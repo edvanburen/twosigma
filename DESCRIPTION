@@ -1,15 +1,18 @@
 Package: twosigma
 Type: Package
-Title: twosigma: Fit 
+Title: twosigma: Fit the TWO-component SInGle cell Model-based Association method for scRNA-seq data analysis
 Version: 0.1.0
-Author: Eric Van Buren
+Authors@R: c(person("Eric", "Van Buren", email = "edvanburen@gmail.com",
+  role = c("aut", "cre")),person("Yun", "Li",role="aut"))
 Maintainer: Eric Van Buren <edvanburen@gmail.com>
-Description: 
-License: What license is it under?
+Description: Implements the TWO-component SInGle cell Model-based Association method . By default, the method fits a zero-inflated negative binomial model with random intercept terms to accommodate within-individual correlation.  Implementation is built off of the glmmTMB package.
+License: GPL-2
 Depends: glmmTMB, 
-	 methods
+	 methods,
+	 pscl
 Encoding: UTF-8
 LazyData: true
 VignetteBuilder: knitr
 URL: http://github.com/edvanburen/twosigma
 BugReports: http://github.com/edvanburen/twosigma/issues
+RoxygenNote: 6.1.0
