@@ -50,6 +50,7 @@ lr.twosigma<-function(count,mean_covar,zi_covar,contrast#,joint=TRUE
     }
   }
 
+
   fit_alt<-glmmTMB(formula=formulas$mean_form
     ,ziformula=formulas$zi_form
     ,weights=weights

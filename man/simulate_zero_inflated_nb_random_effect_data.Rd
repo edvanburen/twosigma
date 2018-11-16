@@ -25,6 +25,8 @@ simulate_zero_inflated_nb_random_effect_data(ncellsper, X, Z, alpha, beta,
 \item{sigma.b}{Standard deviation for the (conditional) mean random intercept.}
 
 \item{id.levels}{Individual-level IDs. If NULL set as 1,2,... up to the number of individuals.}
+
+\item{sim.seed}{Random seed to be used.}
 }
 \value{
 Y Simulated counts

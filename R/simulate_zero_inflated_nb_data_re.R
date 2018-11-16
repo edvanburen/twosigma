@@ -8,6 +8,7 @@
 ##' @param sigma.a Standard deviation for the zero-inflation model random intercept.
 ##' @param sigma.b Standard deviation for the (conditional) mean random intercept.
 ##' @param id.levels Individual-level IDs. If NULL set as 1,2,... up to the number of individuals.
+##' @param sim.seed Random seed to be used.
 ##' @return Y Simulated counts
 ##' @return X Covariate matrix (without intercept) for the (conditional) mean model.
 ##' @return Z Covariate matrix (without intercept) for the zero-inflation model.
@@ -62,13 +63,9 @@ simulate_zero_inflated_nb_random_effect_data<-function(ncellsper,X,Z,alpha,beta,
     if(ind.dropout[i] == 1){Y[i]=0}
     if(ind.dropout[i] == 0)
     {
-      if(phi==0) # not really going to use
-      {
-        Y[i]<-rpois(1,lambda=mu[i])
-      }
       if(phi>0)
       {
-        Y[i]<-rnbinom(1,size=(1/phi),p=(1/(1+phi*mu[i])))
+        Y[i]<-rnbinom(1,size=(1/phi),prob=(1/(1+phi*mu[i])))
       }
       #Watch out for negative binomial parameterizations
     }

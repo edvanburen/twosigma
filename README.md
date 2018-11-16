@@ -120,5 +120,5 @@ summary(fit_meanZI)
           
 lr.fit<-lr.twosigma(contrast="t2d_sim",count=count,mean_covar = X,zi_covar=Z,id=id)
 lr.fit$p.val
-  
+
 ```

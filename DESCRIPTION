@@ -12,7 +12,6 @@ Depends: glmmTMB,
 	 pscl
 Encoding: UTF-8
 LazyData: true
-VignetteBuilder: knitr
 URL: http://github.com/edvanburen/twosigma
 BugReports: http://github.com/edvanburen/twosigma/issues
 RoxygenNote: 6.1.0

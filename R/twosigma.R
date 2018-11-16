@@ -12,6 +12,10 @@
 ##' @param control Control parameters for optimization in \code{glmmTMB}.
 ##' @section Details: Note that the overdispersion estimate returned is the inverse of phi in the parameterization used in TWO-SIGMA.  See ?nbinom2
 ##' @return An object of class \code{glmmTMB}. See Details for a note about the estimated overdispersion parameter.
+##' @import glmmTMB
+##' @import methods
+##' @import pscl
+##' @importFrom stats anova as.formula lm pchisq rbinom residuals rnbinom rnorm
 
 #zi_covar, mean_covar matrices must be specified? Need to figure out what to do exactly here
 # users can input own model formulas to overwrite random effects specification

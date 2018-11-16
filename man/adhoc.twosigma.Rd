@@ -16,8 +16,11 @@ adhoc.twosigma(count, mean_covar, zi_covar, id, weights = rep(1,
 
 \item{zi_covar}{Covariates for the zero-inflation model. Must be a matrix (without an intercept column), = 1 to indicate an intercept only model, or = 0 to indicate no zero-inflation model desired.}
 
-\item{id}{Vector of individual-level ID's. Used as predictor in ANOVA model.
-@param weights weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed. Passed into zeroinfl function
+\item{id}{Vector of individual-level ID's. Used as predictor in ANOVA model.}
+
+\item{weights}{weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed. Passed into zeroinfl function.}
+
+\item{control}{Optional control parameters that can be passed directly into glmmTMB.
 @return P-value from the ANOVA F test.}
 }
 \description{
