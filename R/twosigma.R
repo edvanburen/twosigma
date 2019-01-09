@@ -50,6 +50,7 @@ twosigma<-function(count,mean_covar,zi_covar
             ,dispformula = formulas$disp_form
             ,family=nbinom2,verbose = F
             ,control = control)
+
 return(fit)
 }
 
