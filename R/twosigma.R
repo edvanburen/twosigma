@@ -16,11 +16,11 @@
 ##' @import methods
 ##' @import pscl
 ##' @importFrom stats anova as.formula lm pchisq rbinom residuals rnbinom rnorm
+##' @export twosigma
 
 #zi_covar, mean_covar matrices must be specified? Need to figure out what to do exactly here
 # users can input own model formulas to overwrite random effects specification
 # should know what theyre doing for that though
-
 twosigma<-function(count,mean_covar,zi_covar
                   ,mean_re=TRUE,zi_re=TRUE
                   ,id,mean_form=NULL,zi_form=NULL

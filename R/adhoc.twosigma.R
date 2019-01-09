@@ -6,6 +6,8 @@
 ##' @param weights weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed. Passed into zeroinfl function.
 ##' @param control Optional control parameters that can be passed directly into glmmTMB.
 ##'  @return P-value from the ANOVA F test.
+##'  @export adhoc.twosigma
+
 adhoc.twosigma<-function(count,mean_covar,zi_covar,id
                         ,weights=rep(1,length(count))
                         ,control = glmmTMBControl(optCtrl=list(iter.max=1e5,eval.max=1e5

@@ -13,7 +13,7 @@
 ##' This function assumes that the variable being tested is in both components of the model (and thus that the zero-inflation component exists and contains more than an Intercept). Users wishing to do fixed effect testing in other cases will need to construct the statistics themselves using two separate calls to \code{twosigma}. If users wish to specify custom model formulas they should also construct the likelihood ratio statistics themselves to ensure the test is being conducted properly.
 ##'
 ##' @return A list containing glmmTMB objects of model fits under the null and alternative, the 2 d.f. Likelihood Ratio statistic, and the p-value.
-##'
+##' @export lr.twosigma
 # Likely will want to remove the ability to input a formula for this fn to work properly
 
 lr.twosigma<-function(count,mean_covar,zi_covar,contrast#,joint=TRUE

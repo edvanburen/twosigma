@@ -21,7 +21,8 @@ adhoc.twosigma(count, mean_covar, zi_covar, id, weights = rep(1,
 \item{weights}{weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed. Passed into zeroinfl function.}
 
 \item{control}{Optional control parameters that can be passed directly into glmmTMB.
-@return P-value from the ANOVA F test.}
+@return P-value from the ANOVA F test.
+@export adhoc.twosigma}
 }
 \description{
 adhoc.twosigma: Perform the ad hoc method described in TWO-SIGMA paper

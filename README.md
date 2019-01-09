@@ -8,7 +8,7 @@
 We recommend installing from Github for the latest version of the code:
 ```r
 install.packages("devtools")
-devtools::install_github("https://github.com/edvanburen/twosigma")
+devtools::install_github("edvanburen/twosigma")
 library(twosigma)
 ```
 

@@ -22,6 +22,7 @@
 ##' @return nind Number of individuals.
 ##' @return ncellsper Vector giving the number of cells per individual.
 ##' @return id.levels Individual-level IDs.
+##' @export simulate_zero_inflated_nb_random_effect_data
 
 
 
