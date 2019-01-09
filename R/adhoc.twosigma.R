@@ -1,12 +1,12 @@
 ##' adhoc.twosigma: Perform the ad hoc method described in TWO-SIGMA paper
+##' @export adhoc.twosigma
 ##' @param count Vector of non-negative integer read counts.
 ##' @param mean_covar Covariates for the (conditional) mean model. Must be a matrix (without an intercept column) or = 1 to indicate an intercept only model.
 ##' @param zi_covar Covariates for the zero-inflation model. Must be a matrix (without an intercept column), = 1 to indicate an intercept only model, or = 0 to indicate no zero-inflation model desired.
 ##' @param id Vector of individual-level ID's. Used as predictor in ANOVA model.
 ##' @param weights weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed. Passed into zeroinfl function.
 ##' @param control Optional control parameters that can be passed directly into glmmTMB.
-##'  @return P-value from the ANOVA F test.
-##'  @export adhoc.twosigma
+##' @return P-value from the ANOVA F test.
 
 adhoc.twosigma<-function(count,mean_covar,zi_covar,id
                         ,weights=rep(1,length(count))
