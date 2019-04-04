@@ -6,9 +6,7 @@
 \usage{
 twosigma(count, mean_covar, zi_covar, mean_re = TRUE, zi_re = TRUE, id,
   mean_form = NULL, zi_form = NULL, disp_covar = NULL,
-  weights = rep(1, length(count)), control = glmmTMBControl(optCtrl =
-  list(iter.max = 1e+05, eval.max = 1e+05, step.max = 1e-05, step.min =
-  1e-05, rel.tol = 1e-05, x.tol = 1e-05)))
+  weights = rep(1, length(count)))
 }
 \arguments{
 \item{count}{Vector of non-negative integer read counts.}
