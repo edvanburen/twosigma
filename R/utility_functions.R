@@ -1,14 +1,10 @@
 # Should we have NULL for covars if requiring their input?
 # Should we extend ad hoc to non ZI case?
-check_twosigma_input<-function(count,mean_covar=NULL,zi_covar=NULL
-                               ,mean_form=NULL,zi_form=NULL
+check_twosigma_input<-function(count,mean_covar,zi_covar
                                ,mean_re=TRUE,zi_re=TRUE
                                ,disp_covar=NULL){
 
   # Override count with mean_form if specified then check the inputs
-  if(!is.null(mean_form)){
-      count<-mean_form[[1]]
-  }
 
   if(sum(!as.matrix(count,ncol=1)%%1==0)>0 | min(count)<0){
     stop("When using the Negative Binomial Distribution data must contain only non-negative integers")
@@ -62,6 +58,34 @@ check_twosigma_input<-function(count,mean_covar=NULL,zi_covar=NULL
   # }
 
 }
+
+check_twosigma_custom_input<-function(count
+  ,mean_form,zi_form
+  ,mean_re=TRUE,zi_re=TRUE
+  ,disp_covar=NULL){
+
+  # Override count with mean_form if specified then check the inputs
+    count<-mean_form[[1]]
+
+  if(sum(!as.matrix(count,ncol=1)%%1==0)>0 | min(count)<0){
+    stop("When using the Negative Binomial Distribution data must contain only non-negative integers")
+  }
+
+  if(mean(count==0)>.9){
+    warning("More than 90% of data are zeros. Mean model results may be misleading for such sparse data")
+  }
+  if(mean(count==0)<.1){
+    if(!(is.atomic(zi_covar)&length(zi_covar)==1)){
+      warning("Less than 10% of data are zeros. Zero-Inflation model results may be misleading or unnecessary")
+    }else{
+      if(is.atomic(zi_covar) & length(zi_covar)==1& zi_covar==1){
+        warning("Less than 10% of data are zeros. Zero-Inflation model results may be misleading or unnecessary")
+      }
+    }
+  }
+}
+
+
 create_model_formulas<-function(mean_covar=NULL,zi_covar=NULL
                                 ,mean_form=NULL,zi_form=NULL
                                 ,mean_re=TRUE,zi_re=TRUE
@@ -151,6 +175,8 @@ if(is.null(mean_form)){
   return(list(mean_form=mean_form,zi_form=zi_form,disp_form=disp_form))
 
 }
+
+
 create_adhoc_formulas<-function(mean_covar,zi_covar){
   if(is.matrix(mean_covar)&is.matrix(zi_covar)){
     form<-count~mean_covar|zi_covar
