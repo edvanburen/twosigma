@@ -48,14 +48,12 @@ For example, each of the following function calls reproduces the default TWO-SIG
 
 ```r
 twosigma(count=counts, mean_covar=mean_covars, zi_covar=zi_covars, mean_re = TRUE, zi_re = TRUE, id=id)
-twosigma(count=counts, id=id
-        , mean_form=count~mean_covars+(1|id),zi_form=~zi_covars+(1|id))
+twosigma(count=counts, id=id, mean_form=count~mean_covars+(1|id),zi_form=~zi_covars+(1|id))
 ```
 ## Fixed Effect Testing  
 If users wish to jointly test a fixed effect using the twosigma model, they may do so using the lr.twosigma function
 ```r
-lr.twosigma(count, mean_covar, zi_covar, contrast, mean_re = TRUE,
-  zi_re = TRUE, disp_covar = NULL)
+lr.twosigma(count, mean_covar, zi_covar, contrast, mean_re = TRUE,zi_re = TRUE, disp_covar = NULL)
 ```
 - **contrast**: Either a string indicating the column name of the covariate to test or an integer referring to its column position in BOTH the mean_covar and zi_covar matrices. If an integer is specified there is no check that it corresponds to the same covariate in both the mean_covar and zi_covar matrices. 
 
