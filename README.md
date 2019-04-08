@@ -37,18 +37,22 @@ twosigma(count, mean_covar, zi_covar, mean_re = TRUE, zi_re = TRUE, id)
 - **zi_re**: Should random intercept terms be included in the zero-inflation model? Can be NULL if using the mean_form parameter described below.
 - **id**: Vector of individual-level ID's. Used for random effect prediction.
 
-If (and likely only needed if) users wish to customize the random effect specification, they may do so via the arguments "mean_form" and "zi_form" described below:
-
-- **mean_form** a two-sided formula for the (conditional) mean model. Left side specifies the response and right side includes fixed and random effect terms 
+If (and likely only needed if) users wish to customize the random effect specification, they may do so via the function twosigma_custom, which has the following syntax:
+```r
+twosigma_custom(count, mean_form, zi_form, id, disp_covar = NULL,weights = rep(1, length(count)), control = glmmTMBControl())
+````
+- **count**: A vector of non-negative integer counts. No normalization is done.
+- **mean_form** a two-sided formula for the (conditional) mean model. Left side specifies the response and right side includes fixed and random effect terms. Users should ensure that the response matches the input to the "count" parameter 
 - **zi_form** a one-sided formula for the zero-inflation model including fixed and random effect terms
+- **id**: Vector of individual-level ID's. Used for random effect prediction.
 
-Some care must be taken, however, because these are fed directly into the glmmTMB function. **It is therefore the user's responsibility to ensure that covariates and the response specified in formula terms will match the mean_covar and zi_covar arguments, respectively**. The formulas will be fed into glmmTMB verbatium so users must ensure consistency. 
+Some care must be taken, however, because these formulas are fed directly into the glmmTMB function. **It is therefore the user's responsibility to ensure that formulas being inputted will operate as desired**. The formulas will be fed into glmmTMB verbatium so users must ensure consistency. 
 
 For example, each of the following function calls reproduces the default TWO-SIGMA specification with random intercepts in both components:
 
 ```r
 twosigma(count=counts, mean_covar=mean_covars, zi_covar=zi_covars, mean_re = TRUE, zi_re = TRUE, id=id)
-twosigma(count=counts, id=id, mean_form=count~mean_covars+(1|id),zi_form=~zi_covars+(1|id))
+twosigma_custom(count=counts, mean_form=count~mean_covar_matrix+(1|id),zi_form=~zi_covar_matrix+(1|id),id=id)
 ```
 ## Fixed Effect Testing  
 If users wish to jointly test a fixed effect using the twosigma model, they may do so using the lr.twosigma function
