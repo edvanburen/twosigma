@@ -1,4 +1,5 @@
 ##' Specify custom model formulas to the TWO-component SInGle cell Model-based Association method of ... This function is only needed if users wish to include random effect terms beyond random intercepts. Users should be confident in their abilities to specify random effects using the syntax of lme4.
+##' @param count Vector of non-negative integer read counts. Users should ensure that this matches matches the LHS of the formula in "mean_form."
 ##' @param mean_form Custom two-sided model formula for the (conditional) mean model. Formula is passed directly into glmmTMB with random effects specified as in the lme4 package. Users should ensure that the dependent variable matches the argument to the parameter "count."
 ##' @param zi_form Custom one-sided model formula for the zero-inflation model. Formula is passed directly into glmmTMB with random effects specified as in lme4.
 ##' @param id Vector of individual-level ID's. Used for random effect prediction.
@@ -14,7 +15,7 @@
 ##' @export twosigma_custom
 
 
-twosigma_custom<-function(mean_form,zi_form,id,
+twosigma_custom<-function(count,mean_form,zi_form,id,
   disp_covar=NULL
   ,weights=rep(1,length(count))
   ,control = glmmTMBControl()){
@@ -24,7 +25,7 @@ twosigma_custom<-function(mean_form,zi_form,id,
   # Check that response is only valid counts if using Negative Binomial
   #if(grepl("nbinom2",family$family) & (sum(!as.matrix(count,ncol=1)%%1==0)>0 | min(count)<0)){
 
-  check_twosigma_custom_input(mean_form,zi_form,id,disp_covar)
+  check_twosigma_custom_input(count,mean_form,zi_form,id,disp_covar)
 
   if(is.null(disp_covar)){
     disp_form<- ~1 #Default is intercept only

@@ -10,7 +10,7 @@ check_twosigma_input<-function(count,mean_covar,zi_covar
     stop("When using the Negative Binomial Distribution data must contain only non-negative integers")
   }
 
-  if(is.null(mean_covar)&is.null(mean_form))
+  if(is.null(mean_covar))
   {
     stop("At minimum must specify Mean Model Covariates or provide model formula")
   }
@@ -65,7 +65,6 @@ check_twosigma_custom_input<-function(count
   ,disp_covar=NULL){
 
   # Override count with mean_form if specified then check the inputs
-    count<-mean_form[[1]]
 
   if(sum(!as.matrix(count,ncol=1)%%1==0)>0 | min(count)<0){
     stop("When using the Negative Binomial Distribution data must contain only non-negative integers")
@@ -75,13 +74,10 @@ check_twosigma_custom_input<-function(count
     warning("More than 90% of data are zeros. Mean model results may be misleading for such sparse data")
   }
   if(mean(count==0)<.1){
-    if(!(is.atomic(zi_covar)&length(zi_covar)==1)){
+    if(!(zi_form==~0)){
       warning("Less than 10% of data are zeros. Zero-Inflation model results may be misleading or unnecessary")
-    }else{
-      if(is.atomic(zi_covar) & length(zi_covar)==1& zi_covar==1){
-        warning("Less than 10% of data are zeros. Zero-Inflation model results may be misleading or unnecessary")
-      }
     }
+
   }
 }
 
