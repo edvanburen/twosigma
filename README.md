@@ -31,32 +31,33 @@ twosigma(count, mean_covar, zi_covar, mean_re = TRUE, zi_re = TRUE, id)
 ```
 
 - **count**: A vector of non-negative integer counts. No normalization is done.
-- **mean_covar**: A matrix (such as from model.matrix) of covariates for the (conditional) mean model without an intercept term. Columns give covariates and rows give individual-level information.
-- **zi_covar**: A matrix (such as from model.matrix) of covariates for the zero-inflation model without an intercept term. Columns give covariates and rows give individual-level information.
+- **mean_covar**: A matrix (such as from model.matrix) of covariates for the (conditional) mean model without an intercept term. Columns give covariates and rows give individual-level information. Can be NULL if using the mean_form parameter described below.
+- **zi_covar**: A matrix (such as from model.matrix) of covariates for the zero-inflation model without an intercept term. Columns give covariates and rows give individual-level information. Can be NULL if using the zi_form parameter described below.
 - **mean_re**: Should random intercept terms be included in the (conditional) mean model?
 - **zi_re**: Should random intercept terms be included in the zero-inflation model?
 - **id**: Vector of individual-level ID's. Used for random effect prediction.
 
-If users wish to customize the random effect specification, they may do so via the arguments "mean_form" and "zi_form" described below:
+If (and likely only needed if) users wish to customize the random effect specification, they may do so via the arguments "mean_form" and "zi_form" described below:
 
 - **mean_form** a two-sided formula for the (conditional) mean model. Left side specifies the response and right side includes fixed and random effect terms 
 - **zi_form** a one-sided formula for the zero-inflation model including fixed and random effect terms
 
-Some care must be taken, however, because these are fed directly into the glmmTMB function. **It is expected that covariates specified in formula terms will match the mean_covar and zi_covar arguments, respectively**. The formulas will be fed into glmmTMB verbatium so users must ensure consistency. 
+Some care must be taken, however, because these are fed directly into the glmmTMB function. **It is therefore the user's responsibility to ensure that covariates and the response specified in formula terms will match the mean_covar and zi_covar arguments, respectively**. The formulas will be fed into glmmTMB verbatium so users must ensure consistency. 
 
-For example,the following reproduces the default TWO-SIGMA specification with random intercepts:
+For example, each of the following function calls reproduces the default TWO-SIGMA specification with random intercepts in both components:
 
 ```r
-twosigma(count=counts, mean_covar=mean_covars, zi_covar=zi_covars, mean_re = TRUE, zi_re = TRUE, id
+twosigma(count=counts, mean_covar=mean_covars, zi_covar=zi_covars, mean_re = TRUE, zi_re = TRUE, id=id)
+twosigma(count=counts, id=id
         , mean_form=count~mean_covars+(1|id),zi_form=~zi_covars+(1|id))
 ```
 ## Fixed Effect Testing  
-If users wish to jointly test a fixed effect using the twosigma model, they may do so using 
+If users wish to jointly test a fixed effect using the twosigma model, they may do so using the lr.twosigma function
 ```r
 lr.twosigma(count, mean_covar, zi_covar, contrast, mean_re = TRUE,
   zi_re = TRUE, disp_covar = NULL)
 ```
-- **contrast**: Either a string indicating the column name of the covariate to test or an integer referring to its column position in BOTH the mean_covar and zi_covar matrices. If an integer is specified there is no check that it corresponds to the same covariate in both positions. 
+- **contrast**: Either a string indicating the column name of the covariate to test or an integer referring to its column position in BOTH the mean_covar and zi_covar matrices. If an integer is specified there is no check that it corresponds to the same covariate in both the mean_covar and zi_covar matrices. 
 
 This function assumes that the variable being tested is in both components of the model (and thus that the zero-inflation component exists and contains more than an Intercept). Users wishing to do fixed effect testing in other cases will need to construct the statistics themselves to ensure valid nested models are being constructed.
 
@@ -106,11 +107,11 @@ sim_dat<-simulate_zero_inflated_nb_random_effect_data(ncellsper,X,Z,alpha,beta,p
 
 #--- Fit TWO-SIGMA to simulated data
 id<-sim_dat$id
-count<-sim_dat$Y
+counts<-sim_dat$Y
 
-fit<-twosigma(count=count,zi_covar=Z,mean_covar = X,id=id)
-fit_noZI<-twosigma(count=count,zi_covar=0,mean_covar = X,id=id)
-fit_meanZI<-twosigma(count=count,zi_covar=1,mean_covar = X,id=id)
+fit<-twosigma(count=counts,zi_covar=Z,mean_covar = X,id=id)
+fit_noZI<-twosigma(count=counts,zi_covar=0,mean_covar = X,id=id)
+fit_meanZI<-twosigma(count=counts,zi_covar=1,mean_covar = X,id=id)
 summary(fit)
 confint(fit)
 summary(fit_noZI)
