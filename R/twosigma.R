@@ -22,7 +22,7 @@
 # users can input own model formulas to overwrite random effects specification
 # should know what theyre doing for that though
 twosigma<-function(count,mean_covar=NULL,zi_covar=NULL
-                  ,mean_re=TRUE,zi_re=TRUE
+                  ,mean_re=NULL,zi_re=NULL
                   ,id,mean_form=NULL,zi_form=NULL
                    ,disp_covar=NULL #need to be able to use data option?
                    ,weights=rep(1,length(count))

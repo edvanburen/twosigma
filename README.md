@@ -33,8 +33,8 @@ twosigma(count, mean_covar, zi_covar, mean_re = TRUE, zi_re = TRUE, id)
 - **count**: A vector of non-negative integer counts. No normalization is done.
 - **mean_covar**: A matrix (such as from model.matrix) of covariates for the (conditional) mean model without an intercept term. Columns give covariates and rows give individual-level information. Can be NULL if using the mean_form parameter described below.
 - **zi_covar**: A matrix (such as from model.matrix) of covariates for the zero-inflation model without an intercept term. Columns give covariates and rows give individual-level information. Can be NULL if using the zi_form parameter described below.
-- **mean_re**: Should random intercept terms be included in the (conditional) mean model?
-- **zi_re**: Should random intercept terms be included in the zero-inflation model?
+- **mean_re**: Should random intercept terms be included in the (conditional) mean model? Can be NULL if using the mean_form parameter described below.
+- **zi_re**: Should random intercept terms be included in the zero-inflation model? Can be NULL if using the mean_form parameter described below.
 - **id**: Vector of individual-level ID's. Used for random effect prediction.
 
 If (and likely only needed if) users wish to customize the random effect specification, they may do so via the arguments "mean_form" and "zi_form" described below:

@@ -5,6 +5,11 @@ check_twosigma_input<-function(count,mean_covar=NULL,zi_covar=NULL
                                ,mean_re=TRUE,zi_re=TRUE
                                ,disp_covar=NULL){
 
+  # Override count with mean_form if specified then check the inputs
+  if(!is.null(mean_form)){
+      count<-mean_form[[1]]
+  }
+
   if(sum(!as.matrix(count,ncol=1)%%1==0)>0 | min(count)<0){
     stop("When using the Negative Binomial Distribution data must contain only non-negative integers")
   }
@@ -13,6 +18,7 @@ check_twosigma_input<-function(count,mean_covar=NULL,zi_covar=NULL
   {
     stop("At minimum must specify Mean Model Covariates or provide model formula")
   }
+
   #Check for intercept being input
   if(class(mean_covar)=="matrix"){
     check_no_intercept<-function(x){mean(x==1)}
@@ -46,9 +52,6 @@ check_twosigma_input<-function(count,mean_covar=NULL,zi_covar=NULL
     }
   }
 
- # if(!is.null(mean_form)){
-
-#  }
   #if(!is.null(zi_form)){
 
 # }
