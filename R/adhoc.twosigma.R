@@ -15,7 +15,6 @@ adhoc.twosigma<-function(count,mean_covar,zi_covar,id
                         ,rel.tol=1e-5,x.tol=1e-5))){
 
   check_twosigma_input(count,mean_covar,zi_covar
-    ,mean_form=NULL,zi_form=NULL
     ,mean_re=T,zi_re=T
     ,disp_covar=NULL)
 

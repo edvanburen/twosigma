@@ -34,7 +34,6 @@ twosigma<-function(count,mean_covar=NULL,zi_covar=NULL
     #if(grepl("nbinom2",family$family) & (sum(!as.matrix(count,ncol=1)%%1==0)>0 | min(count)<0)){
 
   check_twosigma_input(count,mean_covar,zi_covar
-                       ,mean_form,zi_form
                        ,mean_re,zi_re
                        ,disp_covar)
   formulas<-create_model_formulas(mean_covar,zi_covar

@@ -25,7 +25,6 @@ lr.twosigma<-function(count,mean_covar,zi_covar,contrast#,joint=TRUE
                         ,step.max=.00001,step.min=.00001
                         ,rel.tol=1e-5,x.tol=1e-5))){
   check_twosigma_input(count,mean_covar,zi_covar
-    ,mean_form=NULL,zi_form=NULL
     ,mean_re,zi_re
     ,disp_covar)
 
