@@ -1,12 +1,12 @@
 ##' TWO-SIGMA: Fit the TWO-component SInGle cell Model-based Association method of...
-##' @param count Vector of non-negative integer read counts.
+##' @param count Vector of non-negative integer read counts. If specifying custom formula(s) via the arguments mean_form and zi_form the expression in mean_form will supersede.
 ##' @param mean_covar Covariates for the (conditional) mean model. Must be a matrix (without an intercept column) or = 1 to indicate an intercept only model.
 ##' @param zi_covar Covariates for the zero-inflation model. Must be a matrix (without an intercept column), = 1 to indicate an intercept only model, or = 0 to indicate no zero-inflation model desired.
 ##' @param mean_re Should random intercepts be included in the (conditional) mean model?
 ##' @param zi_re Should random intercepts be included in the zero-inflation model?
 ##' @param id Vector of individual-level ID's. Used for random effect prediction.
-##' @param mean_form Custom two-sided model formula for the (conditional) mean model. Only necessary if it is desired to include more complex random effects beyond a random intercept. Formula is passed directly into glmmTMB with random effects specified as in lme4. If specified takes precedence over the \code{mean_re} and \code{mean_covar} arguments.
-##' @param zi_form Custom one-sided model formula for the zero-inflation model. Only necessary if it is desired to include more complex random effects beyond a random intercept. Formula is passed directly into glmmTMB with random effects specified as in lme4. If specified takes precedence over the \code{zi_re} and \code{zi_covar} arguments
+##' @param mean_form Custom two-sided model formula for the (conditional) mean model. Only necessary if it is desired to include more complex random effects beyond a random intercept. Formula is passed directly into glmmTMB with random effects specified as in the lme4 package. If specified takes precedence over the \code{mean_re} and \code{mean_covar} arguments. Users should ensure that the dependent variable matches the argument to the parameter "count."
+##' @param zi_form Custom one-sided model formula for the zero-inflation model. Only necessary if it is desired to include more complex random effects beyond a random intercept. Formula is passed directly into glmmTMB with random effects specified as in lme4. If specified takes precedence over the \code{zi_re} and \code{zi_covar} arguments.
 ##' @param disp_covar Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model.
 ##' @param weights weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.
 ##' @param control Control parameters for optimization in \code{glmmTMB}.
