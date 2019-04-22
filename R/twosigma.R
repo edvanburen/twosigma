@@ -35,7 +35,7 @@ twosigma<-function(count,mean_covar,zi_covar
                        ,mean_re,zi_re
                        ,disp_covar)
   formulas<-create_model_formulas(mean_covar,zi_covar
-    ,mean_form,zi_form
+    ,mean_form=NULL,zi_form=NULL
     ,mean_re,zi_re
     ,disp_covar)
 
