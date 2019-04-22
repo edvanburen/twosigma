@@ -5,8 +5,6 @@
 ##' @param mean_re Should random intercepts be included in the (conditional) mean model?
 ##' @param zi_re Should random intercepts be included in the zero-inflation model?
 ##' @param id Vector of individual-level ID's. Used for random effect prediction.
-##' @param mean_form Custom two-sided model formula for the (conditional) mean model. Only necessary if it is desired to include more complex random effects beyond a random intercept. Formula is passed directly into glmmTMB with random effects specified as in the lme4 package. If specified takes precedence over the \code{mean_re} and \code{mean_covar} arguments. Users should ensure that the dependent variable matches the argument to the parameter "count."
-##' @param zi_form Custom one-sided model formula for the zero-inflation model. Only necessary if it is desired to include more complex random effects beyond a random intercept. Formula is passed directly into glmmTMB with random effects specified as in lme4. If specified takes precedence over the \code{zi_re} and \code{zi_covar} arguments.
 ##' @param disp_covar Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model.
 ##' @param weights weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.
 ##' @param control Control parameters for optimization in \code{glmmTMB}.
@@ -21,9 +19,9 @@
 #zi_covar, mean_covar matrices must be specified? Need to figure out what to do exactly here
 # users can input own model formulas to overwrite random effects specification
 # should know what theyre doing for that though
-twosigma<-function(count,mean_covar=NULL,zi_covar=NULL
-                  ,mean_re=NULL,zi_re=NULL
-                  ,id,mean_form=NULL,zi_form=NULL
+twosigma<-function(count,mean_covar,zi_covar
+                  ,mean_re=TRUE,zi_re=TRUE
+                  ,id
                    ,disp_covar=NULL #need to be able to use data option?
                    ,weights=rep(1,length(count))
                    ,control = glmmTMBControl()){

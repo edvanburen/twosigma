@@ -4,8 +4,7 @@
 \alias{twosigma}
 \title{TWO-SIGMA: Fit the TWO-component SInGle cell Model-based Association method of...}
 \usage{
-twosigma(count, mean_covar = NULL, zi_covar = NULL, mean_re = NULL,
-  zi_re = NULL, id, mean_form = NULL, zi_form = NULL,
+twosigma(count, mean_covar, zi_covar, mean_re = TRUE, zi_re = TRUE, id,
   disp_covar = NULL, weights = rep(1, length(count)),
   control = glmmTMBControl())
 }
@@ -21,10 +20,6 @@ twosigma(count, mean_covar = NULL, zi_covar = NULL, mean_re = NULL,
 \item{zi_re}{Should random intercepts be included in the zero-inflation model?}
 
 \item{id}{Vector of individual-level ID's. Used for random effect prediction.}
-
-\item{mean_form}{Custom two-sided model formula for the (conditional) mean model. Only necessary if it is desired to include more complex random effects beyond a random intercept. Formula is passed directly into glmmTMB with random effects specified as in the lme4 package. If specified takes precedence over the \code{mean_re} and \code{mean_covar} arguments. Users should ensure that the dependent variable matches the argument to the parameter "count."}
-
-\item{zi_form}{Custom one-sided model formula for the zero-inflation model. Only necessary if it is desired to include more complex random effects beyond a random intercept. Formula is passed directly into glmmTMB with random effects specified as in lme4. If specified takes precedence over the \code{zi_re} and \code{zi_covar} arguments.}
 
 \item{disp_covar}{Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model.}
 
