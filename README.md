@@ -31,8 +31,8 @@ twosigma(count, mean_covar, zi_covar, mean_re = TRUE, zi_re = TRUE, id)
 ```
 
 - **count**: A vector of non-negative integer counts. No normalization is done.
-- **mean_covar**: A matrix (such as from model.matrix) of covariates for the (conditional) mean model without an intercept term. Columns give covariates and rows give individual-level information. Can be NULL if using the mean_form parameter described below.
-- **zi_covar**: A matrix (such as from model.matrix) of covariates for the zero-inflation model without an intercept term. Columns give covariates and rows give individual-level information. Can be NULL if using the zi_form parameter described below.
+- **mean_covar**: A matrix (such as from model.matrix) of covariates for the (conditional) mean model without an intercept term. Columns give covariates and rows give individual-level information.
+- **zi_covar**: A matrix (such as from model.matrix) of covariates for the zero-inflation model without an intercept term. Columns give covariates and rows give individual-level information.
 - **mean_re**: Should random intercept terms be included in the (conditional) mean model? Can be NULL if using the mean_form parameter described below.
 - **zi_re**: Should random intercept terms be included in the zero-inflation model? Can be NULL if using the mean_form parameter described below.
 - **id**: Vector of individual-level ID's. Used for random effect prediction.
@@ -46,16 +46,16 @@ twosigma_custom(count, mean_form, zi_form, id, disp_covar = NULL,weights = rep(1
 - **zi_form** a one-sided formula for the zero-inflation model including fixed and random effect terms
 - **id**: Vector of individual-level ID's. Used for random effect prediction.
 
-Some care must be taken, however, because these formulas are fed directly into the glmmTMB function. **It is therefore the user's responsibility to ensure that formulas being inputted will operate as desired**. The formulas will be fed into glmmTMB verbatium so users must ensure consistency. 
+Some care must be taken, however, because these formulas are fed directly into the glmmTMB function. **It is therefore the user's responsibility to ensure that formulas being inputted will operate as desired**.
 
 For example, each of the following function calls reproduces the default TWO-SIGMA specification with random intercepts in both components:
 
 ```r
-twosigma(count=counts, mean_covar=mean_covars, zi_covar=zi_covars, mean_re = TRUE, zi_re = TRUE, id=id)
-twosigma_custom(count=counts, mean_form=count~mean_covar_matrix+(1|id),zi_form=~zi_covar_matrix+(1|id),id=id)
+twosigma(count=counts, mean_covar=mean_covar_matrix, zi_covar=zi_covar_matrix, mean_re = TRUE, zi_re = TRUE, id=id)
+twosigma_custom(count=counts, mean_form=counts~mean_covar_matrix+(1|id),zi_form=~zi_covar_matrix+(1|id),id=id)
 ```
 ## Fixed Effect Testing  
-If users wish to jointly test a fixed effect using the twosigma model, they may do so using the lr.twosigma function
+If users wish to jointly test a fixed effect using the twosigma model with a non-custom specification, they may do so using the lr.twosigma function:
 ```r
 lr.twosigma(count, mean_covar, zi_covar, contrast, mean_re = TRUE,zi_re = TRUE, disp_covar = NULL)
 ```
@@ -121,7 +121,7 @@ summary(fit_meanZI)
 
 # Perform Likelihood Ratio Test on variable "t2d_sim"
           
-lr.fit<-lr.twosigma(contrast="t2d_sim",count=count,mean_covar = X,zi_covar=Z,id=id)
+lr.fit<-lr.twosigma(contrast="t2d_sim",count=counts,mean_covar = X,zi_covar=Z,id=id)
 lr.fit$p.val
 
 ```
