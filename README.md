@@ -39,7 +39,8 @@ twosigma(count, mean_covar, zi_covar, mean_re = TRUE, zi_re = TRUE, id)
 
 If (and likely only needed if) users wish to customize the random effect specification, they may do so via the function twosigma_custom, which has the following syntax:
 ```r
-twosigma_custom(count, mean_form, zi_form, id, disp_covar = NULL,weights = rep(1, length(count)), control = glmmTMBControl())
+twosigma_custom(count, mean_form, zi_form, id, disp_covar = NULL
+                ,weights = rep(1, length(count)), control = glmmTMBControl())
 ````
 - **count**: A vector of non-negative integer counts. No normalization is done.
 - **mean_form** a two-sided formula for the (conditional) mean model. Left side specifies the response and right side includes fixed and random effect terms. Users should ensure that the response matches the input to the "count" parameter 
