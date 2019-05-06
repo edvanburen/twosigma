@@ -178,33 +178,44 @@ create_adhoc_formulas<-function(count,mean_covar,zi_covar){
     form<-count~mean_covar|zi_covar
   }
   if(class(zi_covar)=="numeric" & is.matrix(mean_covar)){
-    if(zi_covar==0){
-      stop("Ad hoc method only implemented when ZI model contains at minimum an intercept")
+    if(length(zi_covar)==1){
+      if(zi_covar==0){
+        stop("Ad hoc method only implemented when ZI model contains at minimum an intercept")
       }else if(zi_covar==1){
-      form<-count~mean_covar|1
+        form<-count~mean_covar|1
       }else{
-      stop("Invalid zero-inflation covariates specified")
+        stop("Invalid zero-inflation covariates specified")
       }
+    }else{
+      stop("Invalid zero-inflation covariates specified")
+    }
   }
   if(class(mean_covar)=="numeric" & is.matrix(zi_covar)){
-    if(mean_covar==0){
-      stop("Ad hoc method only implemented when Mean model contains at minimum an intercept")
-    }else if(mean_covar==1){
-      form<-count~1|zi_covar
+    if(length(mean_covar==1)){
+      if(mean_covar==0){
+        stop("Ad hoc method only implemented when Mean model contains at minimum an intercept")
+      }else if(mean_covar==1){
+        form<-count~1|zi_covar
+      }else{
+        stop("Invalid mean model covariates specified")
+      }
     }else{
       stop("Invalid mean model covariates specified")
     }
   }
   if(class(mean_covar)=="numeric" & class(zi_covar)=="numeric"){
-    if(mean_covar==0 | zi_covar==0){
-      stop("Ad hoc method only implemented when both mean and zi model contain at minimum an intercept")
-    }
-    if(mean_covar==1 & zi_covar==1){
-      form<-count~1|1
-    }
-    else{
-      stop("Ad hoc method only implemented when both mean and zi model contain at minimum an intercept")
-    }
+      if(length(mean_covar)==1 & length(zi_covar)==1){
+        if(mean_covar==0 | zi_covar==0){
+          stop("Ad hoc method only implemented when both mean and zi model contain at minimum an intercept")
+        }
+        if(mean_covar==1 & zi_covar==1){
+          form<-count~1|1
+        }
+        else{
+          stop("Ad hoc method only implemented when both mean and zi model contain at minimum an intercept")
+        }
+      }
+
   }
 
   return(form)

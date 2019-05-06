@@ -128,5 +128,6 @@ lr.fit<-lr.twosigma(contrast="t2d_sim",count=counts,mean_covar = X,zi_covar=Z,id
 lr.fit$p.val
 
 # Perform adhoc method to see if random effects are needed
+adhoc.twosigma(count=counts,zi_covar=Z,mean_covar=X,id=id)
 
 ```
