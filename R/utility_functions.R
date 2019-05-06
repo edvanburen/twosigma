@@ -214,6 +214,8 @@ create_adhoc_formulas<-function(count,mean_covar,zi_covar){
         else{
           stop("Ad hoc method only implemented when both mean and zi model contain at minimum an intercept")
         }
+      }else{
+        form<-count~mean_covar|zi_covar
       }
 
   }
