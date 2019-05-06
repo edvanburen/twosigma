@@ -18,7 +18,7 @@ adhoc.twosigma<-function(count,mean_covar,zi_covar,id
     ,mean_re=T,zi_re=T
     ,disp_covar=NULL)
 
-  form<-create_adhoc_formulas(mean_covar,zi_covar)
+  form<-create_adhoc_formulas(count,mean_covar,zi_covar)
 resid<-residuals(zeroinfl(form,dist="negbin",link="logit"),type="pearson",weights=weights)
      lm1<-lm(resid~id)
      p.val_adhoc<-anova(lm1)$`Pr(>F)`[1]

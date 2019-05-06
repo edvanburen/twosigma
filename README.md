@@ -113,7 +113,9 @@ id<-sim_dat$id
 counts<-sim_dat$Y
 
 fit<-twosigma(count=counts,zi_covar=Z,mean_covar = X,id=id)
+#--- Fit TWO-SIGMA without a zero-inflation component
 fit_noZI<-twosigma(count=counts,zi_covar=0,mean_covar = X,id=id)
+#--- Fit TWO-SIGMA without an intercept only zero-inflation component
 fit_meanZI<-twosigma(count=counts,zi_covar=1,mean_covar = X,id=id)
 summary(fit)
 confint(fit)
@@ -124,5 +126,7 @@ summary(fit_meanZI)
           
 lr.fit<-lr.twosigma(contrast="t2d_sim",count=counts,mean_covar = X,zi_covar=Z,id=id)
 lr.fit$p.val
+
+# Perform adhoc method to see if random effects are needed
 
 ```
