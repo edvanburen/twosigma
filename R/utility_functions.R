@@ -189,6 +189,7 @@ create_adhoc_formulas<-function(count,mean_covar,zi_covar){
     }else{
       stop("Invalid zero-inflation covariates specified")
     }
+    form<-count~mean_covar|zi_covar
   }
   if(class(mean_covar)=="numeric" & is.matrix(zi_covar)){
     if(length(mean_covar==1)){
@@ -202,6 +203,7 @@ create_adhoc_formulas<-function(count,mean_covar,zi_covar){
     }else{
       stop("Invalid mean model covariates specified")
     }
+    form<-count~mean_covar|zi_covar
   }
   if(class(mean_covar)=="numeric" & class(zi_covar)=="numeric"){
       if(length(mean_covar)==1 & length(zi_covar)==1){
