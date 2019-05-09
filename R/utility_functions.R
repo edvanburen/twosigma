@@ -173,11 +173,11 @@ if(is.null(mean_form)){
 }
 
 
-create_adhoc_formulas<-function(count,mean_covar,zi_covar){
+create_adhoc_formulas2<-function(count,mean_covar,zi_covar){
   if(is.matrix(mean_covar)&is.matrix(zi_covar)){
     form<-count~mean_covar|zi_covar
   }
-  if(class(zi_covar)=="numeric" & is.matrix(mean_covar)){
+  if((class(zi_covar)=="numeric"| (class(zi_covar)=="integer")) & length(zi_covar)==1 & is.matrix(mean_covar)){
     if(length(zi_covar)==1){
       if(zi_covar==0){
         stop("Ad hoc method only implemented when ZI model contains at minimum an intercept")
@@ -191,7 +191,7 @@ create_adhoc_formulas<-function(count,mean_covar,zi_covar){
     }
     form<-count~mean_covar|zi_covar
   }
-  if(class(mean_covar)=="numeric" & is.matrix(zi_covar)){
+  if((class(mean_covar)=="numeric"| (class(mean_covar)=="integer")) & length(mean_covar)==1 & is.matrix(zi_covar)){
     if(length(mean_covar==1)){
       if(mean_covar==0){
         stop("Ad hoc method only implemented when Mean model contains at minimum an intercept")
@@ -205,7 +205,12 @@ create_adhoc_formulas<-function(count,mean_covar,zi_covar){
     }
     form<-count~mean_covar|zi_covar
   }
-  if(class(mean_covar)=="numeric" & class(zi_covar)=="numeric"){
+  if((class(mean_covar)=="numeric"| (class(mean_covar)=="integer")) & length(mean_covar)>1 & is.matrix(zi_covar)){
+    form<-count~mean_covar|zi_covar
+  }
+
+  if((class(mean_covar)=="numeric"| (class(mean_covar)=="integer")) & length(mean_covar)>1
+    & (class(zi_covar)=="numeric"| (class(zi_covar)=="integer")) & length(zi_covar)>1){
       if(length(mean_covar)==1 & length(zi_covar)==1){
         if(mean_covar==0 | zi_covar==0){
           stop("Ad hoc method only implemented when both mean and zi model contain at minimum an intercept")
@@ -220,7 +225,39 @@ create_adhoc_formulas<-function(count,mean_covar,zi_covar){
         form<-count~mean_covar|zi_covar
       }
 
+    }
+  if((class(zi_covar)=="numeric"| (class(zi_covar)=="integer")) & length(zi_covar)>1 & is.matrix(mean_covar)){
+    form<-count~mean_covar|zi_covar
   }
-
+  browser
+  return(form)
+}
+create_adhoc_formulas<-function(count,mean_covar,zi_covar){
+  if(length(zi_covar)==1){
+    if(zi_covar==0){
+      stop("Ad hoc method only implemented when both mean and zi model contain at minimum an intercept")}
+    if(zi_covar!=1){
+      stop("Invalid zi model covariates specified")
+    }
+  }
+  if(length(mean_covar)==1){
+    if(mean_covar==0){
+      stop("Ad hoc method only implemented when both mean and zi model contain at minimum an intercept")}
+    if(mean_covar!=1){
+      stop("Invalid mean model covariates specified")
+    }
+  }
+  if(length(mean_covar)==1 & length(zi_covar)>1){
+    if(mean_covar==1){form<-count~1|zi_covar}
+  }
+  if(length(mean_covar)>1 & length(zi_covar)==1){
+    if(zi_covar==1){form<-count~mean_covar|1}
+  }
+  if(length(mean_covar)==1 & length(zi_covar)==1){
+    if(mean_covar==1 & zi_covar==1){form<-count~1|1}
+  }
+  if(!exists("form")){
+    form<-count~mean_covar|zi_covar
+  }
   return(form)
 }
