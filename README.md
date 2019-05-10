@@ -14,7 +14,7 @@ library(twosigma)
 
 ## Model
 TWO-SIGMA is based on the following parameterization of the negative binomial distribution: 
-<img src="inst/image/nb2.jpg" width="600" align="center">
+<img src="inst/image/nb3.jpg" width="600" align="center">
 
 A point mass at zero is added to the distribution to account for dropout.  The result is the probability mass function for the zero-inflated negative binomial distribution:
 
