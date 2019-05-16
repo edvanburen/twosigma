@@ -5,14 +5,10 @@
 ##' @param zi_covar Covariates for the zero-inflation model. Must be a matrix (without an intercept column), = 1 to indicate an intercept only model, or = 0 to indicate no zero-inflation model desired.
 ##' @param id Vector of individual-level ID's. Used as predictor in ANOVA model.
 ##' @param weights weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed. Passed into zeroinfl function.
-##' @param control Optional control parameters that can be passed directly into glmmTMB.
 ##' @return P-value from the ANOVA F test.
 
 adhoc.twosigma<-function(count,mean_covar,zi_covar,id
-                        ,weights=rep(1,length(count))
-                        ,control = glmmTMBControl(optCtrl=list(iter.max=1e5,eval.max=1e5
-                        ,step.max=.00001,step.min=.00001
-                        ,rel.tol=1e-5,x.tol=1e-5))){
+                        ,weights=rep(1,length(count))){
 
   check_twosigma_input(count,mean_covar,zi_covar
     ,mean_re=T,zi_re=T
