@@ -2,7 +2,7 @@
 # Should we extend ad hoc to non ZI case?
 check_twosigma_input<-function(count,mean_covar,zi_covar
                                ,mean_re=TRUE,zi_re=TRUE
-                               ,disp_covar=NULL){
+                               ,disp_covar=NULL,adhoc){
 
   # Override count with mean_form if specified then check the inputs
 
@@ -47,16 +47,6 @@ check_twosigma_input<-function(count,mean_covar,zi_covar
       }
     }
   }
-
-  #if(!is.null(zi_form)){
-
-# }
-  # if(mean(count==0)<.1 & !is.atomic(zi_covar)){
-  #     warning("Less than 10% of data are zeros. Zero-Inflation model results may be misleading or unnecessary")
-  #   }else if(mean(count==0)<.1 & is.atomic(zi_covar) & length(zi_covar)==1& zi_covar==1){
-  #     warning("Less than 10% of data are zeros. Zero-Inflation model results may be misleading or unnecessary")
-  # }
-
 }
 
 check_twosigma_custom_input<-function(count
@@ -77,7 +67,6 @@ check_twosigma_custom_input<-function(count
     if(!(zi_form==~0)){
       warning("Less than 10% of data are zeros. Zero-Inflation model results may be misleading or unnecessary")
     }
-
   }
 }
 
@@ -229,9 +218,9 @@ create_adhoc_formulas2<-function(count,mean_covar,zi_covar){
   if((class(zi_covar)=="numeric"| (class(zi_covar)=="integer")) & length(zi_covar)>1 & is.matrix(mean_covar)){
     form<-count~mean_covar|zi_covar
   }
-  browser
   return(form)
 }
+
 create_adhoc_formulas<-function(count,mean_covar,zi_covar){
   if(length(zi_covar)==1){
     if(zi_covar==0){

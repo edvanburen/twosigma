@@ -5,7 +5,7 @@
 \title{TWO-SIGMA: Fit the TWO-component SInGle cell Model-based Association method of...}
 \usage{
 twosigma(count, mean_covar, zi_covar, mean_re = TRUE, zi_re = TRUE, id,
-  disp_covar = NULL, weights = rep(1, length(count)),
+  adhoc = TRUE, disp_covar = NULL, weights = rep(1, length(count)),
   control = glmmTMBControl())
 }
 \arguments{
@@ -20,6 +20,8 @@ twosigma(count, mean_covar, zi_covar, mean_re = TRUE, zi_re = TRUE, id,
 \item{zi_re}{Should random intercepts be included in the zero-inflation model?}
 
 \item{id}{Vector of individual-level ID's. Used for random effect prediction.}
+
+\item{adhoc}{Should the adhoc method be used by default to judge if random effects are needed?}
 
 \item{disp_covar}{Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model.}
 

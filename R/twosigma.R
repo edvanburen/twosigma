@@ -31,20 +31,22 @@ twosigma<-function(count,mean_covar,zi_covar
   #}
   # Check that response is only valid counts if using Negative Binomial
   #if(grepl("nbinom2",family$family) & (sum(!as.matrix(count,ncol=1)%%1==0)>0 | min(count)<0)){
-
   check_twosigma_input(count,mean_covar,zi_covar
     ,mean_re,zi_re
-    ,disp_covar)
+    ,disp_covar,adhoc)
+
   if(adhoc==TRUE){
+    if(is.atomic(zi_covar)&length(zi_covar)==1){
+      if(zi_covar==0){stop("adhoc method only implemented when ZI model contains at minimum an intercept. Please either set adhoc=FALSE or specify at minimum an intercept in the ZI model.")}}
     p.val<-adhoc.twosigma(count=count,mean_covar=mean_covar,zi_covar = zi_covar,id=id,weights=weights)
     if(p.val<.1){
       mean_re=TRUE
       zi_re=TRUE
-      print(message("adhoc method used to set both mean_re and zi_re to TRUE. Set adhoc=FALSE for user-inputted values                       for mean_re and zi_re"))
+      message("adhoc method used to set both mean_re and zi_re to TRUE. Set adhoc=FALSE to customize mean_re and zi_re.")
     }else{
       mean_re=FALSE
       zi_re=FALSE
-      print(message("adhoc method used to set both mean_re and zi_re to FALSE. Set adhoc=FALSE for user-inputted values                     for mean_re and zi_re"))
+      message("adhoc method used to set both mean_re and zi_re to FALSE. Set adhoc=FALSE to customize user-inputted values for mean_re and zi_re.")
     }
   }
   formulas<-create_model_formulas(mean_covar,zi_covar

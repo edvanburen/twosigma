@@ -5,9 +5,7 @@
 \title{adhoc.twosigma: Perform the ad hoc method described in TWO-SIGMA paper}
 \usage{
 adhoc.twosigma(count, mean_covar, zi_covar, id, weights = rep(1,
-  length(count)), control = glmmTMBControl(optCtrl = list(iter.max =
-  1e+05, eval.max = 1e+05, step.max = 1e-05, step.min = 1e-05, rel.tol =
-  1e-05, x.tol = 1e-05)))
+  length(count)))
 }
 \arguments{
 \item{count}{Vector of non-negative integer read counts.}
@@ -19,8 +17,6 @@ adhoc.twosigma(count, mean_covar, zi_covar, id, weights = rep(1,
 \item{id}{Vector of individual-level ID's. Used as predictor in ANOVA model.}
 
 \item{weights}{weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed. Passed into zeroinfl function.}
-
-\item{control}{Optional control parameters that can be passed directly into glmmTMB.}
 }
 \value{
 P-value from the ANOVA F test.
