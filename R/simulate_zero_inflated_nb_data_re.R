@@ -35,6 +35,8 @@ simulate_zero_inflated_nb_random_effect_data<-function(ncellsper,X,Z,alpha,beta,
   if(sigma.a<0 | sigma.b<0){
     stop("sigma.a and sigma.b cannot be less than zero")
   }
+
+  phiinv<-1/phi
   id.levels<-1:length(ncellsper)
   nind<-length(id.levels)
   id<-rep(id.levels,times=ncellsper)
@@ -66,7 +68,7 @@ simulate_zero_inflated_nb_random_effect_data<-function(ncellsper,X,Z,alpha,beta,
     {
       if(phi>0)
       {
-        Y[i]<-rnbinom(1,size=(1/phi),prob=(1/(1+phi*mu[i])))
+        Y[i]<-rnbinom(1,size=(1/phiinv),prob=(1/(1+phiinv*mu[i])))
       }
       #Watch out for negative binomial parameterizations
     }
