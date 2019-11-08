@@ -143,14 +143,16 @@ if(is.null(mean_form)){
     if(mean_re==TRUE){
       #mean_form<-count~mean_covar+ (1|id)
       if(!is.null(colnames(mean_covar))){
-        mean_form<-as.formula(paste0("count","~",paste(unlist(strsplit(colnames(mean_covar),split=" ")),collapse="+"),"+","(1|id)"))
+        #mean_form<-as.formula(paste0("count","~",paste(unlist(strsplit(colnames(mean_covar),split=" ")),collapse="+"),"+","(1|id)"))
+        mean_form<-count~mean_covar+ (1|id)
       }else{
         mean_form<-count~mean_covar+ (1|id)
       }
     }
     if(mean_re==FALSE){
       if(!is.null(colnames(mean_covar))){
-      mean_form<-as.formula(paste0("count","~",paste(unlist(strsplit(colnames(mean_covar),split=" ")),collapse="+")))
+      #mean_form<-as.formula(paste0("count","~",paste(unlist(strsplit(colnames(mean_covar),split=" ")),collapse="+")))
+        mean_form<-count~mean_covar
       }else{
         mean_form<-count~mean_covar
       }
@@ -159,7 +161,8 @@ if(is.null(mean_form)){
   if(is.null(zi_form)){
     if(zi_re==TRUE){
       if(!is.null(colnames(zi_covar))){
-        zi_form<-as.formula(paste0("~",paste(unlist(strsplit(colnames(zi_covar),split=" ")),collapse="+"),"+","(1|id)"))
+        #zi_form<-as.formula(paste0("~",paste(unlist(strsplit(colnames(zi_covar),split=" ")),collapse="+"),"+","(1|id)"))
+        zi_form<-~zi_covar+ (1|id)
       }else{
         zi_form<-~zi_covar+ (1|id)
       }
@@ -168,6 +171,7 @@ if(is.null(mean_form)){
     if(zi_re==FALSE){
       if(!is.null(colnames(zi_covar))){
       zi_form<-as.formula(paste0("~",paste(unlist(strsplit(colnames(zi_covar),split=" ")),collapse="+")))
+        #zi_form<-~zi_covar
       }else{
         zi_form<-~zi_covar
       }

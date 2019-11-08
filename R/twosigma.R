@@ -54,7 +54,7 @@ twosigma<-function(count,mean_covar,zi_covar
     ,mean_form=NULL,zi_form=NULL
     ,mean_re,zi_re
     ,disp_covar)
-
+  #browser()
   fit<-glmmTMB(formula=formulas$mean_form
     ,ziformula=formulas$zi_form
     ,weights=weights
