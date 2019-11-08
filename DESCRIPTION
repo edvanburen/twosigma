@@ -14,4 +14,4 @@ Encoding: UTF-8
 LazyData: true
 URL: http://github.com/edvanburen/twosigma
 BugReports: http://github.com/edvanburen/twosigma/issues
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1

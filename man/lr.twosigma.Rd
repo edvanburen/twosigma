@@ -13,11 +13,11 @@ lr.twosigma(count, mean_covar, zi_covar, contrast, mean_re = TRUE,
 \arguments{
 \item{count}{Vector of non-negative integer read counts.}
 
-\item{mean_covar}{Covariates for the (conditional) mean model. Must be a matrix (without an intercept column) or = 1 to indicate an intercept only model.}
+\item{mean_covar}{Covariates for the (conditional) mean model. Must be a matrix (without an intercept column) or a vector if a single covariate is being tested.}
 
-\item{zi_covar}{Covariates for the zero-inflation model. Must be a matrix (without an intercept column), = 1 to indicate an intercept only model, or = 0 to indicate no zero-inflation model desired.}
+\item{zi_covar}{Covariates for the zero-inflation model. Must be a matrix (without an intercept column) or a vector if a single covariate is being tested.}
 
-\item{contrast}{Either a string indicating the column name of the covariate to test or an integer referring to its column position in BOTH the mean_covar and zi_covar matrices.}
+\item{contrast}{Either a string indicating the column name of the covariate to test or an integer referring to its column position in BOTH the mean_covar and zi_covar matrices (if the two matrices differ using a string name is preferred). Argument is ignored if mean_covar and zi_covar are both a single covariate (as that covariate is assumed of interest).}
 
 \item{mean_re}{Should random intercepts be included in the (conditional) mean model?}
 
