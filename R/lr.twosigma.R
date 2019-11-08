@@ -28,7 +28,7 @@ lr.twosigma<-function(count,mean_covar,zi_covar,contrast#,joint=TRUE
                         ,rel.tol=1e-5,x.tol=1e-5))){
   check_twosigma_input(count,mean_covar,zi_covar
     ,mean_re,zi_re
-    ,disp_covar)
+    ,disp_covar,id=id)
 
   if(adhoc==TRUE){
     if(is.atomic(zi_covar)&length(zi_covar)==1){
