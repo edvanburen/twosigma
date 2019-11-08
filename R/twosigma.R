@@ -4,7 +4,7 @@
 ##' @param zi_covar Covariates for the zero-inflation model. Must be a matrix (without an intercept column), = 1 to indicate an intercept only model, or = 0 to indicate no zero-inflation model desired.
 ##' @param mean_re Should random intercepts be included in the (conditional) mean model?
 ##' @param zi_re Should random intercepts be included in the zero-inflation model?
-##' @param id Vector of individual-level ID's. Only used for random effect prediction but required regardless.
+##' @param id Vector of individual-level ID's. Used for random effect prediction and the adhoc method but required regardless.
 ##' @param adhoc Should the adhoc method be used by default to judge if random effects are needed?
 ##' @param adhoc_thresh Value below which the adhoc p-value is deemed significant (and thus RE are deemed necessary). Only used if adhoc==TRUE.
 ##' @param disp_covar Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model.

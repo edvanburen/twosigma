@@ -19,7 +19,7 @@ twosigma(count, mean_covar, zi_covar, mean_re = TRUE, zi_re = TRUE, id,
 
 \item{zi_re}{Should random intercepts be included in the zero-inflation model?}
 
-\item{id}{Vector of individual-level ID's. Only used for random effect prediction but required regardless.}
+\item{id}{Vector of individual-level ID's. Used for random effect prediction and the adhoc method but required regardless.}
 
 \item{adhoc}{Should the adhoc method be used by default to judge if random effects are needed?}
 

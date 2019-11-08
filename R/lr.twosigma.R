@@ -5,7 +5,7 @@
 ##' @param contrast Either a string indicating the column name of the covariate to test or an integer referring to its column position in BOTH the mean_covar and zi_covar matrices (if the two matrices differ using a string name is preferred). Argument is ignored if mean_covar and zi_covar are both a single covariate (that covariate is assumed of interest).
 ##' @param mean_re Should random intercepts be included in the (conditional) mean model?
 ##' @param zi_re Should random intercepts be included in the zero-inflation model?
-##' @param id Vector of individual-level ID's. Only used for random effect prediction but required regardless.
+##' @param id Vector of individual-level ID's. Used for random effect prediction and the adhoc method but required regardless.
 ##' @param adhoc Should the adhoc method be used by default to judge if random effects are needed?
 ##' @param adhoc_thresh Value below which the adhoc p-value is deemed significant (and thus RE are deemed necessary). Only used if adhoc==TRUE.
 ##' @param disp_covar Covariates for a log-linear model for the dispersion. Either a matrix or = 1 to indicate an intercept only model.
