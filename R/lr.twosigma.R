@@ -28,8 +28,6 @@ lr.twosigma<-function(count,mean_covar,zi_covar,contrast#,joint=TRUE
     ,mean_re,zi_re
     ,disp_covar)
 
-  mean_covar<-as.matrix(mean_covar)
-  zi_covar<-as.matrix(zi_covar)
   formulas<-create_model_formulas(mean_covar,zi_covar
     ,mean_form=NULL,zi_form=NULL
     ,mean_re,zi_re
