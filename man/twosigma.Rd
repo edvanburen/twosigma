@@ -15,9 +15,9 @@ twosigma(count, mean_covar, zi_covar, mean_re = TRUE, zi_re = TRUE, id,
 
 \item{zi_covar}{Covariates for the zero-inflation model. Must be a matrix (without an intercept column), = 1 to indicate an intercept only model, or = 0 to indicate no zero-inflation model desired.}
 
-\item{mean_re}{Should random intercepts be included in the (conditional) mean model?}
+\item{mean_re}{Should random intercepts be included in the (conditional) mean model? Ignored if adhoc=TRUE.}
 
-\item{zi_re}{Should random intercepts be included in the zero-inflation model?}
+\item{zi_re}{Should random intercepts be included in the zero-inflation model? Ignored if adhoc=TRUE.}
 
 \item{id}{Vector of individual-level ID's. Used for random effect prediction and the adhoc method but required regardless.}
 
@@ -38,6 +38,6 @@ An object of class \code{glmmTMB}.
 TWO-SIGMA: Fit the TWO-component SInGle cell Model-based Association method of...
 }
 \section{Details}{
-  If adhoc==TRUE, any input in mean_re and zi_re will be ignored.  See ?nbinom2
+  If adhoc=TRUE, any input in mean_re and zi_re will be ignored.
 }
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/lr.twosigma.R
 \name{lr.twosigma}
 \alias{lr.twosigma}
-\title{lr.twosigma: Conveinent wrapper function for performing joint likelihood ratio tests in TWO-SIGMA. Only designed for cases in which the covariate of interest is in both components.}
+\title{lr.twosigma: Conveinent wrapper function for performing joint likelihood ratio tests in TWO-SIGMA.}
 \usage{
 lr.twosigma(count, mean_covar, zi_covar, contrast, mean_re = TRUE,
   zi_re = TRUE, disp_covar = NULL, id, adhoc = FALSE,
@@ -40,7 +40,7 @@ lr.twosigma(count, mean_covar, zi_covar, contrast, mean_re = TRUE,
 A list containing glmmTMB objects of model fits under the null and alternative, the 2 d.f. Likelihood Ratio statistic, and the p-value.
 }
 \description{
-lr.twosigma: Conveinent wrapper function for performing joint likelihood ratio tests in TWO-SIGMA. Only designed for cases in which the covariate of interest is in both components.
+lr.twosigma: Conveinent wrapper function for performing joint likelihood ratio tests in TWO-SIGMA.
 }
 \section{Details}{
 

@@ -5,7 +5,11 @@ check_twosigma_input<-function(count,mean_covar,zi_covar
                                ,disp_covar=NULL,adhoc){
 
   # Override count with mean_form if specified then check the inputs
-
+  if(length(unique(id))==1){
+    if(adhoc==TRUE | (adhoc==FALSE & (mean_re==TRUE|zi_re==TRUE))){
+      stop("The id variable only has one level. The adhoc method or any random effect inclusion is not appropriate.")
+    }
+  }
   if(sum(!as.matrix(count,ncol=1)%%1==0)>0 | min(count)<0){
     stop("When using the Negative Binomial Distribution data must contain only non-negative integers")
   }

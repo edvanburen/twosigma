@@ -2,15 +2,15 @@
 ##' @param count Vector of non-negative integer read counts. If specifying custom formula(s) via the arguments mean_form and zi_form the expression in mean_form will supersede.
 ##' @param mean_covar Covariates for the (conditional) mean model. Must be a matrix (without an intercept column) or = 1 to indicate an intercept only model.
 ##' @param zi_covar Covariates for the zero-inflation model. Must be a matrix (without an intercept column), = 1 to indicate an intercept only model, or = 0 to indicate no zero-inflation model desired.
-##' @param mean_re Should random intercepts be included in the (conditional) mean model?
-##' @param zi_re Should random intercepts be included in the zero-inflation model?
+##' @param mean_re Should random intercepts be included in the (conditional) mean model? Ignored if adhoc=TRUE.
+##' @param zi_re Should random intercepts be included in the zero-inflation model? Ignored if adhoc=TRUE.
 ##' @param id Vector of individual-level ID's. Used for random effect prediction and the adhoc method but required regardless.
 ##' @param adhoc Should the adhoc method be used by default to judge if random effects are needed?
 ##' @param adhoc_thresh Value below which the adhoc p-value is deemed significant (and thus RE are deemed necessary). Only used if adhoc==TRUE.
 ##' @param disp_covar Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model.
 ##' @param weights weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.
 ##' @param control Control parameters for optimization in \code{glmmTMB}.
-##' @section Details:  If adhoc==TRUE, any input in mean_re and zi_re will be ignored.  See ?nbinom2
+##' @section Details:  If adhoc=TRUE, any input in mean_re and zi_re will be ignored.
 ##' @return An object of class \code{glmmTMB}.
 ##' @import glmmTMB
 ##' @import methods

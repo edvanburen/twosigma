@@ -27,17 +27,20 @@ The full TWO-SIGMA specification is therefore as follows:
 ## Usage  
 The workhorse function is twosigma, which can be easiest called as
 ```r
-twosigma(count, mean_covar, zi_covar, mean_re = TRUE, zi_re = TRUE, id)
+twosigma(count, mean_covar, zi_covar,id)
 ```
 
 - **count**: A vector of non-negative integer counts. No normalization is done.
-- **mean_covar**: A matrix (such as from model.matrix) of covariates for the (conditional) mean model without an intercept term. Columns give covariates and rows give individual-level information.
-- **zi_covar**: A matrix (such as from model.matrix) of covariates for the zero-inflation model without an intercept term. Columns give covariates and rows give individual-level information.
-- **mean_re**: Should random intercept terms be included in the (conditional) mean model? Can be NULL if using the mean_form parameter described below.
-- **zi_re**: Should random intercept terms be included in the zero-inflation model? Can be NULL if using the mean_form parameter described below.
-- **id**: Vector of individual-level ID's. Used for random effect prediction.
+- **mean_covar**: A matrix (such as from model.matrix) of covariates for the (conditional) mean model without an intercept term. Columns give covariates and the number of rows should correspond to the number of cells.
+- **zi_covar**: A matrix (such as from model.matrix) of covariates for the zero-inflation model without an intercept term. Columns give covariates and the number of rows should correspond to the number of cells.
+- **id**: Vector of individual-level ID's. Used for random effect prediction and the ad hoc method and is currently required even if neither is being used.
 
-If (and likely only needed if) users wish to customize the random effect specification, they may do so via the function twosigma_custom, which has the following syntax:
+By default, we employ our ad hoc procedure to determine if random effects are needed. If user's wish to specify their own random effect specifications, they can set adhoc=FALSE, and use the following inputs:
+
+- **mean_re**: Should random intercept terms be included in the (conditional) mean model?
+- **zi_re**: Should random intercept terms be included in the zero-inflation model?
+
+If users wish to customize the random effect specification, they may do so via the function twosigma_custom, which has the following syntax:
 ```r
 twosigma_custom(count, mean_form, zi_form, id, disp_covar = NULL
                 ,weights = rep(1, length(count)), control = glmmTMBControl())
@@ -52,7 +55,7 @@ Some care must be taken, however, because these formulas are fed directly into t
 For example, each of the following function calls reproduces the default TWO-SIGMA specification with random intercepts in both components:
 
 ```r
-twosigma(count=counts, mean_covar=mean_covar_matrix, zi_covar=zi_covar_matrix, mean_re = TRUE, zi_re = TRUE, id=id)
+twosigma(count=counts, mean_covar=mean_covar_matrix, zi_covar=zi_covar_matrix, mean_re = TRUE, zi_re = TRUE, id=id,adhoc=F)
 twosigma_custom(count=counts, mean_form=counts~mean_covar_matrix+(1|id),zi_form=~zi_covar_matrix+(1|id),id=id)
 ```
 ## Fixed Effect Testing  
