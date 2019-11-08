@@ -8,7 +8,7 @@
 ##' @param disp_covar Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model.
 ##' @param weights weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.
 ##' @param control Control parameters for optimization in \code{glmmTMB}.
-##' @section Details: Note that the overdispersion estimate returned is the inverse of phi in the parameterization used in TWO-SIGMA.  See ?nbinom2
+##' @section Details: The same function as twosigma but without the adhoc as eligible input. Exists for legacy reasons.
 ##' @return An object of class \code{glmmTMB}. See Details for a note about the estimated overdispersion parameter.
 ##' @import glmmTMB
 ##' @import methods

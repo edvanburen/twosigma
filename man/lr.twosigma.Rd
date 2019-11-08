@@ -2,13 +2,14 @@
 % Please edit documentation in R/lr.twosigma.R
 \name{lr.twosigma}
 \alias{lr.twosigma}
-\title{lr.twosigma: Conveinent wrapper function for performing joint likelihood ratio tests in TWO-SIGMA}
+\title{lr.twosigma: Conveinent wrapper function for performing joint likelihood ratio tests in TWO-SIGMA. Only designed for cases in which the covariate of interest is in both components.}
 \usage{
 lr.twosigma(count, mean_covar, zi_covar, contrast, mean_re = TRUE,
-  zi_re = TRUE, disp_covar = NULL, id, weights = rep(1,
-  length(count)), control = glmmTMBControl(optCtrl = list(iter.max =
-  1e+05, eval.max = 1e+05, step.max = 1e-05, step.min = 1e-05, rel.tol =
-  1e-05, x.tol = 1e-05)))
+  zi_re = TRUE, disp_covar = NULL, id, adhoc = FALSE,
+  adhoc_thresh = 0.1, weights = rep(1, length(count)),
+  control = glmmTMBControl(optCtrl = list(iter.max = 1e+05, eval.max =
+  1e+05, step.max = 1e-05, step.min = 1e-05, rel.tol = 1e-05, x.tol =
+  1e-05)))
 }
 \arguments{
 \item{count}{Vector of non-negative integer read counts.}
@@ -17,7 +18,7 @@ lr.twosigma(count, mean_covar, zi_covar, contrast, mean_re = TRUE,
 
 \item{zi_covar}{Covariates for the zero-inflation model. Must be a matrix (without an intercept column) or a vector if a single covariate is being tested.}
 
-\item{contrast}{Either a string indicating the column name of the covariate to test or an integer referring to its column position in BOTH the mean_covar and zi_covar matrices (if the two matrices differ using a string name is preferred). Argument is ignored if mean_covar and zi_covar are both a single covariate (as that covariate is assumed of interest).}
+\item{contrast}{Either a string indicating the column name of the covariate to test or an integer referring to its column position in BOTH the mean_covar and zi_covar matrices (if the two matrices differ using a string name is preferred). Argument is ignored if mean_covar and zi_covar are both a single covariate (that covariate is assumed of interest).}
 
 \item{mean_re}{Should random intercepts be included in the (conditional) mean model?}
 
@@ -25,7 +26,11 @@ lr.twosigma(count, mean_covar, zi_covar, contrast, mean_re = TRUE,
 
 \item{disp_covar}{Covariates for a log-linear model for the dispersion. Either a matrix or = 1 to indicate an intercept only model.}
 
-\item{id}{Vector of individual-level ID's. Used for random effect prediction.}
+\item{id}{Vector of individual-level ID's. Only used for random effect prediction but required regardless.}
+
+\item{adhoc}{Should the adhoc method be used by default to judge if random effects are needed?}
+
+\item{adhoc_thresh}{Value below which the adhoc p-value is deemed significant (and thus RE are deemed necessary). Only used if adhoc==TRUE.}
 
 \item{weights}{weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.}
 
@@ -35,10 +40,10 @@ lr.twosigma(count, mean_covar, zi_covar, contrast, mean_re = TRUE,
 A list containing glmmTMB objects of model fits under the null and alternative, the 2 d.f. Likelihood Ratio statistic, and the p-value.
 }
 \description{
-lr.twosigma: Conveinent wrapper function for performing joint likelihood ratio tests in TWO-SIGMA
+lr.twosigma: Conveinent wrapper function for performing joint likelihood ratio tests in TWO-SIGMA. Only designed for cases in which the covariate of interest is in both components.
 }
 \section{Details}{
 
-This function assumes that the variable being tested is in both components of the model (and thus that the zero-inflation component exists and contains more than an Intercept). Users wishing to do fixed effect testing in other cases will need to construct the statistics themselves using two separate calls to \code{twosigma}. If users wish to specify custom model formulas they should also construct the likelihood ratio statistics themselves to ensure the test is being conducted properly.
+This function assumes that the variable being tested is in both components of the model (and thus that the zero-inflation component exists and contains more than an Intercept). Users wishing to do fixed effect testing in other cases will need to construct the statistics themselves using two separate calls to \code{twosigma}. If users wish to specify custom model formulas they should also construct the likelihood ratio statistics themselves to ensure the test is being conducted properly. If adhoc==TRUE, any input in mean_re and zi_re will be ignored.
 }
 

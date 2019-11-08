@@ -5,8 +5,8 @@
 \title{TWO-SIGMA: Fit the TWO-component SInGle cell Model-based Association method of...}
 \usage{
 twosigma(count, mean_covar, zi_covar, mean_re = TRUE, zi_re = TRUE, id,
-  adhoc = TRUE, disp_covar = NULL, weights = rep(1, length(count)),
-  control = glmmTMBControl())
+  adhoc = TRUE, adhoc_thresh = 0.1, disp_covar = NULL,
+  weights = rep(1, length(count)), control = glmmTMBControl())
 }
 \arguments{
 \item{count}{Vector of non-negative integer read counts. If specifying custom formula(s) via the arguments mean_form and zi_form the expression in mean_form will supersede.}
@@ -19,9 +19,11 @@ twosigma(count, mean_covar, zi_covar, mean_re = TRUE, zi_re = TRUE, id,
 
 \item{zi_re}{Should random intercepts be included in the zero-inflation model?}
 
-\item{id}{Vector of individual-level ID's. Used for random effect prediction.}
+\item{id}{Vector of individual-level ID's. Only used for random effect prediction but required regardless.}
 
 \item{adhoc}{Should the adhoc method be used by default to judge if random effects are needed?}
+
+\item{adhoc_thresh}{Value below which the adhoc p-value is deemed significant (and thus RE are deemed necessary). Only used if adhoc==TRUE.}
 
 \item{disp_covar}{Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model.}
 
@@ -30,12 +32,12 @@ twosigma(count, mean_covar, zi_covar, mean_re = TRUE, zi_re = TRUE, id,
 \item{control}{Control parameters for optimization in \code{glmmTMB}.}
 }
 \value{
-An object of class \code{glmmTMB}. See Details for a note about the estimated overdispersion parameter.
+An object of class \code{glmmTMB}.
 }
 \description{
 TWO-SIGMA: Fit the TWO-component SInGle cell Model-based Association method of...
 }
 \section{Details}{
- Note that the overdispersion estimate returned is the inverse of phi in the parameterization used in TWO-SIGMA.  See ?nbinom2
+  If adhoc==TRUE, any input in mean_re and zi_re will be ignored.  See ?nbinom2
 }
 

@@ -34,6 +34,6 @@ An object of class \code{glmmTMB}. See Details for a note about the estimated ov
 TWO-SIGMA: Fit the TWO-component SInGle cell Model-based Association method of...
 }
 \section{Details}{
- Note that the overdispersion estimate returned is the inverse of phi in the parameterization used in TWO-SIGMA.  See ?nbinom2
+ The same function as twosigma but without the adhoc as eligible input. Exists for legacy reasons.
 }
 

@@ -23,12 +23,8 @@ twosigma_custom(count, mean_form, zi_form, id, disp_covar = NULL,
 \item{control}{Control parameters for optimization in \code{glmmTMB}.}
 }
 \value{
-An object of class \code{glmmTMB}. See Details for a note about the estimated overdispersion parameter.
+An object of class \code{glmmTMB}..
 }
 \description{
 Specify custom model formulas to the TWO-component SInGle cell Model-based Association method of ... This function is only needed if users wish to include random effect terms beyond random intercepts. Users should be confident in their abilities to specify random effects using the syntax of lme4.
 }
-\section{Details}{
- Note that the overdispersion estimate returned is the inverse of phi in the parameterization used in TWO-SIGMA.  See ?nbinom2
-}
-
