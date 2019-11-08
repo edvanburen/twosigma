@@ -28,10 +28,13 @@ lr.twosigma<-function(count,mean_covar,zi_covar,contrast#,joint=TRUE
     ,mean_re,zi_re
     ,disp_covar)
 
+  mean_covar<-as.matrix(mean_covar)
+  zi_covar<-as.matrix(zi_covar)
   formulas<-create_model_formulas(mean_covar,zi_covar
     ,mean_form=NULL,zi_form=NULL
     ,mean_re,zi_re
     ,disp_covar)
+
   if(is.atomic(zi_covar)&length(zi_covar)==1){
     if(zi_covar==1 | zi_covar==0){
       stop("This function is meant for joint testing of a covariate when it is present in both components.")
@@ -48,8 +51,6 @@ lr.twosigma<-function(count,mean_covar,zi_covar,contrast#,joint=TRUE
       stop("contrast not found in both matrices")
     }
   }
-
-
   fit_alt<-glmmTMB(formula=formulas$mean_form
     ,ziformula=formulas$zi_form
     ,weights=weights
@@ -63,8 +64,22 @@ lr.twosigma<-function(count,mean_covar,zi_covar,contrast#,joint=TRUE
     if(contrast>max(ncol(get("mean_covar")),ncol(get("zi_covar")))){
       stop("Contrast seems to be ill-defined")
     }
-    formulas$mean_form<-as.formula(gsub("mean_covar","mean_covar[,-contrast]",format(formulas$mean_form)))
-    formulas$zi_form<-as.formula(gsub("zi_covar","zi_covar[,-contrast]",format(formulas$zi_form)))
+    if(is.atomic(mean_covar) & is.atomic(zi_covar)){
+      formulas$mean_form<-as.formula(gsub("mean_covar","",format(formulas$mean_form)))
+      formulas$zi_form<-as.formula(gsub("zi_covar","",format(formulas$zi_form)))
+    }
+    if(!is.atomic(mean_covar) & is.atomic(zi_covar)){
+      formulas$mean_form<-as.formula(gsub("mean_covar","mean_covar[,-contrast]",format(formulas$mean_form)))
+      formulas$zi_form<-as.formula(gsub("zi_covar","",format(formulas$zi_form)))
+    }
+    if(is.atomic(mean_covar) & !is.atomic(zi_covar)){
+      formulas$mean_form<-as.formula(gsub("mean_covar","",format(formulas$mean_form)))
+      formulas$zi_form<-as.formula(gsub("zi_covar","zi_covar[,-contrast]",format(formulas$zi_form)))
+    }
+    if(!is.atomic(mean_covar) & !is.atomic(zi_covar)){
+      formulas$mean_form<-as.formula(gsub("mean_covar","mean_covar[,-contrast]",format(formulas$mean_form)))
+      formulas$zi_form<-as.formula(gsub("zi_covar","zi_covar[,-contrast]",format(formulas$zi_form)))
+    }
   }else{
     index<-which(colnames(mean_covar)==contrast)
     if(length(index)==0){
