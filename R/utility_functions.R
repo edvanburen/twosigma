@@ -2,7 +2,7 @@
 # Should we extend ad hoc to non ZI case?
 check_twosigma_input<-function(count,mean_covar,zi_covar
                                ,mean_re=TRUE,zi_re=TRUE
-                               ,disp_covar=NULL,adhoc){
+                               ,disp_covar=NULL,adhoc,id){
 
   # Override count with mean_form if specified then check the inputs
   if(length(unique(id))==1){

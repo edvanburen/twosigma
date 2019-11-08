@@ -34,7 +34,7 @@ twosigma<-function(count,mean_covar,zi_covar
   #if(grepl("nbinom2",family$family) & (sum(!as.matrix(count,ncol=1)%%1==0)>0 | min(count)<0)){
   check_twosigma_input(count,mean_covar,zi_covar
     ,mean_re,zi_re
-    ,disp_covar,adhoc)
+    ,disp_covar,adhoc,id=id)
 
   if(adhoc==TRUE){
     if(is.atomic(zi_covar)&length(zi_covar)==1){
