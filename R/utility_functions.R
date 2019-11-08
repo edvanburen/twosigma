@@ -170,8 +170,8 @@ if(is.null(mean_form)){
     }
     if(zi_re==FALSE){
       if(!is.null(colnames(zi_covar))){
-      zi_form<-as.formula(paste0("~",paste(unlist(strsplit(colnames(zi_covar),split=" ")),collapse="+")))
-        #zi_form<-~zi_covar
+      #zi_form<-as.formula(paste0("~",paste(unlist(strsplit(colnames(zi_covar),split=" ")),collapse="+")))
+        zi_form<-~zi_covar
       }else{
         zi_form<-~zi_covar
       }
