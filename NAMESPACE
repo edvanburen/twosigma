@@ -2,9 +2,12 @@
 
 export(adhoc.twosigma)
 export(lr.twosigma)
+export(lr.twosigma_custom)
 export(simulate_zero_inflated_nb_random_effect_data)
 export(twosigma)
 export(twosigma_custom)
+export(twosigmag)
+export(twosigmag_custom)
 import(glmmTMB)
 import(methods)
 import(pscl)

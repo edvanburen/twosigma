@@ -11,7 +11,7 @@ adhoc.twosigma<-function(count,mean_covar,zi_covar,id
                         ,weights=rep(1,length(count))){
 
   check_twosigma_input(count,mean_covar,zi_covar
-    ,mean_re=T,zi_re=T
+    ,mean_re=T,zi_re=T,id=id
     ,disp_covar=NULL)
 
   form<-create_adhoc_formulas(count,mean_covar,zi_covar)
