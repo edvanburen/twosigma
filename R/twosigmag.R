@@ -5,6 +5,7 @@
 ##' @param mean_re Should random intercepts be included in the (conditional) mean model? Ignored if adhoc=TRUE.
 ##' @param zi_re Should random intercepts be included in the zero-inflation model? Ignored if adhoc=TRUE.
 ##' @param id Vector of individual-level ID's. Used for random effect prediction and the adhoc method but required regardless.
+##' @param rho Inter-gene correlation value. If NULL (default), estimated using model residuals from TWO-SIGMAG.
 ##' @param adhoc Should the adhoc method be used by default to judge if random effects are needed?
 ##' @param adhoc_thresh Value below which the adhoc p-value is deemed significant (and thus RE are deemed necessary). Only used if adhoc==TRUE.
 ##' @param disp_covar Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model.
@@ -20,7 +21,7 @@
 
 twosigmag<-function(count_matrix,index,contrast,mean_covar,zi_covar
   ,mean_re=TRUE,zi_re=TRUE
-  ,id,adhoc=TRUE,adhoc_thresh=0.1
+  ,id,rho=NULL,adhoc=TRUE,adhoc_thresh=0.1
   ,disp_covar=NULL #need to be able to use data option?
   ,verbose_output=FALSE
   ,weights=rep(1,length(count_matrix[1,]))
@@ -54,18 +55,20 @@ if(max(index)>ngenes | min(index)<1){stop("Index seems to be invalid, must be nu
       stats_all[i]<-fits_twosigmag[[i]]$LR_stat
       print(paste("Finished Gene Number",i,"of",nrow(count_matrix)))
     }
-      print(paste("Estimating Set-Level correlation and calculating p-value"))
-      nind<-length(unique(id))
-      cor_temp<-numeric(length=nind)
-      m<-1
-      unique_id<-unique(id)
-      j<-0
-      for(y in unique_id){
-        j<-j+1
-        temp<-cor(t(residuals_test[,which(id==y)])) # any checks for id behavior needed here?
-        cor_temp[j]<-mean(temp[upper.tri(temp)],na.rm = T)
+      if(is.null(rho)){
+        print(paste("Estimating Set-Level correlation and calculating p-value"))
+        nind<-length(unique(id))
+        cor_temp<-numeric(length=nind)
+        m<-1
+        unique_id<-unique(id)
+        j<-0
+        for(y in unique_id){
+          j<-j+1
+          temp<-cor(t(residuals_test[,which(id==y)])) # any checks for id behavior needed here?
+          cor_temp[j]<-mean(temp[upper.tri(temp)],na.rm = T)
+        }
+        rho<-mean(cor_temp)
       }
-      rho<-mean(cor_temp)
       var<-(1/(2*pi))*test_size*ref_size*(asin(1)+(ref_size-1)*asin(.5)+(test_size-1)*(ref_size-1)*asin(.5*rho)+(test_size-1)*asin((rho+1)/2))
 
       wilcox_stat<-sum(rank(c(stats_test,stats_ref))[1:test_size]) - .5*test_size*(test_size+1)

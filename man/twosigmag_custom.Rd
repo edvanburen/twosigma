@@ -5,7 +5,7 @@
 \title{TWO-SIGMA: Fit the TWO-component SInGle cell Model-based Association method of...}
 \usage{
 twosigmag_custom(count_matrix, index, mean_form_alt, zi_form_alt,
-  mean_form_null, zi_form_null, id, disp_covar = NULL,
+  mean_form_null, zi_form_null, id, rho = NULL, disp_covar = NULL,
   verbose_output = FALSE, weights = rep(1, length(count_matrix[1, ])),
   control = glmmTMBControl())
 }
@@ -13,6 +13,8 @@ twosigmag_custom(count_matrix, index, mean_form_alt, zi_form_alt,
 \item{count_matrix}{Matrix of non-negative integer read counts. If specifying custom formula(s) via the arguments mean_form and zi_form the expression in mean_form will supersede.}
 
 \item{id}{Vector of individual-level ID's. Used for random effect prediction and the adhoc method but required regardless.}
+
+\item{rho}{Inter-gene correlation value. If NULL (default), estimated using TWO-SIGMA model residuals.}
 
 \item{disp_covar}{Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model.}
 

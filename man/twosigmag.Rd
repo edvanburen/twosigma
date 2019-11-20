@@ -5,7 +5,7 @@
 \title{TWO-SIGMA: Fit the TWO-component SInGle cell Model-based Association method of...}
 \usage{
 twosigmag(count_matrix, index, contrast, mean_covar, zi_covar,
-  mean_re = TRUE, zi_re = TRUE, id, adhoc = TRUE,
+  mean_re = TRUE, zi_re = TRUE, id, rho = NULL, adhoc = TRUE,
   adhoc_thresh = 0.1, disp_covar = NULL, verbose_output = FALSE,
   weights = rep(1, length(count_matrix[1, ])),
   control = glmmTMBControl())
@@ -22,6 +22,8 @@ twosigmag(count_matrix, index, contrast, mean_covar, zi_covar,
 \item{zi_re}{Should random intercepts be included in the zero-inflation model? Ignored if adhoc=TRUE.}
 
 \item{id}{Vector of individual-level ID's. Used for random effect prediction and the adhoc method but required regardless.}
+
+\item{rho}{Inter-gene correlation value. If NULL (default), estimated using model residuals from TWO-SIGMAG.}
 
 \item{adhoc}{Should the adhoc method be used by default to judge if random effects are needed?}
 

@@ -59,7 +59,8 @@ check_twosigma_custom_input<-function(count
   ,disp_covar=NULL){
 
   # Override count with mean_form if specified then check the inputs
-
+  if(mean_form[[2]]!="count"){stop("Please begin the mean_form input with the name 'count'. Failure to do so will cause an error.")}
+  if(length(zi_form)>2){stop("ZI Formula should be one-sided and thus only have a length of 2.")}
   if(sum(!as.matrix(count,ncol=1)%%1==0)>0 | min(count)<0){
     stop("When using the Negative Binomial Distribution data must contain only non-negative integers")
   }
