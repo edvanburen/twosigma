@@ -2,8 +2,7 @@
 
 ## Introduction
 
-<code>twosigma</code> is an R package for fitting our proposed TWO-component SInGle cell Model-based Association method for the analysis of single-cell RNA-seq (scRNA-seq) data.  The first component models the drop-out probability with a mixed effects logistic regression, and the second component models the (conditional) mean read count with a mixed-effects log-linear negative binomial regression. Our approach is novel in that it simultaneously allows for overdispersed and zero-inflated counts while accommodating dependency in both drop-out probability and mean mRNA abundance at the single-cell level.  
-
+<code>twosigma</code> is an R package for fitting our proposed TWO-component SInGle cell Model-based Association method (TWO-SIGMA) for the analysis of single-cell RNA-seq (scRNA-seq) data. The first component models the drop-out probability with a mixed effects logistic regression, and the second component models the (conditional) mean read count with a mixed-effects log-linear negative binomial regression. Our approach is novel in that it simultaneously allows for overdispersed and zero-inflated counts while accommodating dependency in both drop-out probability and mean mRNA abundance at the single-cell level.  
 ## Installation
 We recommend installing from Github for the latest version of the code:
 ```r
@@ -33,39 +32,43 @@ twosigma(count, mean_covar, zi_covar,id)
 - **count**: A vector of non-negative integer counts. No normalization is done.
 - **mean_covar**: A matrix (such as from model.matrix) of covariates for the (conditional) mean model without an intercept term. Columns give covariates and the number of rows should correspond to the number of cells.
 - **zi_covar**: A matrix (such as from model.matrix) of covariates for the zero-inflation model without an intercept term. Columns give covariates and the number of rows should correspond to the number of cells.
-- **id**: Vector of individual-level ID's. Used for random effect prediction and the ad hoc method and is currently required even if neither is being used.
+- **id**: Vector of individual-level ID's (length equal to the total number of cells). Used for random effect prediction and the ad hoc method and is currently required even if neither is being used.
 
-By default, we employ our ad hoc procedure to determine if random effects are needed. If user's wish to specify their own random effect specifications, they can set adhoc=FALSE, and use the following inputs:
+By default, we employ our ad hoc procedure to determine if random effects are needed. If users wish to specify their own random effect specifications, they can set adhoc=FALSE, and use the following inputs:
 
 - **mean_re**: Should random intercept terms be included in the (conditional) mean model?
 - **zi_re**: Should random intercept terms be included in the zero-inflation model?
 
-If users wish to customize the random effect specification, they may do so via the function twosigma_custom, which has the following syntax:
+If <code> adhoc=TRUE </code>, mean_re and zi_re are ignored and a warning is printed.
+
+If users wish to customize the random effect specification, they may do so via the function <code> twosigma_custom </code>, which has the following syntax:
 ```r
 twosigma_custom(count, mean_form, zi_form, id, disp_covar = NULL
                 ,weights = rep(1, length(count)), control = glmmTMBControl())
 ````
-- **count**: A vector of non-negative integer counts. No normalization is done.
-- **mean_form** a two-sided formula for the (conditional) mean model. Left side specifies the response and right side includes fixed and random effect terms. Users should ensure that the response matches the input to the "count" parameter 
-- **zi_form** a one-sided formula for the zero-inflation model including fixed and random effect terms
+- **count**: A vector of non-negative integer counts. No normalization is done. Batch can be controlled for by inclusion in the design matrices.
+- **mean_form** a two-sided formula for the (conditional) mean model. Left side specifies the response and right side includes fixed and random effect terms. Users should ensure that the response has the name "count", e.g. <code> mean_form = count ~ 1 </code>
+- **zi_form** a one-sided formula for the zero-inflation model including fixed and random effect terms, e.g. e.g. <code>  ~ 1 </code>
 - **id**: Vector of individual-level ID's. Used for random effect prediction.
 
-Some care must be taken, however, because these formulas are fed directly into the glmmTMB function. **It is therefore the user's responsibility to ensure that formulas being inputted will operate as desired**.
+Some care must be taken, however, because these formulas are used directly. **It is therefore the user's responsibility to ensure that formulas being inputted will operate as expected**.
 
 For example, each of the following function calls reproduces the default TWO-SIGMA specification with random intercepts in both components:
 
 ```r
 twosigma(count=counts, mean_covar=mean_covar_matrix, zi_covar=zi_covar_matrix, mean_re = TRUE, zi_re = TRUE, id=id,adhoc=F)
-twosigma_custom(count=counts, mean_form=counts~mean_covar_matrix+(1|id),zi_form=~zi_covar_matrix+(1|id),id=id)
+twosigma_custom(count=counts, mean_form=count~mean_covar_matrix+(1|id),zi_form=~zi_covar_matrix+(1|id),id=id)
 ```
 ## Fixed Effect Testing  
-If users wish to jointly test a fixed effect using the twosigma model with a non-custom specification, they may do so using the lr.twosigma function:
+If users wish to jointly test a fixed effect using the twosigma model with a non-custom specification, they may do so using the <code> lr.twosigma </code> or <code> lr.twosigma_custom </code> functions:
 ```r
-lr.twosigma(count, mean_covar, zi_covar, contrast, mean_re = TRUE,zi_re = TRUE, disp_covar = NULL)
+lr.twosigma(count, mean_covar, zi_covar, contrast, mean_re = TRUE,zi_re = TRUE, disp_covar = NULL,adhoc=TRUE)
+lr.twosigma_custom(count, mean_form_alt, zi_form_alt, mean_form_null,zi_form_null,id,lr.df)
 ```
 - **contrast**: Either a string indicating the column name of the covariate to test or an integer referring to its column position in BOTH the mean_covar and zi_covar matrices. If an integer is specified there is no check that it corresponds to the same covariate in both the mean_covar and zi_covar matrices. 
+- **lr.df** If custom formulas are input users must provide the asymptotic degrees of freedom from which the likelihood ratio p-value can be calculated. Must be a non-negative integer. 
 
-This function assumes that the variable being tested is in both components of the model (and thus that the zero-inflation component exists and contains more than an Intercept). Users wishing to do fixed effect testing in other cases will need to construct the statistics themselves to ensure valid nested models are being constructed.
+The <code> lr.twosigma </code> function assumes that the variable being tested is in both components of the model (and thus that the zero-inflation component exists and contains more than an Intercept). Users wishing to do fixed effect testing in other cases can use the <code> lr.twosigma_custom </code> function with custom formulas or construct the test themselves using two calls to <code>twosigma</code> or <code> twosigma_custom</code>. The formula inputs <code> mean_form_alt </code>, <code> mean_form_null </code>, <code> zi_form_alt </code>, and <code> zi_form_null </code> should be specified as in the <code> lr.twosigma_custom</code> function and once again **users must ensure custom formulas represent a valid likelihood ratio test**.  
 
 ## Ad hoc method
 As mentioned in the paper, we mention a method that can be useful in selecting genes that may benefit from the inclusion of random effect terms. This method fits a zero-inflated negative binomial model without random effects and uses a one-way ANOVA regressing the Pearson residuals on the individual ID to look for differences between individuals.
@@ -73,7 +76,7 @@ As mentioned in the paper, we mention a method that can be useful in selecting g
 ```r
 adhoc.twosigma(count, mean_covar, zi_covar, id)
 ```
-The p-value from the ANOVA F test is returned, and can be used as a screening for genes that are most in need of random effects.
+The p-value from the ANOVA F test is returned, and can be used as a screening for genes that are most in need of random effects. This functionality is built into the <code> twosigma </code> function so users likely do not need to call directly themselves.
 
 ## Examples
 ```r
@@ -116,7 +119,7 @@ id<-sim_dat$id
 counts<-sim_dat$Y
 
 fit<-twosigma(count=counts,zi_covar=Z,mean_covar = X,id=id)
-fit2<-twosigma_custom(count=counts, mean_form=counts~X+(1|id),zi_form=~Z+(1|id),id=id)
+fit2<-twosigma_custom(count=counts, mean_form=count~X+(1|id),zi_form=~Z+(1|id),id=id)
 
 #fit and fit2 are the same
 
@@ -136,7 +139,11 @@ summary(fit_meanZI)
           
 lr.fit<-lr.twosigma(contrast="t2d_sim",count=counts,mean_covar = X,zi_covar=Z,id=id)
 lr.fit$p.val
-summary(lr.fit$fit_null)
+summary(lr.fit$fit_alt)
+
+lr.fit_custom<-lr.twosigma_custom(count=counts,mean_form_alt=count~X, zi_form_alt=~Z, mean_form_null=count~X[,-1],zi_form_null=~Z[,-1],id=id)
+lr.fit_custom$p.val
+summary(lr.fit_custom$fit_alt)
 
 # Perform adhoc method to see if random effects are needed
 adhoc.twosigma(count=counts,zi_covar=Z,mean_covar=X,id=id)

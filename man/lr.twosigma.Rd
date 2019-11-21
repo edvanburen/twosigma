@@ -5,8 +5,8 @@
 \title{lr.twosigma: Conveinent wrapper function for performing joint likelihood ratio tests in TWO-SIGMA.}
 \usage{
 lr.twosigma(count, mean_covar, zi_covar, contrast, mean_re = TRUE,
-  zi_re = TRUE, disp_covar = NULL, id, adhoc = FALSE,
-  adhoc_thresh = 0.1, weights = rep(1, length(count)),
+  zi_re = TRUE, id, adhoc = FALSE, adhoc_thresh = 0.1,
+  disp_covar = NULL, weights = rep(1, length(count)),
   control = glmmTMBControl(optCtrl = list(iter.max = 1e+05, eval.max =
   1e+05, step.max = 1e-05, step.min = 1e-05, rel.tol = 1e-05, x.tol =
   1e-05)))
@@ -24,13 +24,13 @@ lr.twosigma(count, mean_covar, zi_covar, contrast, mean_re = TRUE,
 
 \item{zi_re}{Should random intercepts be included in the zero-inflation model?}
 
-\item{disp_covar}{Covariates for a log-linear model for the dispersion. Either a matrix or = 1 to indicate an intercept only model.}
-
 \item{id}{Vector of individual-level ID's. Used for random effect prediction and the adhoc method but required regardless.}
 
 \item{adhoc}{Should the adhoc method be used by default to judge if random effects are needed?}
 
 \item{adhoc_thresh}{Value below which the adhoc p-value is deemed significant (and thus RE are deemed necessary). Only used if adhoc==TRUE.}
+
+\item{disp_covar}{Covariates for a log-linear model for the dispersion. Either a matrix or = 1 to indicate an intercept only model.}
 
 \item{weights}{weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.}
 

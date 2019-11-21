@@ -3,6 +3,7 @@
 ##' @param mean_covar Covariates for the (conditional) mean model. Must be a matrix (without an intercept column) or a vector if a single covariate is being tested.
 ##' @param zi_covar Covariates for the zero-inflation model. Must be a matrix (without an intercept column) or a vector if a single covariate is being tested.
 ##' @param id Vector of individual-level ID's. Used for random effect prediction and the adhoc method but required regardless.
+##' @param lr.df Degrees of Freedom for the constructed likelihood ratio test. Must be a non-negative integer.
 ##' @param disp_covar Covariates for a log-linear model for the dispersion. Either a matrix or = 1 to indicate an intercept only model.
 ##' @param weights weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.
 ##' @param control Control parameters for optimization in glmmTMB.
@@ -14,7 +15,7 @@
 # Likely will want to remove the ability to input a formula for this fn to work properly
 
 lr.twosigma_custom<-function(count,mean_form_alt,zi_form_alt,mean_form_null,zi_form_null
-                      ,disp_covar=NULL,id,adhoc=FALSE
+                      ,id,lr.df,disp_covar=NULL
                       ,weights=rep(1,length(count))
                       ,control = glmmTMBControl(optCtrl=list(iter.max=1e5,eval.max=1e5
                         ,step.max=.00001,step.min=.00001
@@ -57,6 +58,6 @@ fit_null<-glmmTMB(formula=formulas_null$mean_form
     ,control = control)
 
 LR_stat<- as.numeric(-2*(summary(fit_null)$logLik-summary(fit_alt)$logLik))
-p.val<-1-pchisq(LR_stat,df=2)
+p.val<-1-pchisq(LR_stat,df=lr.df)
 return(list(fit_null=fit_null,fit_alt=fit_alt,LR_stat=LR_stat,p.val=p.val))
 }

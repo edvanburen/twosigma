@@ -5,17 +5,19 @@
 \title{lr.twosigma: Conveinent wrapper function for performing joint likelihood ratio tests in TWO-SIGMA.}
 \usage{
 lr.twosigma_custom(count, mean_form_alt, zi_form_alt, mean_form_null,
-  zi_form_null, disp_covar = NULL, id, adhoc = FALSE,
-  weights = rep(1, length(count)), control = glmmTMBControl(optCtrl =
-  list(iter.max = 1e+05, eval.max = 1e+05, step.max = 1e-05, step.min =
-  1e-05, rel.tol = 1e-05, x.tol = 1e-05)))
+  zi_form_null, id, lr.df, disp_covar = NULL, weights = rep(1,
+  length(count)), control = glmmTMBControl(optCtrl = list(iter.max =
+  1e+05, eval.max = 1e+05, step.max = 1e-05, step.min = 1e-05, rel.tol =
+  1e-05, x.tol = 1e-05)))
 }
 \arguments{
 \item{count}{Vector of non-negative integer read counts.}
 
-\item{disp_covar}{Covariates for a log-linear model for the dispersion. Either a matrix or = 1 to indicate an intercept only model.}
-
 \item{id}{Vector of individual-level ID's. Used for random effect prediction and the adhoc method but required regardless.}
+
+\item{lr.df}{Degrees of Freedom for the constructed likelihood ratio test. Must be a non-negative integer.}
+
+\item{disp_covar}{Covariates for a log-linear model for the dispersion. Either a matrix or = 1 to indicate an intercept only model.}
 
 \item{weights}{weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.}
 

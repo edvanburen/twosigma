@@ -20,8 +20,9 @@
 
 lr.twosigma<-function(count,mean_covar,zi_covar,contrast#,joint=TRUE
                       #,mean_form=NULL,zi_form=NULL
-                      ,mean_re=TRUE,zi_re=TRUE
-                      ,disp_covar=NULL,id,adhoc=FALSE,adhoc_thresh=0.1
+                      ,mean_re=TRUE,zi_re=TRUE,
+                       id,adhoc=FALSE,adhoc_thresh=0.1
+                      ,disp_covar=NULL
                       ,weights=rep(1,length(count))
                       ,control = glmmTMBControl(optCtrl=list(iter.max=1e5,eval.max=1e5
                         ,step.max=.00001,step.min=.00001
