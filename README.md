@@ -61,8 +61,8 @@ twosigma_custom(count=counts, mean_form=count~mean_covar_matrix+(1|id),zi_form=~
 ## Fixed Effect Testing  
 If users wish to jointly test a fixed effect using the twosigma model with a non-custom specification, they may do so using the <code> lr.twosigma </code> or <code> lr.twosigma_custom </code> functions:
 ```r
-lr.twosigma(count, mean_covar, zi_covar, contrast, mean_re = TRUE\n,zi_re = TRUE, disp_covar = NULL,adhoc=TRUE)
-lr.twosigma_custom(count, mean_form_alt, zi_form_alt, mean_form_null,zi_form_null,id,lr.df)
+lr.twosigma(count, mean_covar, zi_covar, contrast, mean_re = TRUE,zi_re = TRUE, disp_covar = NULL,adhoc=TRUE)
+lr.twosigma_custom(count, mean_form_alt, zi_form_alt, mean_form_null, zi_form_null, id, lr.df)
 ```
 - **contrast**: Either a string indicating the column name of the covariate to test or an integer referring to its column position in BOTH the mean_covar and zi_covar matrices. If an integer is specified there is no check that it corresponds to the same covariate in both the mean_covar and zi_covar matrices. 
 - **lr.df** If custom formulas are input users must provide the asymptotic degrees of freedom from which the likelihood ratio p-value can be calculated. Must be a non-negative integer. 
