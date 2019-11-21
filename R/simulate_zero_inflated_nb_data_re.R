@@ -27,7 +27,7 @@
 
 
 simulate_zero_inflated_nb_random_effect_data<-function(ncellsper,X,Z,alpha,beta,phi,sigma.a,sigma.b,
-                                                      id.levels=NULL,sim.seed)
+                                                      id.levels=NULL,sim.seed=NULL)
 {
   if(phi<=0){
     stop("phi must be >0")
@@ -35,7 +35,9 @@ simulate_zero_inflated_nb_random_effect_data<-function(ncellsper,X,Z,alpha,beta,
   if(sigma.a<0 | sigma.b<0){
     stop("sigma.a and sigma.b cannot be less than zero")
   }
-
+  if(!is.null(sim.seed)){
+    set.seed(sim.seed)
+  }
   phiinv<-1/phi
   id.levels<-1:length(ncellsper)
   nind<-length(id.levels)

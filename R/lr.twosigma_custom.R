@@ -1,4 +1,4 @@
-##' lr.twosigma: Conveinent wrapper function for performing joint likelihood ratio tests in TWO-SIGMA.
+##' lr.twosigma_custom: Conveinent wrapper function for performing joint likelihood ratio tests in TWO-SIGMA with custom user-specified formulas
 ##' @param count Vector of non-negative integer read counts.
 ##' @param mean_covar Covariates for the (conditional) mean model. Must be a matrix (without an intercept column) or a vector if a single covariate is being tested.
 ##' @param zi_covar Covariates for the zero-inflation model. Must be a matrix (without an intercept column) or a vector if a single covariate is being tested.

@@ -110,14 +110,14 @@ X<-cbind(scale(t2d_sim),scale(age_sim),scale(cdr_sim))
 colnames(X)<-c("t2d_sim","age_sim","cdr_sim")
 
 sim_dat<-simulate_zero_inflated_nb_random_effect_data(ncellsper,X,Z,alpha,beta,phi,sigma.a,sigma.b,
-                                                      id.levels=NULL,sim.seed)
+                                                      id.levels=NULL)
 #-----------------------------------------------#    
 
 #--- Fit TWO-SIGMA to simulated data
 id<-sim_dat$id
 counts<-sim_dat$Y
 
-fit<-twosigma(count=counts,zi_covar=Z,mean_covar = X,id=id)
+fit<-twosigma(count=counts,zi_covar=Z,mean_covar = X,id=id,mean_re=TRUE,zi_re=TRUE,adhoc=F)
 fit2<-twosigma_custom(count=counts, mean_form=count~X+(1|id),zi_form=~Z+(1|id),id=id)
 
 #fit and fit2 are the same
@@ -125,12 +125,13 @@ fit2<-twosigma_custom(count=counts, mean_form=count~X+(1|id),zi_form=~Z+(1|id),i
 summary(fit)
 summary(fit2)
 
-#--- Fit TWO-SIGMA without a zero-inflation component
-fit_noZI<-twosigma(count=counts,zi_covar=0,mean_covar = X,id=id)
-#--- Fit TWO-SIGMA without an intercept only zero-inflation component
-fit_meanZI<-twosigma(count=counts,zi_covar=1,mean_covar = X,id=id)
-summary(fit)
 confint(fit)
+
+#--- Fit TWO-SIGMA without a zero-inflation component
+fit_noZI<-twosigma(count=counts,zi_covar=0,mean_covar = X,id=id,mean_re=F,zi_re=F,adhoc=F)
+#--- Fit TWO-SIGMA with an intercept only zero-inflation component
+fit_meanZI<-twosigma(count=counts,zi_covar=1,mean_covar = X,id=id,mean_re=F,zi_re=F,adhoc=F)
+
 summary(fit_noZI)
 summary(fit_meanZI)
 
@@ -140,7 +141,7 @@ lr.fit<-lr.twosigma(contrast="t2d_sim",count=counts,mean_covar = X,zi_covar=Z,id
 lr.fit$p.val
 summary(lr.fit$fit_alt)
 
-lr.fit_custom<-lr.twosigma_custom(count=counts,mean_form_alt=count~X, zi_form_alt=~Z, mean_form_null=count~X[,-1],zi_form_null=~Z[,-1],id=id)
+lr.fit_custom<-lr.twosigma_custom(count=counts,mean_form_alt=count~X, zi_form_alt=~Z, mean_form_null=count~X[,-1],zi_form_null=~Z[,-1],id=id,lr.df=2)
 lr.fit_custom$p.val
 summary(lr.fit_custom$fit_alt)
 
