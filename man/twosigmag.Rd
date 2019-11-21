@@ -25,7 +25,7 @@ twosigmag(count_matrix, index, contrast, mean_covar, zi_covar,
 
 \item{rho}{Inter-gene correlation value. If NULL (default), estimated using model residuals from TWO-SIGMAG.}
 
-\item{adhoc}{Should the adhoc method be used by default to judge if random effects are needed?}
+\item{adhoc}{Should the adhoc method be used by default to judge if random effects are needed? Defaults to FALSE. Setting to TRUE means that different genes could have different models used, which may not be desirable for interpretability.}
 
 \item{adhoc_thresh}{Value below which the adhoc p-value is deemed significant (and thus RE are deemed necessary). Only used if adhoc==TRUE.}
 
