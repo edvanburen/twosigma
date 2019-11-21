@@ -39,16 +39,15 @@ By default, we employ our ad hoc procedure to determine if random effects are ne
 - **mean_re**: Should random intercept terms be included in the (conditional) mean model?
 - **zi_re**: Should random intercept terms be included in the zero-inflation model?
 
-If <code> adhoc=TRUE </code>, mean_re and zi_re are ignored and a warning is printed.
+If <code> adhoc=TRUE</code>, mean_re and zi_re are ignored and a warning is printed.
 
-If users wish to customize the random effect specification, they may do so via the function <code> twosigma_custom </code>, which has the following syntax:
+If users wish to customize the random effect specification, they may do so via the function <code> twosigma_custom </code>, which has the following basic syntax:
 ```r
-twosigma_custom(count, mean_form, zi_form, id, disp_covar = NULL
-                ,weights = rep(1, length(count)), control = glmmTMBControl())
+twosigma_custom(count, mean_form, zi_form, id)
 ````
 - **count**: A vector of non-negative integer counts. No normalization is done. Batch can be controlled for by inclusion in the design matrices.
 - **mean_form** a two-sided formula for the (conditional) mean model. Left side specifies the response and right side includes fixed and random effect terms. Users should ensure that the response has the name "count", e.g. <code> mean_form = count ~ 1 </code>
-- **zi_form** a one-sided formula for the zero-inflation model including fixed and random effect terms, e.g. e.g. <code>  ~ 1 </code>
+- **zi_form** a one-sided formula for the zero-inflation model including fixed and random effect terms, e.g. <code>  ~ 1 </code>
 - **id**: Vector of individual-level ID's. Used for random effect prediction.
 
 Some care must be taken, however, because these formulas are used directly. **It is therefore the user's responsibility to ensure that formulas being inputted will operate as expected**.
@@ -62,7 +61,7 @@ twosigma_custom(count=counts, mean_form=count~mean_covar_matrix+(1|id),zi_form=~
 ## Fixed Effect Testing  
 If users wish to jointly test a fixed effect using the twosigma model with a non-custom specification, they may do so using the <code> lr.twosigma </code> or <code> lr.twosigma_custom </code> functions:
 ```r
-lr.twosigma(count, mean_covar, zi_covar, contrast, mean_re = TRUE,zi_re = TRUE, disp_covar = NULL,adhoc=TRUE)
+lr.twosigma(count, mean_covar, zi_covar, contrast, mean_re = TRUE\n,zi_re = TRUE, disp_covar = NULL,adhoc=TRUE)
 lr.twosigma_custom(count, mean_form_alt, zi_form_alt, mean_form_null,zi_form_null,id,lr.df)
 ```
 - **contrast**: Either a string indicating the column name of the covariate to test or an integer referring to its column position in BOTH the mean_covar and zi_covar matrices. If an integer is specified there is no check that it corresponds to the same covariate in both the mean_covar and zi_covar matrices. 
