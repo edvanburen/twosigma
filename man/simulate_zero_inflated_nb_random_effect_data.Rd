@@ -5,7 +5,7 @@
 \title{Simulated zero-inflated negative binomial data with random effects}
 \usage{
 simulate_zero_inflated_nb_random_effect_data(ncellsper, X, Z, alpha, beta,
-  phi, sigma.a, sigma.b, id.levels = NULL, sim.seed)
+  phi, sigma.a, sigma.b, id.levels = NULL, sim.seed = NULL)
 }
 \arguments{
 \item{ncellsper}{Vector giving the number of cells per individual.  Length of the vector is taken as the number of individuals.}

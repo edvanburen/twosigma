@@ -19,32 +19,41 @@
 ##' @importFrom stats anova as.formula lm pchisq rbinom residuals rnbinom rnorm
 ##' @export twosigmag
 
-twosigmag<-function(count_matrix,index,contrast,mean_covar,zi_covar
+twosigmag<-function(count_matrix,index_test,index_ref=NULL,contrast,mean_covar,zi_covar
   ,mean_re=TRUE,zi_re=TRUE
   ,id,rho=NULL,adhoc=TRUE,adhoc_thresh=0.1
   ,disp_covar=NULL #need to be able to use data option?
   ,verbose_output=FALSE
   ,weights=rep(1,length(count_matrix[1,]))
   ,control = glmmTMBControl()){
-  # catch errors for index (numeric, check indices vs dimensions of input matrix, check that there is a ref set)
-ngenes<-nrow(count_matrix)
-ncells<-ncol(count_matrix)
-test_size<-length(index)
-ref_size<-ngenes-test_size
-fits_twosigmag<-vector('list',length=ngenes)
-residuals_test<-matrix(nrow=length(index),ncol=ncells)
-stats_test<-numeric(length=test_size)
-stats_ref<-numeric(length=ngenes-test_size)
-stats_all<-numeric(length=ngenes)
-j<-0
-k<-0
-if(max(index)>ngenes | min(index)<1){stop("Index seems to be invalid, must be numeric within the dimensions of the input count_matrix")}
+  if(!is.null(index_ref)){
+    genes<-c(index_test,index_ref)
+    ngenes<-length(genes)
+  }else {
+    genes<-c(index_test,setdiff(1:nrow(count_matrix),index_test))
+    ngenes<-length(genes)
+  }
+  if(!is.null(index_ref)){
+    if(sum(index_test%in%index_ref)>0){stop("A gene should not be in both the test and reference sets")}
+  }
+  if(max(index_test)>ngenes | min(index_test)<1){stop("Test Index seems to be invalid, must be numeric within the dimensions of the input count_matrix")}
+  ncells<-ncol(count_matrix)
+  test_size<-length(index_test)
+  ref_size<-ngenes-test_size
+  fits_twosigmag<-vector('list',length=ngenes)
+  residuals_test<-matrix(nrow=length(index_test),ncol=ncells)
+  stats_test<-numeric(length=test_size)
+  stats_ref<-numeric(length=ngenes-test_size)
+  stats_all<-numeric(length=ngenes)
+  j<-0 # Index for test set
+  k<-0 # Index for ref set
     for(i in 1:ngenes){
-      fits_twosigmag[[i]]<-lr.twosigma(count_matrix[i,],contrast = contrast
+      l<-genes[i]
+      fits_twosigmag[[i]]<-lr.twosigma(count_matrix[l,],contrast = contrast
         ,mean_covar=mean_covar,zi_covar=zi_covar
         ,mean_re=mean_re,zi_re=zi_re
         ,id=id,adhoc=adhoc)
-      if(i%in%index){
+      if(l%in%index_test){
         j<-j+1
         residuals_test[j,]<-residuals(fits_twosigmag[[i]]$fit_alt)
         stats_test[j]<-fits_twosigmag[[i]]$LR_stat
@@ -53,7 +62,7 @@ if(max(index)>ngenes | min(index)<1){stop("Index seems to be invalid, must be nu
         stats_ref[k]<-fits_twosigmag[[i]]$LR_stat
       }
       stats_all[i]<-fits_twosigmag[[i]]$LR_stat
-      print(paste("Finished Gene Number",i,"of",nrow(count_matrix)))
+      print(paste("Finished Gene Number",i,"of",ngenes))
     }
       if(is.null(rho)){
         print(paste("Estimating Set-Level correlation and calculating p-value"))

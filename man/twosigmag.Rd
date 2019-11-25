@@ -4,10 +4,10 @@
 \alias{twosigmag}
 \title{TWO-SIGMA: Fit the TWO-component SInGle cell Model-based Association method of...}
 \usage{
-twosigmag(count_matrix, index, contrast, mean_covar, zi_covar,
-  mean_re = TRUE, zi_re = TRUE, id, rho = NULL, adhoc = TRUE,
-  adhoc_thresh = 0.1, disp_covar = NULL, verbose_output = FALSE,
-  weights = rep(1, length(count_matrix[1, ])),
+twosigmag(count_matrix, index_test, index_ref = NULL, contrast,
+  mean_covar, zi_covar, mean_re = TRUE, zi_re = TRUE, id, rho = NULL,
+  adhoc = TRUE, adhoc_thresh = 0.1, disp_covar = NULL,
+  verbose_output = FALSE, weights = rep(1, length(count_matrix[1, ])),
   control = glmmTMBControl())
 }
 \arguments{

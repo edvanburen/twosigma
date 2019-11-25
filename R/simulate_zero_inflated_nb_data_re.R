@@ -29,6 +29,7 @@
 simulate_zero_inflated_nb_random_effect_data<-function(ncellsper,X,Z,alpha,beta,phi,sigma.a,sigma.b,
                                                       id.levels=NULL,sim.seed=NULL)
 {
+  if(is.null(sim.seed)){sim.seed<-sample.int(1e8,1)}
   if(phi<=0){
     stop("phi must be >0")
   }

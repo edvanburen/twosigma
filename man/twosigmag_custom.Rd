@@ -4,13 +4,18 @@
 \alias{twosigmag_custom}
 \title{TWO-SIGMA: Fit the TWO-component SInGle cell Model-based Association method of...}
 \usage{
-twosigmag_custom(count_matrix, index, mean_form_alt, zi_form_alt,
-  mean_form_null, zi_form_null, id, rho = NULL, disp_covar = NULL,
-  verbose_output = FALSE, weights = rep(1, length(count_matrix[1, ])),
+twosigmag_custom(count_matrix, index_test, index_ref = NULL,
+  mean_form_alt, zi_form_alt, mean_form_null, zi_form_null, id,
+  rho = NULL, disp_covar = NULL, verbose_output = FALSE,
+  weights = rep(1, length(count_matrix[1, ])),
   control = glmmTMBControl())
 }
 \arguments{
 \item{count_matrix}{Matrix of non-negative integer read counts. If specifying custom formula(s) via the arguments mean_form and zi_form the expression in mean_form will supersede.}
+
+\item{index_test}{Index corresponding to rows of the count matrix that are in the test set.}
+
+\item{index_ref}{Index corresponding to rows of the count matrix that are in the reference set.  If NULL, all rows that are not part of index_test are taken as the reference set.}
 
 \item{id}{Vector of individual-level ID's. Used for random effect prediction and the adhoc method but required regardless.}
 
@@ -21,6 +26,8 @@ twosigmag_custom(count_matrix, index, mean_form_alt, zi_form_alt,
 \item{weights}{weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.}
 
 \item{control}{Control parameters for optimization in \code{glmmTMB}.}
+
+\item{contrast}{Either a string indicating the column name of the covariate to test or an integer referring to its column position in BOTH the mean_covar and zi_covar matrices (if the two matrices differ using a string name is preferred). Argument is ignored if mean_covar and zi_covar are both a single covariate (that covariate is assumed of interest).}
 
 \item{mean_re}{Should random intercepts be included in the (conditional) mean model? Ignored if adhoc=TRUE.}
 

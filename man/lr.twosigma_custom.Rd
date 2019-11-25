@@ -2,7 +2,7 @@
 % Please edit documentation in R/lr.twosigma_custom.R
 \name{lr.twosigma_custom}
 \alias{lr.twosigma_custom}
-\title{lr.twosigma: Conveinent wrapper function for performing joint likelihood ratio tests in TWO-SIGMA.}
+\title{lr.twosigma_custom: Conveinent wrapper function for performing joint likelihood ratio tests in TWO-SIGMA with custom user-specified formulas}
 \usage{
 lr.twosigma_custom(count, mean_form_alt, zi_form_alt, mean_form_null,
   zi_form_null, id, lr.df, disp_covar = NULL, weights = rep(1,
@@ -31,7 +31,7 @@ lr.twosigma_custom(count, mean_form_alt, zi_form_alt, mean_form_null,
 A list containing glmmTMB objects of model fits under the null and alternative, the 2 d.f. Likelihood Ratio statistic, and the p-value.
 }
 \description{
-lr.twosigma: Conveinent wrapper function for performing joint likelihood ratio tests in TWO-SIGMA.
+lr.twosigma_custom: Conveinent wrapper function for performing joint likelihood ratio tests in TWO-SIGMA with custom user-specified formulas
 }
 \section{Details}{
 

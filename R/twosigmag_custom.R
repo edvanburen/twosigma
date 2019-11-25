@@ -1,5 +1,8 @@
 ##' TWO-SIGMA: Fit the TWO-component SInGle cell Model-based Association method of...
 ##' @param count_matrix Matrix of non-negative integer read counts. If specifying custom formula(s) via the arguments mean_form and zi_form the expression in mean_form will supersede.
+##' @param index_test Index corresponding to rows of the count matrix that are in the test set.
+##' @param index_ref Index corresponding to rows of the count matrix that are in the reference set.  If NULL, all rows that are not part of index_test are taken as the reference set.
+##' @param contrast Either a string indicating the column name of the covariate to test or an integer referring to its column position in BOTH the mean_covar and zi_covar matrices (if the two matrices differ using a string name is preferred). Argument is ignored if mean_covar and zi_covar are both a single covariate (that covariate is assumed of interest).
 ##' @param mean_re Should random intercepts be included in the (conditional) mean model? Ignored if adhoc=TRUE.
 ##' @param zi_re Should random intercepts be included in the zero-inflation model? Ignored if adhoc=TRUE.
 ##' @param id Vector of individual-level ID's. Used for random effect prediction and the adhoc method but required regardless.
@@ -15,31 +18,41 @@
 ##' @importFrom stats anova as.formula lm pchisq rbinom residuals rnbinom rnorm
 ##' @export twosigmag_custom
 
-twosigmag_custom<-function(count_matrix,index,mean_form_alt,zi_form_alt,mean_form_null,zi_form_null
-  ,id
+twosigmag_custom<-function(count_matrix,index_test,index_ref=NULL,mean_form_alt,zi_form_alt,mean_form_null,zi_form_null
+  ,id,lr.df
   ,rho=NULL
   ,disp_covar=NULL #need to be able to use data option?
   ,verbose_output=FALSE
   ,weights=rep(1,length(count_matrix[1,]))
   ,control = glmmTMBControl()){
+  if(!is.null(index_ref)){
+    genes<-c(index_test,index_ref)
+    ngenes<-length(genes)
+  }else {
+    genes<-c(index_test,setdiff(1:nrow(count_matrix),index_test))
+    ngenes<-length(genes)
+  }
   # catch errors for index (numeric, check indices vs dimensions of input matrix, check that there is a ref set)
-ngenes<-nrow(count_matrix)
+  if(!is.null(index_ref)){
+    if(sum(index_test%in%index_ref)>0){stop("A gene should not be in both the test and reference sets")}
+  }
+  if(max(index_test)>ngenes | min(index_test)<1){stop("Index seems to be invalid, must be numeric within the dimensions of the input count_matrix")}
 ncells<-ncol(count_matrix)
-test_size<-length(index)
+test_size<-length(index_test)
 ref_size<-ngenes-test_size
 fits_twosigmag<-vector('list',length=ngenes)
-residuals_test<-matrix(nrow=length(index),ncol=ncells)
+residuals_test<-matrix(nrow=length(index_test),ncol=ncells)
 stats_test<-numeric(length=test_size)
 stats_ref<-numeric(length=ngenes-test_size)
 stats_all<-numeric(length=ngenes)
-j<-0
-k<-0
-if(max(index)>ngenes | min(index)<1){stop("Index seems to be invalid, must be numeric within the dimensions of the input count_matrix")}
-    for(i in 1:ngenes){
-      count<-count_matrix[i,]
+j<-0 # Index for test set
+k<-0 # Index for ref set
+for(i in 1:ngenes){
+      l<-genes[i]
+      count<-count_matrix[l,]
       fits_twosigmag[[i]]<-lr.twosigma_custom(count=count
-        ,mean_form_alt,zi_form_alt,mean_form_null,zi_form_null,id=id)
-      if(i%in%index){
+        ,mean_form_alt,zi_form_alt,mean_form_null,zi_form_null,id=id,lr.df = lr.df)
+      if(l%in%index_test){
         j<-j+1
         residuals_test[j,]<-residuals(fits_twosigmag[[i]]$fit_alt)
         stats_test[j]<-fits_twosigmag[[i]]$LR_stat
@@ -48,7 +61,7 @@ if(max(index)>ngenes | min(index)<1){stop("Index seems to be invalid, must be nu
         stats_ref[k]<-fits_twosigmag[[i]]$LR_stat
       }
       stats_all[i]<-fits_twosigmag[[i]]$LR_stat
-      print(paste("Finished Gene Number",i,"of",nrow(count_matrix)))
+      print(paste("Finished Gene Number",i,"of",ngenes))
     }
       if(is.null(rho)){
         print(paste("Estimating Set-Level correlation and calculating p-value"))
