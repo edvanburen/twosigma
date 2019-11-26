@@ -2,16 +2,22 @@
 % Please edit documentation in R/lr.twosigma_custom.R
 \name{lr.twosigma_custom}
 \alias{lr.twosigma_custom}
-\title{lr.twosigma_custom: Conveinent wrapper function for performing joint likelihood ratio tests in TWO-SIGMA with custom user-specified formulas}
+\title{Conveinent wrapper function for performing joint likelihood ratio tests with the TWO-SIGMA model of ... with custom user-specified formulas.}
 \usage{
 lr.twosigma_custom(count, mean_form_alt, zi_form_alt, mean_form_null,
   zi_form_null, id, lr.df, disp_covar = NULL, weights = rep(1,
-  length(count)), control = glmmTMBControl(optCtrl = list(iter.max =
-  1e+05, eval.max = 1e+05, step.max = 1e-05, step.min = 1e-05, rel.tol =
-  1e-05, x.tol = 1e-05)))
+  length(count)), control = glmmTMBControl())
 }
 \arguments{
 \item{count}{Vector of non-negative integer read counts.}
+
+\item{mean_form_alt}{Custom two-sided model formula for the (conditional) mean model under the null. Formula is passed directly into glmmTMB with random effects specified as in the lme4 package. Users should ensure that the dependent variable matches the argument to the parameter "count."}
+
+\item{zi_form_alt}{Custom one-sided model formula for the zero-inflation model under the alternative. Formula is passed directly into glmmTMB with random effects specified as in lme4.}
+
+\item{mean_form_null}{Custom two-sided model formula for the (conditional) mean model under the null. Syntax is as in \code{mean_form_alt}.}
+
+\item{zi_form_null}{Custom one-sided model formula for the zero-inflation model under the null. Syntax is as in \code{zi_form_alt}.}
 
 \item{id}{Vector of individual-level ID's. Used for random effect prediction and the adhoc method but required regardless.}
 
@@ -22,19 +28,15 @@ lr.twosigma_custom(count, mean_form_alt, zi_form_alt, mean_form_null,
 \item{weights}{weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.}
 
 \item{control}{Control parameters for optimization in glmmTMB.}
-
-\item{mean_covar}{Covariates for the (conditional) mean model. Must be a matrix (without an intercept column) or a vector if a single covariate is being tested.}
-
-\item{zi_covar}{Covariates for the zero-inflation model. Must be a matrix (without an intercept column) or a vector if a single covariate is being tested.}
 }
 \value{
-A list containing glmmTMB objects of model fits under the null and alternative, the 2 d.f. Likelihood Ratio statistic, and the p-value.
+A list containing glmmTMB objects of model fits under the null and alternative, the Likelihood Ratio statistic, associated p-value, and all model formulas used.
 }
 \description{
-lr.twosigma_custom: Conveinent wrapper function for performing joint likelihood ratio tests in TWO-SIGMA with custom user-specified formulas
+Conveinent wrapper function for performing joint likelihood ratio tests with the TWO-SIGMA model of ... with custom user-specified formulas.
 }
 \section{Details}{
 
-This function is a wrapper for conducting fixed effect likelihood ratio tests with twosigma.  There is no (absolutely no) checking to make sure that the alt and null model formulas represent a valid likelihood ratio test when fit together.  Users must ensure that inputted formulas represent valid nested models.
+This function is a wrapper for conducting fixed effect likelihood ratio tests with twosigma.  There is no checking to make sure that the alt and null model formulas represent a valid likelihood ratio test when fit together.  Users must ensure that inputted formulas represent valid nested models. If either model fails to converge, or the LR statistic is negative, both the statistic and p-value are assigned as NA.
 }
 

@@ -1,4 +1,4 @@
-##' lr.twosigma: Conveinent wrapper function for performing joint likelihood ratio tests in TWO-SIGMA.
+##' Conveinent wrapper function for performing joint likelihood ratio tests using the TWO-SIGMA model of ...
 ##' @param count Vector of non-negative integer read counts.
 ##' @param mean_covar Covariates for the (conditional) mean model. Must be a matrix (without an intercept column) or a vector if a single covariate is being tested.
 ##' @param zi_covar Covariates for the zero-inflation model. Must be a matrix (without an intercept column) or a vector if a single covariate is being tested.
@@ -12,21 +12,21 @@
 ##' @param weights weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.
 ##' @param control Control parameters for optimization in glmmTMB.
 ##' @section Details:
-##' This function assumes that the variable being tested is in both components of the model (and thus that the zero-inflation component exists and contains more than an Intercept). Users wishing to do fixed effect testing in other cases will need to construct the statistics themselves using two separate calls to \code{twosigma}. If users wish to specify custom model formulas they should also construct the likelihood ratio statistics themselves to ensure the test is being conducted properly. If adhoc==TRUE, any input in mean_re and zi_re will be ignored.
+##' This function assumes that the variable being tested is in both components of the model (and thus that the zero-inflation component exists and contains more than an Intercept). Users wishing to do fixed effect testing in other cases or specify custom model formulas they will need to construct the statistics themselves using either two separate calls to \code{twosigma} or the \code{lr.twosigma_custom} fumction. If adhoc==TRUE, any input in mean_re and zi_re will be ignored. If either model fails to converge, or the LR statistic is negative, both the statistic and p-value are assigned as NA.
 ##'
 ##' @return A list containing glmmTMB objects of model fits under the null and alternative, the 2 d.f. Likelihood Ratio statistic, and the p-value.
 ##' @export lr.twosigma
-# Likely will want to remove the ability to input a formula for this fn to work properly
 
-lr.twosigma<-function(count,mean_covar,zi_covar,contrast#,joint=TRUE
-                      #,mean_form=NULL,zi_form=NULL
-                      ,mean_re=TRUE,zi_re=TRUE,
+lr.twosigma<-function(count,mean_covar,zi_covar,contrast
+                      ,mean_re=FALSE,zi_re=FALSE,
                        id,adhoc=FALSE,adhoc_thresh=0.1
                       ,disp_covar=NULL
                       ,weights=rep(1,length(count))
-                      ,control = glmmTMBControl(optCtrl=list(iter.max=1e5,eval.max=1e5
-                        ,step.max=.00001,step.min=.00001
-                        ,rel.tol=1e-5,x.tol=1e-5))){
+                      ,control=glmmTMBControl())
+                      #,control = glmmTMBControl(optCtrl=list(iter.max=1e5,eval.max=1e5
+                       # ,step.max=.00001,step.min=.00001
+                      #  ,rel.tol=1e-5,x.tol=1e-5)))
+  {
   check_twosigma_input(count,mean_covar,zi_covar
     ,mean_re,zi_re
     ,disp_covar,id=id,adhoc=adhoc)
@@ -168,6 +168,9 @@ fit_null<-glmmTMB(formula=formulas$mean_form
     ,family=nbinom2,verbose = F
     ,control = control)
 LR_stat<- as.numeric(-2*(summary(fit_null)$logLik-summary(fit_alt)$logLik))
+if(LR_stat<0 | (!fit_alt$sdr$pdHess) | (!fit_null$sdr$pdHess)){
+  LR_stat<-NA
+  message("LR stat set to NA, indicative of model specification or fitting problem")}
 p.val<-1-pchisq(LR_stat,df=2)
 return(list(fit_null=fit_null,fit_alt=fit_alt,LR_stat=LR_stat,p.val=p.val))
 }

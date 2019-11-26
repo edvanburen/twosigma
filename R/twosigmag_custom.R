@@ -1,4 +1,4 @@
-##' TWO-SIGMA: Fit the TWO-component SInGle cell Model-based Association method of...
+##' Gene set testing adjusting for inter-gene correlation using the TWO-SIGMA model of ... with custom user-specified model formulas.
 ##' @param count_matrix Matrix of non-negative integer read counts. If specifying custom formula(s) via the arguments mean_form and zi_form the expression in mean_form will supersede.
 ##' @param index_test Index corresponding to rows of the count matrix that are in the test set.
 ##' @param index_ref Index corresponding to rows of the count matrix that are in the reference set.  If NULL, all rows that are not part of index_test are taken as the reference set.
@@ -6,8 +6,9 @@
 ##' @param mean_re Should random intercepts be included in the (conditional) mean model? Ignored if adhoc=TRUE.
 ##' @param zi_re Should random intercepts be included in the zero-inflation model? Ignored if adhoc=TRUE.
 ##' @param id Vector of individual-level ID's. Used for random effect prediction and the adhoc method but required regardless.
+##' @param lr.df degrees of freedom for the asymptotic chi-square approximation to the liklihood ratio statistic.
 ##' @param rho Inter-gene correlation value. If NULL (default), estimated using TWO-SIGMA model residuals.
-##' @param disp_covar Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model.
+##' @param disp_covar Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model. Defaults to NULL for constant dispersion.
 ##' @param weights weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.
 ##' @param control Control parameters for optimization in \code{glmmTMB}.
 ##' @section Details:  If adhoc=TRUE, any input in mean_re and zi_re will be ignored.
@@ -25,6 +26,9 @@ twosigmag_custom<-function(count_matrix,index_test,index_ref=NULL,mean_form_alt,
   ,verbose_output=FALSE
   ,weights=rep(1,length(count_matrix[1,]))
   ,control = glmmTMBControl()){
+  if(adhoc==TRUE){
+    message("adhoc method is allowed but discouraged for gene set testing because statistics for different genes can be based on different models. Users may not wish this to occur.")
+  }
   if(!is.null(index_ref)){
     genes<-c(index_test,index_ref)
     ngenes<-length(genes)

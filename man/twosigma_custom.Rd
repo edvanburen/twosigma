@@ -2,7 +2,7 @@
 % Please edit documentation in R/twosigma_custom.R
 \name{twosigma_custom}
 \alias{twosigma_custom}
-\title{Specify custom model formulas to the TWO-component SInGle cell Model-based Association method of}
+\title{Fit the TWO-component SInGle cell Model-based Association method of ... with custom user-specified model formulas.}
 \usage{
 twosigma_custom(count, mean_form, zi_form, id, disp_covar = NULL,
   weights = rep(1, length(count)), control = glmmTMBControl())
@@ -23,10 +23,10 @@ twosigma_custom(count, mean_form, zi_form, id, disp_covar = NULL,
 \item{control}{Control parameters for optimization in \code{glmmTMB}.}
 }
 \value{
-An object of class \code{glmmTMB}..
+An object of class \code{glmmTMB}.
 }
 \description{
-Specify custom model formulas to the TWO-component SInGle cell Model-based Association method of
+Fit the TWO-component SInGle cell Model-based Association method of ... with custom user-specified model formulas.
 }
 \section{Details}{
 

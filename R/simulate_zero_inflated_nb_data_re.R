@@ -8,7 +8,7 @@
 ##' @param sigma.a Standard deviation for the zero-inflation model random intercept.
 ##' @param sigma.b Standard deviation for the (conditional) mean random intercept.
 ##' @param id.levels Individual-level IDs. If NULL set as 1,2,... up to the number of individuals.
-##' @param sim.seed Random seed to be used.
+##' @param sim.seed Random seed to be used. If NULL one will be randomly chosen.
 ##' @return Y Simulated counts
 ##' @return X Covariate matrix (without intercept) for the (conditional) mean model.
 ##' @return Z Covariate matrix (without intercept) for the zero-inflation model.

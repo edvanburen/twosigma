@@ -2,14 +2,12 @@
 % Please edit documentation in R/lr.twosigma.R
 \name{lr.twosigma}
 \alias{lr.twosigma}
-\title{lr.twosigma: Conveinent wrapper function for performing joint likelihood ratio tests in TWO-SIGMA.}
+\title{Conveinent wrapper function for performing joint likelihood ratio tests using the TWO-SIGMA model of ...}
 \usage{
-lr.twosigma(count, mean_covar, zi_covar, contrast, mean_re = TRUE,
-  zi_re = TRUE, id, adhoc = FALSE, adhoc_thresh = 0.1,
+lr.twosigma(count, mean_covar, zi_covar, contrast, mean_re = FALSE,
+  zi_re = FALSE, id, adhoc = FALSE, adhoc_thresh = 0.1,
   disp_covar = NULL, weights = rep(1, length(count)),
-  control = glmmTMBControl(optCtrl = list(iter.max = 1e+05, eval.max =
-  1e+05, step.max = 1e-05, step.min = 1e-05, rel.tol = 1e-05, x.tol =
-  1e-05)))
+  control = glmmTMBControl())
 }
 \arguments{
 \item{count}{Vector of non-negative integer read counts.}
@@ -40,10 +38,10 @@ lr.twosigma(count, mean_covar, zi_covar, contrast, mean_re = TRUE,
 A list containing glmmTMB objects of model fits under the null and alternative, the 2 d.f. Likelihood Ratio statistic, and the p-value.
 }
 \description{
-lr.twosigma: Conveinent wrapper function for performing joint likelihood ratio tests in TWO-SIGMA.
+Conveinent wrapper function for performing joint likelihood ratio tests using the TWO-SIGMA model of ...
 }
 \section{Details}{
 
-This function assumes that the variable being tested is in both components of the model (and thus that the zero-inflation component exists and contains more than an Intercept). Users wishing to do fixed effect testing in other cases will need to construct the statistics themselves using two separate calls to \code{twosigma}. If users wish to specify custom model formulas they should also construct the likelihood ratio statistics themselves to ensure the test is being conducted properly. If adhoc==TRUE, any input in mean_re and zi_re will be ignored.
+This function assumes that the variable being tested is in both components of the model (and thus that the zero-inflation component exists and contains more than an Intercept). Users wishing to do fixed effect testing in other cases or specify custom model formulas they will need to construct the statistics themselves using either two separate calls to \code{twosigma} or the \code{lr.twosigma_custom} fumction. If adhoc==TRUE, any input in mean_re and zi_re will be ignored. If either model fails to converge, or the LR statistic is negative, both the statistic and p-value are assigned as NA.
 }
 

@@ -26,7 +26,7 @@ simulate_zero_inflated_nb_random_effect_data(ncellsper, X, Z, alpha, beta,
 
 \item{id.levels}{Individual-level IDs. If NULL set as 1,2,... up to the number of individuals.}
 
-\item{sim.seed}{Random seed to be used.}
+\item{sim.seed}{Random seed to be used. If NULL one will be randomly chosen.}
 }
 \value{
 Y Simulated counts

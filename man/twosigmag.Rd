@@ -2,7 +2,7 @@
 % Please edit documentation in R/twosigmag.R
 \name{twosigmag}
 \alias{twosigmag}
-\title{TWO-SIGMA: Fit the TWO-component SInGle cell Model-based Association method of...}
+\title{Gene set testing adjusting for inter-gene correlation using the TWO-SIGMA model of ...}
 \usage{
 twosigmag(count_matrix, index_test, index_ref = NULL, contrast,
   mean_covar, zi_covar, mean_re = TRUE, zi_re = TRUE, id, rho = NULL,
@@ -29,7 +29,7 @@ twosigmag(count_matrix, index_test, index_ref = NULL, contrast,
 
 \item{adhoc_thresh}{Value below which the adhoc p-value is deemed significant (and thus RE are deemed necessary). Only used if adhoc==TRUE.}
 
-\item{disp_covar}{Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model.}
+\item{disp_covar}{Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model. Defaults to NULL for constant dispersion.}
 
 \item{weights}{weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.}
 
@@ -39,7 +39,7 @@ twosigmag(count_matrix, index_test, index_ref = NULL, contrast,
 An object of class \code{glmmTMB}.
 }
 \description{
-TWO-SIGMA: Fit the TWO-component SInGle cell Model-based Association method of...
+Gene set testing adjusting for inter-gene correlation using the TWO-SIGMA model of ...
 }
 \section{Details}{
   If adhoc=TRUE, any input in mean_re and zi_re will be ignored.

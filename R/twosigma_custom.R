@@ -1,4 +1,4 @@
-##' Specify custom model formulas to the TWO-component SInGle cell Model-based Association method of
+##' Fit the TWO-component SInGle cell Model-based Association method of ... with custom user-specified model formulas.
 ##' @param count Vector of non-negative integer read counts. Users should ensure that this matches matches the LHS of the formula in "mean_form."
 ##' @param mean_form Custom two-sided model formula for the (conditional) mean model. Formula is passed directly into glmmTMB with random effects specified as in the lme4 package. Users should ensure that the dependent variable matches the argument to the parameter "count."
 ##' @param zi_form Custom one-sided model formula for the zero-inflation model. Formula is passed directly into glmmTMB with random effects specified as in lme4.
@@ -8,7 +8,7 @@
 ##' @param control Control parameters for optimization in \code{glmmTMB}.
 ##' @section Details:
 ##' This function is likely only needed if users wish to include random effect terms beyond random intercepts. Users should be confident in their abilities to specify random effects using the syntax of lme4.
-##' @return An object of class \code{glmmTMB}..
+##' @return An object of class \code{glmmTMB}.
 ##' @import glmmTMB
 ##' @import methods
 ##' @import pscl

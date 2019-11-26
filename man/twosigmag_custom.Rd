@@ -2,10 +2,10 @@
 % Please edit documentation in R/twosigmag_custom.R
 \name{twosigmag_custom}
 \alias{twosigmag_custom}
-\title{TWO-SIGMA: Fit the TWO-component SInGle cell Model-based Association method of...}
+\title{Gene set testing adjusting for inter-gene correlation using the TWO-SIGMA model of ... with custom user-specified model formulas.}
 \usage{
 twosigmag_custom(count_matrix, index_test, index_ref = NULL,
-  mean_form_alt, zi_form_alt, mean_form_null, zi_form_null, id,
+  mean_form_alt, zi_form_alt, mean_form_null, zi_form_null, id, lr.df,
   rho = NULL, disp_covar = NULL, verbose_output = FALSE,
   weights = rep(1, length(count_matrix[1, ])),
   control = glmmTMBControl())
@@ -19,9 +19,11 @@ twosigmag_custom(count_matrix, index_test, index_ref = NULL,
 
 \item{id}{Vector of individual-level ID's. Used for random effect prediction and the adhoc method but required regardless.}
 
+\item{lr.df}{degrees of freedom for the asymptotic chi-square approximation to the liklihood ratio statistic.}
+
 \item{rho}{Inter-gene correlation value. If NULL (default), estimated using TWO-SIGMA model residuals.}
 
-\item{disp_covar}{Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model.}
+\item{disp_covar}{Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model. Defaults to NULL for constant dispersion.}
 
 \item{weights}{weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.}
 
@@ -37,7 +39,7 @@ twosigmag_custom(count_matrix, index_test, index_ref = NULL,
 An object of class \code{glmmTMB}.
 }
 \description{
-TWO-SIGMA: Fit the TWO-component SInGle cell Model-based Association method of...
+Gene set testing adjusting for inter-gene correlation using the TWO-SIGMA model of ... with custom user-specified model formulas.
 }
 \section{Details}{
   If adhoc=TRUE, any input in mean_re and zi_re will be ignored.
