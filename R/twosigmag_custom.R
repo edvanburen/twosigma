@@ -26,9 +26,6 @@ twosigmag_custom<-function(count_matrix,index_test,index_ref=NULL,mean_form_alt,
   ,verbose_output=FALSE
   ,weights=rep(1,length(count_matrix[1,]))
   ,control = glmmTMBControl()){
-  if(adhoc==TRUE){
-    message("adhoc method is allowed but discouraged for gene set testing because statistics for different genes can be based on different models. Users may not wish this to occur.")
-  }
   if(!is.null(index_ref)){
     genes<-c(index_test,index_ref)
     ngenes<-length(genes)
@@ -40,7 +37,8 @@ twosigmag_custom<-function(count_matrix,index_test,index_ref=NULL,mean_form_alt,
   if(!is.null(index_ref)){
     if(sum(index_test%in%index_ref)>0){stop("A gene should not be in both the test and reference sets")}
   }
-  if(max(index_test)>ngenes | min(index_test)<1){stop("Index seems to be invalid, must be numeric within the dimensions of the input count_matrix")}
+  if(max(index_test)>nrow(sim_dat2) | min(index_test)<1){stop("Test Set Index seems to be invalid, must be numeric within the dimensions of the input count_matrix")}
+  if(max(index_ref)>nrow(sim_dat2) | min(index_ref)<1){stop("Ref Index seems to be invalid, must be numeric within the dimensions of the input count_matrix")}
 ncells<-ncol(count_matrix)
 test_size<-length(index_test)
 ref_size<-ngenes-test_size
