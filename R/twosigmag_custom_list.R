@@ -23,7 +23,7 @@ twosigmag_custom_list<-function(count_matrix,index_test,index_ref=NULL,mean_form
   ,id,lr.df
   ,rho=NULL
   ,disp_covar=NULL #need to be able to use data option?
-  ,verbose_output=FALSE
+  ,return_fits=FALSE
   ,weights=rep(1,length(count_matrix[1,]))
   ,control = glmmTMBControl()){
 
@@ -52,16 +52,27 @@ twosigmag_custom_list<-function(count_matrix,index_test,index_ref=NULL,mean_form
   if(max(unlist(index_test))>nrow(count_matrix) | min(unlist(index_test))<1){stop("Test Index seems to be invalid, must be numeric within the dimensions of the input count_matrix")}
   ncells<-ncol(count_matrix)
   # Fit all gene level statistics that are needed
-  fits_twosigmag<-vector('list',length=nrow(count_matrix))
+  if(return_fits==FALSE){
+    fit_twosigmag<-list()
+  }else{
+    fit_twosigmag<-vector('list',length=nrow(count_matrix))
+  }
   residuals_all<-matrix(nrow=nrow(count_matrix),ncol=ncells)
   stats_all<-rep(NA,length=nrow(count_matrix))
   for(i in 1:ngenes){
     l<-genes[i]
-    fits_twosigmag[[l]]<-lr.twosigma_custom(count=count_matrix[l,]
-      ,mean_form_alt,zi_form_alt,mean_form_null,zi_form_null,id=id,lr.df = lr.df)
+    if(return_fits==TRUE){
+      fit_twosigmag[[l]]<-lr.twosigma_custom(count=count_matrix[l,]
+        ,mean_form_alt,zi_form_alt,mean_form_null,zi_form_null,id=id,lr.df = lr.df)
+      residuals_all[l,]<-residuals(fit_twosigmag[[l]]$fit_alt)
+      stats_all[l]<-fit_twosigmag[[l]]$LR_stat
+    }else{
+      fit_twosigmag<-lr.twosigma_custom(count=count_matrix[l,]
+        ,mean_form_alt,zi_form_alt,mean_form_null,zi_form_null,id=id,lr.df = lr.df)
+      residuals_all[l,]<-residuals(fit_twosigmag$fit_alt)
+      stats_all[l]<-fit_twosigmag$LR_stat
 
-    residuals_all[l,]<-residuals(fits_twosigmag[[l]]$fit_alt)
-    stats_all[l]<-fits_twosigmag[[l]]$LR_stat
+    }
     print(paste("Finished Gene Number",i,"of",ngenes))
   }
   stats_test<-vector('list',length=nsets)
@@ -114,8 +125,8 @@ twosigmag_custom_list<-function(count_matrix,index_test,index_ref=NULL,mean_form
     p.val[i]<-2*pnorm(-1*abs((wilcox_stat-.5*test_size*ref_size)/sqrt(var)))
   }
 
-  if(verbose_output==TRUE){
-    return(list(gene_level_fits=fits_twosigmag,LR_stats_gene_level_all=stats_all,set_p.val=p.val,corr=rho_est,index_test=index_test))
+  if(return_fits==TRUE){
+    return(list(gene_level_fits=fit_twosigmag,LR_stats_gene_level_all=stats_all,set_p.val=p.val,corr=rho_est,index_test=index_test))
   }else{
     return(list(LR_stats_gene_level_all=stats_all,set_p.val=p.val,corr=rho_est,index_test=index_test))
   }
