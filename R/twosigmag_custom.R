@@ -85,8 +85,8 @@ for(i in 1:ngenes){
       wilcox_stat<-sum(rank(c(stats_test,stats_ref))[1:test_size]) - .5*test_size*(test_size+1)
       p.val<-2*pnorm(-1*abs((wilcox_stat-.5*test_size*ref_size)/sqrt(var)))
       if(verbose_output==TRUE){
-        return(list(fits_twosigma=fits_twosigmag,stats_all=stats_all,set_p.val=p.val,corr=rho))
+        return(list(gene_level_fits=fits_twosigmag,LR_stats_gene_level_all=stats_all,set_p.val=p.val,corr=rho))
       }else{
-        return(list(LR_stats_all=stats_all,set_p.val=p.val,corr=rho))
+        return(list(LR_stats_gene_level_all=stats_all,set_p.val=p.val,corr=rho))
       }
 }

@@ -172,5 +172,5 @@ if(LR_stat<0 | (!fit_alt$sdr$pdHess) | (!fit_null$sdr$pdHess)){
   LR_stat<-NA
   message("LR stat set to NA, indicative of model specification or fitting problem")}
 p.val<-1-pchisq(LR_stat,df=2)
-return(list(fit_null=fit_null,fit_alt=fit_alt,LR_stat=LR_stat,p.val=p.val))
+return(list(fit_null=fit_null,fit_alt=fit_alt,LR_stat=LR_stat,LR_p.val=p.val))
 }

@@ -40,7 +40,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,contrast,mean_covar,z
   if(!is.null(index_ref)){
     if(sum(index_test%in%index_ref)>0){stop("A gene should not be in both the test and reference sets")}
   }
-  if(max(index_test)>ngenes | min(index_test)<1){stop("Test Index seems to be invalid, must be numeric within the dimensions of the input count_matrix")}
+  if(max(index_test)>nrow(count_matrix) | min(index_test)<1){stop("Test Index seems to be invalid, must be numeric within the dimensions of the input count_matrix")}
   ncells<-ncol(count_matrix)
   test_size<-length(index_test)
   ref_size<-ngenes-test_size
@@ -87,8 +87,8 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,contrast,mean_covar,z
       wilcox_stat<-sum(rank(c(stats_test,stats_ref))[1:test_size]) - .5*test_size*(test_size+1)
       p.val<-2*pnorm(-1*abs((wilcox_stat-.5*test_size*ref_size)/sqrt(var)))
       if(verbose_output==TRUE){
-        return(list(fits_twosigma=fits_twosigmag,stats_all=stats_all,set_p.val=p.val,corr=rho))
+        return(list(fits_twosigma=fits_twosigmag,stats_all=stats_all,set_p.val=p.val,corr=rho,index_test=index_test))
       }else{
-        return(list(LR_stats_all=stats_all,set_p.val=p.val,corr=rho))
+        return(list(LR_stats_all=stats_all,set_p.val=p.val,corr=rho,index_test=index_test))
       }
 }
