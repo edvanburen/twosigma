@@ -148,8 +148,8 @@ twosigmag_custom_list<-function(count_matrix,index_test,index_ref=NULL,mean_form
   }
 
   if(return_fits==TRUE){
-    return(list(gene_level_fits=fit_twosigmag,LR_stats_gene_level_all=stats_all,set_p.val=p.val,corr=rho_est,index_test=index_test,index_ref=index_ref))
+    return(list(gene_level_fits=fit_twosigmag,LR_stats_gene_level_all=stats_all,set_p.val=p.val,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
   }else{
-    return(list(LR_stats_gene_level_all=stats_all,set_p.val=p.val,corr=rho_est,index_test=index_test,index_ref=index_ref))
+    return(list(LR_stats_gene_level_all=stats_all,set_p.val=p.val,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
   }
 }

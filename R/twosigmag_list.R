@@ -48,12 +48,23 @@ twosigmag_list<-function(count_matrix,index_test,index_ref=NULL,contrast,mean_co
       for(i in 1:nsets){
         if(sum(index_test[[i]]%in%index_ref)>0){stop(paste("A gene should not be in both the test and reference sets. Check element number",i,"in test set or reference set."))}
       }
+
+      index_ref<-rep(list(index_ref),nsets)
     }
     genes<-unique(c(unlist(index_test),unlist(index_ref)))
     ngenes<-length(genes)
     ref_inputted<-TRUE
-  }else { # will need all genes
-    genes<-1:nrow(count_matrix)
+  }else {# will need to construct reference set
+    if(is.list(index_test)){
+      index_ref<-vector('list',length=nsets)
+      for(i in 1:nsets){
+        index_ref[[i]]<-sample(setdiff(1:nrow(count_matrix),index_test[[i]]),size=length(index_test[[i]]))
+      }
+      genes<-unique(c(unlist(index_test),unlist(index_ref)))
+    }else{
+      index_ref<-sample(setdiff(1:nrow(count_matrix),index_test),size=length(index_test))
+      genes<-unique(c(unlist(index_test),unlist(index_ref)))
+    }
     ngenes<-length(genes)
     ref_inputted<-FALSE
   }
@@ -102,7 +113,7 @@ twosigmag_list<-function(count_matrix,index_test,index_ref=NULL,contrast,mean_co
     }
 
     if(ref_inputted==FALSE){
-    index_ref[[i]]<-setdiff(1:nrow(count_matrix),index_test[[i]])
+    #index_ref[[i]]<-setdiff(1:nrow(count_matrix),index_test[[i]])
     stats_ref[[i]]<-stats_all[index_ref[[i]]]
     ref_size<-length(index_ref[[i]])
     }else{
@@ -135,8 +146,8 @@ twosigmag_list<-function(count_matrix,index_test,index_ref=NULL,contrast,mean_co
   }
 
    if(return_fits==TRUE){
-     return(list(gene_level_fits=fits_twosigmag,LR_stats_gene_level_all=stats_all,set_p.val=p.val,corr=rho_est,index_test=index_test))
+     return(list(gene_level_fits=fits_twosigmag,LR_stats_gene_level_all=stats_all,set_p.val=p.val,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
    }else{
-    return(list(LR_stats_gene_level_all=stats_all,set_p.val=p.val,corr=rho_est,index_test=index_test))
+    return(list(LR_stats_gene_level_all=stats_all,set_p.val=p.val,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
   }
 }
