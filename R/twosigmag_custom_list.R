@@ -1,7 +1,7 @@
 ##' Gene set testing adjusting for inter-gene correlation using the TWO-SIGMA model of ... with custom user-specified model formulas.
 ##' @param count_matrix Matrix of non-negative integer read counts. If specifying custom formula(s) via the arguments mean_form and zi_form the expression in mean_form will supersede.
 ##' @param index_test Index corresponding to rows of the count matrix that are in the test set.
-##' @param index_ref Index corresponding to rows of the count matrix that are in the reference set.  If NULL, all rows that are not part of index_test are taken as the reference set.
+##' @param index_ref Index corresponding to rows of the count matrix that are in the reference set.  If NULL, a reference set is randomly selected of the same size as test size using genes not in the test set.
 ##' @param contrast Either a string indicating the column name of the covariate to test or an integer referring to its column position in BOTH the mean_covar and zi_covar matrices (if the two matrices differ using a string name is preferred). Argument is ignored if mean_covar and zi_covar are both a single covariate (that covariate is assumed of interest).
 ##' @param mean_re Should random intercepts be included in the (conditional) mean model? Ignored if adhoc=TRUE.
 ##' @param zi_re Should random intercepts be included in the zero-inflation model? Ignored if adhoc=TRUE.
