@@ -26,38 +26,38 @@ twosigmag_list<-function(count_matrix,index_test,index_ref=NULL,contrast,mean_co
   ,return_fits=FALSE
   ,weights=rep(1,length(count_matrix[1,]))
   ,control = glmmTMBControl()){
-
-  if(adhoc==TRUE){
-    message("adhoc method is allowed but discouraged for gene set testing because statistics for different genes can be based on different models. Users may not wish this to occur.")
-  }
+  count_matrix<-as.matrix(count_matrix)
   if(is.list(index_test)){
     nsets<-length(index_test)
+    list_lengths<-lapply(index_test,FUN=length)
+    if(sum(list_lengths<2)>0){stop("All test sets must have at least two genes. Please remove singleton or empty sets.")}
   }else{
     nsets<-1
+    if(length(index_test)<2){stop("All test sets must have at least two genes. Please remove singleton or empty sets.")}
   }
   if(!is.null(index_ref)){
+    if(is.list(index_ref)){
+      for(i in 1:nsets){
+        if(sum(index_test[[i]]%in%index_ref[[i]])>0){stop(paste("A gene should not be in both the test and reference sets. Check element number",i,"in test set or reference set."))}
+      }
+
+      if(is.list(index_test) & length(index_ref)!=length(index_test)){
+        stop("If index_test and index_ref are both lists they should be the same length.")
+      }
+    }else{
+      for(i in 1:nsets){
+        if(sum(index_test[[i]]%in%index_ref)>0){stop(paste("A gene should not be in both the test and reference sets. Check element number",i,"in test set or reference set."))}
+      }
+    }
     genes<-unique(c(unlist(index_test),unlist(index_ref)))
     ngenes<-length(genes)
     ref_inputted<-TRUE
-    if(is.list(index_ref)){
-      if(length(index_ref)==1){
-        index_ref<-rep(index_ref,nsets)
-      }
-    }else{
-      index_ref<-rep(list(index_ref),nsets)
-    }
   }else { # will need all genes
     genes<-1:nrow(count_matrix)
     ngenes<-length(genes)
     ref_inputted<-FALSE
   }
-  if(!is.null(index_ref)){
-    for(i in 1:nsets){
-      if(sum(index_test[[i]]%in%index_ref[[i]])>0){stop(paste("A gene should not be in both the test and reference sets. Check element number",i,"in test set or reference set."))}
-    }
-    }
 
-  # index_ref must be NULL, or equal in length to index_test? length 1? this would allow for a gene to be in both unless careful though
   if(max(unlist(index_test))>nrow(count_matrix) | min(unlist(index_test))<1){stop("Test Index seems to be invalid, must be numeric within the dimensions of the input count_matrix")}
   ncells<-ncol(count_matrix)
 

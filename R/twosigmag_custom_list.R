@@ -26,29 +26,50 @@ twosigmag_custom_list<-function(count_matrix,index_test,index_ref=NULL,mean_form
   ,return_fits=FALSE
   ,weights=rep(1,length(count_matrix[1,]))
   ,control = glmmTMBControl()){
-
+  count_matrix<-as.matrix(count_matrix)
+  if(is.list(index_test)){
+    nsets<-length(index_test)
+    list_lengths<-lapply(index_test,FUN=length)
+    if(sum(list_lengths<2)>0){stop("All test sets must have at least two genes. Please remove singleton or empty sets.")}
+  }else{
+    nsets<-1
+    if(length(index_test)<2){stop("All test sets must have at least two genes. Please remove singleton or empty sets.")}
+  }
 
   if(!is.null(index_ref)){
+    if(is.list(index_ref)){
+      for(i in 1:nsets){
+        if(sum(index_test[[i]]%in%index_ref[[i]])>0){stop(paste("A gene should not be in both the test and reference sets. Check element number",i,"in test set or reference set."))}
+      }
+
+      if(is.list(index_test) & length(index_ref)!=length(index_test)){
+      stop("If index_test and index_ref are both lists they should be the same length.")
+        }
+      }else{
+      for(i in 1:nsets){
+        if(sum(index_test[[i]]%in%index_ref)>0){stop(paste("A gene should not be in both the test and reference sets. Check element number",i,"in test set or reference set."))}
+      }
+
+      index_ref<-rep(list(index_ref),nsets)
+    }
     genes<-unique(c(unlist(index_test),unlist(index_ref)))
     ngenes<-length(genes)
     ref_inputted<-TRUE
-  }else { # will need all genes
-    genes<-1:nrow(count_matrix)
+  }else {# will need to construct reference set
+    if(is.list(index_test)){
+      index_ref<-vector('list',length=nsets)
+      for(i in 1:nsets){
+        index_ref[[i]]<-sample(setdiff(1:nrow(count_matrix),index_test[[i]]),size=length(index_test[[i]]))
+      }
+      genes<-unique(c(unlist(index_test),unlist(index_ref)))
+    }else{
+      index_ref<-sample(setdiff(1:nrow(count_matrix),index_test),size=length(index_test))
+      genes<-unique(c(unlist(index_test),unlist(index_ref)))
+    }
     ngenes<-length(genes)
     ref_inputted<-FALSE
   }
-  if(is.list(index_test)){
-    nsets<-length(index_test)
-  }else{
-    nsets<-1
-  }
-  if(!is.null(index_ref)){
-    for(i in 1:nsets){
-      if(sum(index_test[[i]]%in%index_ref[[i]])>0){stop(paste("A gene should not be in both the test and reference sets. Check element number",i,"in test set or reference set."))}
-    }
-  }
 
-  # index_ref must be NULL, or equal in length to index_test? length 1? this would allow for a gene to be in both unless careful though
   if(max(unlist(index_test))>nrow(count_matrix) | min(unlist(index_test))<1){stop("Test Index seems to be invalid, must be numeric within the dimensions of the input count_matrix")}
   ncells<-ncol(count_matrix)
   # Fit all gene level statistics that are needed
@@ -94,7 +115,7 @@ twosigmag_custom_list<-function(count_matrix,index_test,index_ref=NULL,mean_form
     }
 
     if(ref_inputted==FALSE){
-      index_ref[[i]]<-setdiff(1:nrow(count_matrix),index_test[[i]])
+      #index_ref[[i]]<-setdiff(1:nrow(count_matrix),index_test[[i]])
       stats_ref[[i]]<-stats_all[index_ref[[i]]]
       ref_size<-length(index_ref[[i]])
     }else{
@@ -127,8 +148,8 @@ twosigmag_custom_list<-function(count_matrix,index_test,index_ref=NULL,mean_form
   }
 
   if(return_fits==TRUE){
-    return(list(gene_level_fits=fit_twosigmag,LR_stats_gene_level_all=stats_all,set_p.val=p.val,corr=rho_est,index_test=index_test))
+    return(list(gene_level_fits=fit_twosigmag,LR_stats_gene_level_all=stats_all,set_p.val=p.val,corr=rho_est,index_test=index_test,index_ref=index_ref))
   }else{
-    return(list(LR_stats_gene_level_all=stats_all,set_p.val=p.val,corr=rho_est,index_test=index_test))
+    return(list(LR_stats_gene_level_all=stats_all,set_p.val=p.val,corr=rho_est,index_test=index_test,index_ref=index_ref))
   }
 }

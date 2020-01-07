@@ -26,7 +26,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,contrast,mean_covar,z
   ,verbose_output=FALSE
   ,weights=rep(1,length(count_matrix[1,]))
   ,control = glmmTMBControl()){
-
+  count_matrix<-as.matrix(count_matrix)
   if(adhoc==TRUE){
   message("adhoc method is allowed but discouraged for gene set testing because statistics for different genes can be based on different models. Users may not wish this to occur.")
   }

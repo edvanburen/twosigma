@@ -26,6 +26,7 @@ twosigmag_custom<-function(count_matrix,index_test,index_ref=NULL,mean_form_alt,
   ,verbose_output=FALSE
   ,weights=rep(1,length(count_matrix[1,]))
   ,control = glmmTMBControl()){
+  count_matrix<-as.matrix(count_matrix)
   if(!is.null(index_ref)){
     genes<-c(index_test,index_ref)
     ngenes<-length(genes)
