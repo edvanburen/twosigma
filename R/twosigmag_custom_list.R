@@ -59,6 +59,7 @@ twosigmag_custom_list<-function(count_matrix,index_test,index_ref=NULL,mean_form
   }
   residuals_all<-matrix(nrow=nrow(count_matrix),ncol=ncells)
   stats_all<-rep(NA,length=nrow(count_matrix))
+  #browser()
   for(i in 1:ngenes){
     l<-genes[i]
     if(return_fits==TRUE){
