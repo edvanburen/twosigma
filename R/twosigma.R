@@ -27,6 +27,7 @@ twosigma<-function(count,mean_covar,zi_covar
   ,disp_covar=NULL #need to be able to use data option?
   ,weights=rep(1,length(count))
   ,control = glmmTMBControl()){
+
   #if(!grepl("nbinom2",family$family)){
   #  stop("Only the Negative Binomial Distribution is implemented in TWO-SIGMA")
   #}
@@ -35,7 +36,7 @@ twosigma<-function(count,mean_covar,zi_covar
   check_twosigma_input(count,mean_covar,zi_covar
     ,mean_re,zi_re
     ,disp_covar,adhoc=adhoc,id=id)
-
+  count<-as.numeric(count)
   if(adhoc==TRUE){
     if(is.atomic(zi_covar)&length(zi_covar)==1){
       if(zi_covar==0){stop("adhoc method only implemented when ZI model contains at minimum an intercept. Please either set adhoc=FALSE or specify at minimum an intercept in the ZI model.")}}

@@ -25,7 +25,7 @@ twosigma_custom<-function(count,mean_form,zi_form,id,
   #if(grepl("nbinom2",family$family) & (sum(!as.matrix(count,ncol=1)%%1==0)>0 | min(count)<0)){
 
   check_twosigma_custom_input(count,mean_form,zi_form,id,disp_covar)
-
+  count<-as.numeric(count)
   if(is.null(disp_covar)){
     disp_form<- ~1 #Default is intercept only
   }else{

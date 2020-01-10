@@ -30,7 +30,7 @@ lr.twosigma<-function(count,mean_covar,zi_covar,contrast
   check_twosigma_input(count,mean_covar,zi_covar
     ,mean_re,zi_re
     ,disp_covar,id=id,adhoc=adhoc)
-
+  count<-as.numeric(count)
   if(adhoc==TRUE){
     if(is.atomic(zi_covar)&length(zi_covar)==1){
       if(zi_covar==0){stop("adhoc method only implemented when ZI model contains at minimum an intercept. Please either set adhoc=FALSE or specify at minimum an intercept in the ZI model.")}}

@@ -26,7 +26,7 @@ lr.twosigma_custom<-function(count,mean_form_alt,zi_form_alt,mean_form_null,zi_f
   {
   check_twosigma_custom_input(count,mean_form_alt,zi_form_alt,id,disp_covar)
   check_twosigma_custom_input(count,mean_form_null,zi_form_null,id,disp_covar)
-
+  count<-as.numeric(count)
   if(is.null(disp_covar)){
     disp_form<- ~1 #Default is intercept only
   }else{
