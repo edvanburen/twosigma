@@ -19,7 +19,7 @@
 ##' @importFrom stats anova as.formula lm pchisq rbinom residuals rnbinom rnorm
 ##' @export twosigmag_list
 
-twosigmag_list<-function(count_matrix,index_test,index_ref=NULL,contrast,mean_covar,zi_covar
+twosigmag_list<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,contrast,mean_covar,zi_covar
   ,mean_re=TRUE,zi_re=TRUE
   ,id,rho=NULL,adhoc=TRUE,adhoc_thresh=0.1
   ,disp_covar=NULL #need to be able to use data option?
@@ -35,6 +35,7 @@ twosigmag_list<-function(count_matrix,index_test,index_ref=NULL,contrast,mean_co
     nsets<-1
     if(length(index_test)<2){stop("All test sets must have at least two genes. Please remove singleton or empty sets.")}
   }
+  if(all_as_ref==TRUE & !is.null(index_ref)){stop("Please specify either all_as_ref=TRUE or index_ref as a non-NULL input. If all_as_ref is TRUE index_ref must be NULL.")}
   if(!is.null(index_ref)){
     if(is.list(index_ref)){
       for(i in 1:nsets){
@@ -58,11 +59,20 @@ twosigmag_list<-function(count_matrix,index_test,index_ref=NULL,contrast,mean_co
     if(is.list(index_test)){
       index_ref<-vector('list',length=nsets)
       for(i in 1:nsets){
-        index_ref[[i]]<-sample(setdiff(1:nrow(count_matrix),index_test[[i]]),size=length(index_test[[i]]))
+        if(all_as_ref==FALSE){
+          index_ref[[i]]<-sample(setdiff(1:nrow(count_matrix),index_test[[i]]),size=length(index_test[[i]]))
+        }else{#all_as_ref==TRUE
+          index_ref[[i]]<-setdiff(1:nrow(count_matrix),index_test[[i]])
+        }
       }
       genes<-unique(c(unlist(index_test),unlist(index_ref)))
-    }else{
-      index_ref<-sample(setdiff(1:nrow(count_matrix),index_test),size=length(index_test))
+    }else{#index_test is just a single gene set
+      if(all_as_ref==FALSE){
+        index_ref<-sample(setdiff(1:nrow(count_matrix),index_test),size=length(index_test))
+      }else{
+        index_ref<-setdiff(1:nrow(count_matrix),index_test)
+      }
+
       genes<-unique(c(unlist(index_test),unlist(index_ref)))
     }
     ngenes<-length(genes)
@@ -83,13 +93,17 @@ twosigmag_list<-function(count_matrix,index_test,index_ref=NULL,contrast,mean_co
   for(i in 1:ngenes){
     l<-genes[i]
     if(return_fits==TRUE){
-      fit_twosigmag[[l]]<-lr.twosigma_custom(count=count_matrix[l,]
-        ,mean_form_alt,zi_form_alt,mean_form_null,zi_form_null,id=id,lr.df = lr.df)
+      fit_twosigmag[[l]]<-lr.twosigma(count_matrix[l,],contrast = contrast
+        ,mean_covar=mean_covar,zi_covar=zi_covar
+        ,mean_re=mean_re,zi_re=zi_re
+        ,id=id,adhoc=adhoc)
       residuals_all[l,]<-residuals(fit_twosigmag[[l]]$fit_alt)
       stats_all[l]<-fit_twosigmag[[l]]$LR_stat
     }else{
-      fit_twosigmag<-lr.twosigma_custom(count=count_matrix[l,]
-        ,mean_form_alt,zi_form_alt,mean_form_null,zi_form_null,id=id,lr.df = lr.df)
+      fit_twosigmag<-lr.twosigma(count_matrix[l,],contrast = contrast
+        ,mean_covar=mean_covar,zi_covar=zi_covar
+        ,mean_re=mean_re,zi_re=zi_re
+        ,id=id,adhoc=adhoc)
       residuals_all[l,]<-residuals(fit_twosigmag$fit_alt)
       stats_all[l]<-fit_twosigmag$LR_stat
 

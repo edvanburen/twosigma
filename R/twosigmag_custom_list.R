@@ -19,7 +19,7 @@
 ##' @importFrom stats anova as.formula lm pchisq rbinom residuals rnbinom rnorm
 ##' @export twosigmag_custom_list
 
-twosigmag_custom_list<-function(count_matrix,index_test,index_ref=NULL,mean_form_alt,zi_form_alt,mean_form_null,zi_form_null
+twosigmag_custom_list<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean_form_alt,zi_form_alt,mean_form_null,zi_form_null
   ,id,lr.df
   ,rho=NULL
   ,disp_covar=NULL #need to be able to use data option?
@@ -35,7 +35,7 @@ twosigmag_custom_list<-function(count_matrix,index_test,index_ref=NULL,mean_form
     nsets<-1
     if(length(index_test)<2){stop("All test sets must have at least two genes. Please remove singleton or empty sets.")}
   }
-
+  if(all_as_ref==TRUE & !is.null(index_ref)){stop("Please specify either all_as_ref=TRUE or index_ref as a non-NULL input. If all_as_ref is TRUE index_ref must be NULL.")}
   if(!is.null(index_ref)){
     if(is.list(index_ref)){
       for(i in 1:nsets){
@@ -59,11 +59,20 @@ twosigmag_custom_list<-function(count_matrix,index_test,index_ref=NULL,mean_form
     if(is.list(index_test)){
       index_ref<-vector('list',length=nsets)
       for(i in 1:nsets){
-        index_ref[[i]]<-sample(setdiff(1:nrow(count_matrix),index_test[[i]]),size=length(index_test[[i]]))
+        if(all_as_ref==FALSE){
+          index_ref[[i]]<-sample(setdiff(1:nrow(count_matrix),index_test[[i]]),size=length(index_test[[i]]))
+        }else{#all_as_ref==TRUE
+          index_ref[[i]]<-setdiff(1:nrow(count_matrix),index_test[[i]])
+        }
       }
       genes<-unique(c(unlist(index_test),unlist(index_ref)))
-    }else{
-      index_ref<-sample(setdiff(1:nrow(count_matrix),index_test),size=length(index_test))
+    }else{#index_test is just a single gene set
+      if(all_as_ref==FALSE){
+        index_ref<-sample(setdiff(1:nrow(count_matrix),index_test),size=length(index_test))
+      }else{
+        index_ref<-setdiff(1:nrow(count_matrix),index_test)
+      }
+
       genes<-unique(c(unlist(index_test),unlist(index_ref)))
     }
     ngenes<-length(genes)
