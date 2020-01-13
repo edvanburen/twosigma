@@ -35,7 +35,7 @@ twosigmag_list<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE
     nsets<-1
     if(length(index_test)<2){stop("All test sets must have at least two genes. Please remove singleton or empty sets.")}
   }
-  if(all_as_ref==TRUE & !is.null(index_ref)){stop("Please specify either all_as_ref=TRUE or index_ref as a non-NULL input. If all_as_ref is TRUE index_ref must be NULL.")}
+  if(all_as_ref==TRUE & !is.null(index_ref)){stop("Please specify either all_as_ref=TRUE or index_ref as a non-NULL input. If all_as_ref is TRUE, then index_ref must be NULL.")}
   if(!is.null(index_ref)){
     if(is.list(index_ref)){
       for(i in 1:nsets){
