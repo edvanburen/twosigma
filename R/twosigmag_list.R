@@ -90,6 +90,7 @@ twosigmag_list<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE
   }
   residuals_all<-matrix(nrow=nrow(count_matrix),ncol=ncells)
   stats_all<-rep(NA,length=nrow(count_matrix))
+  p.vals_gene_level<-rep(NA,length=nrow(count_matrix))
   for(i in 1:ngenes){
     l<-genes[i]
     if(return_fits==TRUE){
@@ -99,6 +100,7 @@ twosigmag_list<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE
         ,id=id,adhoc=adhoc)
       residuals_all[l,]<-residuals(fit_twosigmag[[l]]$fit_alt)
       stats_all[l]<-fit_twosigmag[[l]]$LR_stat
+      p.vals_gene_level[l]<-fit_twosigmag[[l]]$LR_p.val
     }else{
       fit_twosigmag<-lr.twosigma(count_matrix[l,],contrast = contrast
         ,mean_covar=mean_covar,zi_covar=zi_covar
@@ -106,8 +108,9 @@ twosigmag_list<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE
         ,id=id,adhoc=adhoc)
       residuals_all[l,]<-residuals(fit_twosigmag$fit_alt)
       stats_all[l]<-fit_twosigmag$LR_stat
-
+      p.vals_gene_level[l]<-fit_twosigmag$LR_p.val
     }
+
     print(paste("Finished Gene Number",i,"of",ngenes))
   }
   stats_test<-vector('list',length=nsets)
@@ -160,8 +163,8 @@ twosigmag_list<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE
   }
 
    if(return_fits==TRUE){
-     return(list(gene_level_fits=fits_twosigmag,LR_stats_gene_level_all=stats_all,set_p.val=p.val,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
+     return(list(gene_level_fits=fits_twosigmag,LR_stats_gene_level_all=stats_all,set_p.val=p.val,p.vals_gene_level=p.vals_gene_level,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
    }else{
-    return(list(LR_stats_gene_level_all=stats_all,set_p.val=p.val,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
+    return(list(LR_stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
   }
 }
