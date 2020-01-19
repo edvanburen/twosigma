@@ -124,7 +124,6 @@ twosigmag_custom_list<-function(count_matrix,index_test,index_ref=NULL,all_as_re
       test_size<-length(index_test)
       residuals_test<-residuals_all[index_test,]
     }
-
     if(ref_inputted==FALSE){
       #index_ref[[i]]<-setdiff(1:nrow(count_matrix),index_test[[i]])
       stats_ref[[i]]<-stats_all[index_ref[[i]]]
