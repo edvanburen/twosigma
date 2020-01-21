@@ -118,10 +118,13 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
       fit_twosigmag<-twosigma_custom(count=count_matrix[l,]
         ,mean_form=mean_form,zi_form=zi_form,id=id)
       residuals_all[l,]<-residuals(fit_twosigmag)
+      tryCatch({
       temp<-summary(glht_glmmTMB(fit_twosigmag,
         linfct = mcp(combined_num2_factor = contrast)))
       stats_all[l,]<-temp$test$tstat
       p.vals_gene_level[l,]<-as.numeric(temp$test$pvalues)
+      }
+      ,error=function(e){print(paste0("Error at ",l))})
     }
     print(paste("Finished Gene Number",i,"of",ngenes))
   }
