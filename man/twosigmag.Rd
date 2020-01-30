@@ -4,11 +4,11 @@
 \alias{twosigmag}
 \title{Gene set testing adjusting for inter-gene correlation using the TWO-SIGMA model of ...}
 \usage{
-twosigmag(count_matrix, index_test, index_ref = NULL, contrast,
-  mean_covar, zi_covar, mean_re = TRUE, zi_re = TRUE, id, rho = NULL,
-  adhoc = TRUE, adhoc_thresh = 0.1, disp_covar = NULL,
-  verbose_output = FALSE, weights = rep(1, length(count_matrix[1, ])),
-  control = glmmTMBControl())
+twosigmag(count_matrix, index_test, index_ref = NULL,
+  all_as_ref = FALSE, contrast, mean_covar, zi_covar, mean_re = TRUE,
+  zi_re = TRUE, id, rho = NULL, adhoc = TRUE, adhoc_thresh = 0.1,
+  disp_covar = NULL, return_fits = FALSE, weights = rep(1,
+  length(count_matrix[1, ])), control = glmmTMBControl())
 }
 \arguments{
 \item{count_matrix}{Matrix of non-negative integer read counts. If specifying custom formula(s) via the arguments mean_form and zi_form the expression in mean_form will supersede.}

@@ -5,9 +5,9 @@
 \title{Gene set testing adjusting for inter-gene correlation using the TWO-SIGMA model of ... with custom user-specified model formulas.}
 \usage{
 twosigmag_custom(count_matrix, index_test, index_ref = NULL,
-  mean_form_alt, zi_form_alt, mean_form_null, zi_form_null, id, lr.df,
-  rho = NULL, disp_covar = NULL, verbose_output = FALSE,
-  weights = rep(1, length(count_matrix[1, ])),
+  all_as_ref = FALSE, mean_form_alt, zi_form_alt, mean_form_null,
+  zi_form_null, id, lr.df, rho = NULL, disp_covar = NULL,
+  return_fits = FALSE, weights = rep(1, length(count_matrix[1, ])),
   control = glmmTMBControl())
 }
 \arguments{
@@ -15,7 +15,7 @@ twosigmag_custom(count_matrix, index_test, index_ref = NULL,
 
 \item{index_test}{Index corresponding to rows of the count matrix that are in the test set.}
 
-\item{index_ref}{Index corresponding to rows of the count matrix that are in the reference set.  If NULL, all rows that are not part of index_test are taken as the reference set.}
+\item{index_ref}{Index corresponding to rows of the count matrix that are in the reference set.  If NULL, a reference set is randomly selected of the same size as test size using genes not in the test set.}
 
 \item{id}{Vector of individual-level ID's. Used for random effect prediction and the adhoc method but required regardless.}
 

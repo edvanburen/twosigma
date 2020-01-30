@@ -19,76 +19,152 @@
 ##' @importFrom stats anova as.formula lm pchisq rbinom residuals rnbinom rnorm
 ##' @export twosigmag
 
-twosigmag<-function(count_matrix,index_test,index_ref=NULL,contrast,mean_covar,zi_covar
+twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,contrast,mean_covar,zi_covar
   ,mean_re=TRUE,zi_re=TRUE
   ,id,rho=NULL,adhoc=TRUE,adhoc_thresh=0.1
   ,disp_covar=NULL #need to be able to use data option?
-  ,verbose_output=FALSE
+  ,return_fits=FALSE
   ,weights=rep(1,length(count_matrix[1,]))
   ,control = glmmTMBControl()){
   count_matrix<-as.matrix(count_matrix)
-  if(adhoc==TRUE){
-  message("adhoc method is allowed but discouraged for gene set testing because statistics for different genes can be based on different models. Users may not wish this to occur.")
+  if(is.list(index_test)){
+    nsets<-length(index_test)
+    list_lengths<-lapply(index_test,FUN=length)
+    if(sum(list_lengths<2)>0){stop("All test sets must have at least two genes. Please remove singleton or empty sets.")}
+  }else{
+    nsets<-1
+    if(length(index_test)<2){stop("All test sets must have at least two genes. Please remove singleton or empty sets.")}
   }
+  if(all_as_ref==TRUE & !is.null(index_ref)){stop("Please specify either all_as_ref=TRUE or index_ref as a non-NULL input. If all_as_ref is TRUE, then index_ref must be NULL.")}
   if(!is.null(index_ref)){
-    genes<-c(index_test,index_ref)
+    if(is.list(index_ref)){
+      for(i in 1:nsets){
+        if(sum(index_test[[i]]%in%index_ref[[i]])>0){stop(paste("A gene should not be in both the test and reference sets. Check element number",i,"in test set or reference set."))}
+      }
+
+      if(is.list(index_test) & length(index_ref)!=length(index_test)){
+        stop("If index_test and index_ref are both lists they should be the same length.")
+      }
+    }else{
+      for(i in 1:nsets){
+        if(sum(index_test[[i]]%in%index_ref)>0){stop(paste("A gene should not be in both the test and reference sets. Check element number",i,"in test set or reference set."))}
+      }
+
+      index_ref<-rep(list(index_ref),nsets)
+    }
+    genes<-unique(c(unlist(index_test),unlist(index_ref)))
     ngenes<-length(genes)
-  }else {
-    genes<-c(index_test,setdiff(1:nrow(count_matrix),index_test))
+    ref_inputted<-TRUE
+  }else {# will need to construct reference set
+    if(is.list(index_test)){
+      index_ref<-vector('list',length=nsets)
+      for(i in 1:nsets){
+        if(all_as_ref==FALSE){
+          index_ref[[i]]<-sample(setdiff(1:nrow(count_matrix),index_test[[i]]),size=length(index_test[[i]]))
+        }else{#all_as_ref==TRUE
+          index_ref[[i]]<-setdiff(1:nrow(count_matrix),index_test[[i]])
+        }
+      }
+      genes<-unique(c(unlist(index_test),unlist(index_ref)))
+    }else{#index_test is just a single gene set
+      if(all_as_ref==FALSE){
+        index_ref<-sample(setdiff(1:nrow(count_matrix),index_test),size=length(index_test))
+      }else{
+        index_ref<-setdiff(1:nrow(count_matrix),index_test)
+      }
+
+      genes<-unique(c(unlist(index_test),unlist(index_ref)))
+    }
     ngenes<-length(genes)
+    ref_inputted<-FALSE
   }
-  if(!is.null(index_ref)){
-    if(sum(index_test%in%index_ref)>0){stop("A gene should not be in both the test and reference sets")}
-  }
-  if(max(index_test)>nrow(count_matrix) | min(index_test)<1){stop("Test Index seems to be invalid, must be numeric within the dimensions of the input count_matrix")}
+
+  if(max(unlist(index_test))>nrow(count_matrix) | min(unlist(index_test))<1){stop("Test Index seems to be invalid, must be numeric within the dimensions of the input count_matrix")}
   ncells<-ncol(count_matrix)
-  test_size<-length(index_test)
-  ref_size<-ngenes-test_size
-  fits_twosigmag<-vector('list',length=ngenes)
-  residuals_test<-matrix(nrow=length(index_test),ncol=ncells)
-  stats_test<-numeric(length=test_size)
-  stats_ref<-numeric(length=ngenes-test_size)
-  stats_all<-numeric(length=ngenes)
-  j<-0 # Index for test set
-  k<-0 # Index for ref set
-    for(i in 1:ngenes){
-      l<-genes[i]
-      fits_twosigmag[[i]]<-lr.twosigma(count_matrix[l,],contrast = contrast
+
+  # Fit all gene level statistics that are needed
+  if(return_fits==FALSE){
+    fit_twosigmag<-list()
+  }else{
+    fit_twosigmag<-vector('list',length=nrow(count_matrix))
+  }
+  residuals_all<-matrix(nrow=nrow(count_matrix),ncol=ncells)
+  stats_all<-rep(NA,length=nrow(count_matrix))
+  p.vals_gene_level<-rep(NA,length=nrow(count_matrix))
+  for(i in 1:ngenes){
+    l<-genes[i]
+    if(return_fits==TRUE){
+      fit_twosigmag[[l]]<-lr.twosigma(count_matrix[l,],contrast = contrast
         ,mean_covar=mean_covar,zi_covar=zi_covar
         ,mean_re=mean_re,zi_re=zi_re
         ,id=id,adhoc=adhoc)
-      if(l%in%index_test){
-        j<-j+1
-        residuals_test[j,]<-residuals(fits_twosigmag[[i]]$fit_alt)
-        stats_test[j]<-fits_twosigmag[[i]]$LR_stat
-      }else{# all genes not in test set are taken as reference set for now
-        k<-k+1
-        stats_ref[k]<-fits_twosigmag[[i]]$LR_stat
-      }
-      stats_all[i]<-fits_twosigmag[[i]]$LR_stat
-      print(paste("Finished Gene Number",i,"of",ngenes))
+      residuals_all[l,]<-residuals(fit_twosigmag[[l]]$fit_alt)
+      stats_all[l]<-fit_twosigmag[[l]]$LR_stat
+      p.vals_gene_level[l]<-fit_twosigmag[[l]]$LR_p.val
+    }else{
+      fit_twosigmag<-lr.twosigma(count_matrix[l,],contrast = contrast
+        ,mean_covar=mean_covar,zi_covar=zi_covar
+        ,mean_re=mean_re,zi_re=zi_re
+        ,id=id,adhoc=adhoc)
+      residuals_all[l,]<-residuals(fit_twosigmag$fit_alt)
+      stats_all[l]<-fit_twosigmag$LR_stat
+      p.vals_gene_level[l]<-fit_twosigmag$LR_p.val
     }
-      if(is.null(rho)){
-        print(paste("Estimating Set-Level correlation and calculating p-value"))
-        nind<-length(unique(id))
-        cor_temp<-numeric(length=nind)
-        m<-1
-        unique_id<-unique(id)
-        j<-0
-        for(y in unique_id){
-          j<-j+1
-          temp<-cor(t(residuals_test[,which(id==y)])) # any checks for id behavior needed here?
-          cor_temp[j]<-mean(temp[upper.tri(temp)],na.rm = T)
-        }
-        rho<-mean(cor_temp)
-      }
-      var<-(1/(2*pi))*test_size*ref_size*(asin(1)+(ref_size-1)*asin(.5)+(test_size-1)*(ref_size-1)*asin(.5*rho)+(test_size-1)*asin((rho+1)/2))
 
-      wilcox_stat<-sum(rank(c(stats_test,stats_ref))[1:test_size]) - .5*test_size*(test_size+1)
-      p.val<-2*pnorm(-1*abs((wilcox_stat-.5*test_size*ref_size)/sqrt(var)))
-      if(verbose_output==TRUE){
-        return(list(fits_twosigma=fits_twosigmag,stats_all=stats_all,set_p.val=p.val,corr=rho,index_test=index_test))
+    print(paste("Finished Gene Number",i,"of",ngenes))
+  }
+  stats_test<-vector('list',length=nsets)
+  stats_ref<-vector('list',length=nsets)
+  p.val<-numeric(length=nsets)
+  rho_est<-numeric(length=nsets)
+  if(is.null(index_ref)){index_ref<-vector('list',length=nsets)}
+  for(i in 1:nsets){
+    if(is.list(index_test)){
+      stats_test[[i]]<-stats_all[index_test[[i]]]
+      test_size<-length(index_test[[i]])
+      residuals_test<-residuals_all[index_test[[i]],]
+    }else{
+      stats_test[[i]]<-stats_all[index_test]
+      test_size<-length(index_test)
+      residuals_test<-residuals_all[index_test,]
+    }
+
+    if(ref_inputted==FALSE){
+    #index_ref[[i]]<-setdiff(1:nrow(count_matrix),index_test[[i]])
+    stats_ref[[i]]<-stats_all[index_ref[[i]]]
+    ref_size<-length(index_ref[[i]])
+    }else{
+      if(is.list(index_ref)){
+        stats_ref[[i]]<-stats_all[index_ref[[i]]]
+        ref_size<-length(index_ref[[i]])
       }else{
-        return(list(LR_stats_all=stats_all,set_p.val=p.val,corr=rho,index_test=index_test))
+        stats_ref[[i]]<-stats_all[index_ref]
+        ref_size<-length(index_ref)
       }
+    }
+
+    if(!is.null(rho)){rho_est[i]<-rho}
+    if(is.null(rho)){
+      print(paste("Estimating Set-Level correlation and calculating p-value"))
+      nind<-length(unique(id))
+      cor_temp<-numeric(length=nind)
+      unique_id<-unique(id)
+      j<-0
+      for(y in unique_id){
+        j<-j+1
+        temp<-cor(t(residuals_test[,which(id==y)])) # any checks for id behavior needed here?
+        cor_temp[j]<-mean(temp[upper.tri(temp)],na.rm = T)
+      }
+      rho_est[i]<-mean(cor_temp)
+    }
+    var<-(1/(2*pi))*test_size*ref_size*(asin(1)+(ref_size-1)*asin(.5)+(test_size-1)*(ref_size-1)*asin(.5*rho_est[i])+(test_size-1)*asin((rho_est[i]+1)/2))
+    wilcox_stat<-sum(rank(c(stats_test[[i]],stats_ref[[i]]))[1:test_size]) - .5*test_size*(test_size+1)
+    p.val[i]<-2*pnorm(-1*abs((wilcox_stat-.5*test_size*ref_size)/sqrt(var)))
+  }
+
+   if(return_fits==TRUE){
+     return(list(gene_level_fits=fits_twosigmag,LR_stats_gene_level_all=stats_all,set_p.val=p.val,p.vals_gene_level=p.vals_gene_level,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
+   }else{
+    return(list(LR_stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
+  }
 }

@@ -26,18 +26,6 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
   ,return_fits=FALSE
   ,weights=rep(1,length(count_matrix[1,]))
   ,control = glmmTMBControl()){
-  glht_glmmTMB <- function (model, ..., component="cond") {
-    glht(model, ...,
-      coef. = function(x) fixef(x)[[component]],
-      vcov. = function(x) vcov(x)[[component]],
-      df = NULL)
-  }
-  modelparm.glmmTMB <- function (model, coef. = function(x) fixef(x)[[component]],
-    vcov. = function(x) vcov(x)[[component]],
-    df = NULL, component="cond", ...) {
-    multcomp:::modelparm.default(model, coef. = coef., vcov. = vcov.,
-      df = df, ...)
-  }
   count_matrix<-as.matrix(count_matrix)
   ncomps<-nrow(contrast)
   #browser()
@@ -103,28 +91,36 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
   }
   residuals_all<-matrix(nrow=nrow(count_matrix),ncol=ncells)
   stats_all<-matrix(NA,nrow=nrow(count_matrix),ncol=nrow(contrast))
-  p.vals_gene_level<-matrix(NA,nrow=nrow(count_matrix),ncol=nrow(contrast))
+  p.vals_gene_level_raw<-matrix(NA,nrow=nrow(count_matrix),ncol=nrow(contrast))
+  p.vals_gene_level_adjust<-matrix(NA,nrow=nrow(count_matrix),ncol=nrow(contrast))
+  #browser()
   for(i in 1:ngenes){
     l<-genes[i]
     if(return_fits==TRUE){
       fit_twosigmag[[l]]<-twosigma_custom(count=count_matrix[l,]
         ,mean_form=mean_form,zi_form=zi_form,id=id)
       residuals_all[l,]<-residuals(fit_twosigmag[[l]])
-      temp<-summary(glht_glmmTMB(fit_twosigmag[[l]],
-        linfct = mcp(combined_num_factor = contrast)))
+      temp2<-glht_glmmTMB(fit_twosigmag[[l]],
+        linfct = mcp(combined_num2_factor = contrast))
+      temp<-summary(temp2,test=adjusted("none"))
       stats_all[l,]<-temp$test$tstat
-      p.vals_gene_level[l,]<-as.numeric(temp$test$pvalues)
+      p.vals_gene_level_raw[l,]<-as.numeric(temp$test$pvalues)
+      temp<-summary(temp2)
+      p.vals_gene_level_adjust[l,]<-as.numeric(temp$test$pvalues)
     }else{
       fit_twosigmag<-twosigma_custom(count=count_matrix[l,]
         ,mean_form=mean_form,zi_form=zi_form,id=id)
       residuals_all[l,]<-residuals(fit_twosigmag)
       tryCatch({
-      temp<-summary(glht_glmmTMB(fit_twosigmag,
-        linfct = mcp(combined_num2_factor = contrast)))
+      temp2<-glht_glmmTMB(fit_twosigmag,
+          linfct = mcp(combined_num2_factor = contrast))
+      temp<-summary(temp2,test=adjusted("none"))
       stats_all[l,]<-temp$test$tstat
-      p.vals_gene_level[l,]<-as.numeric(temp$test$pvalues)
+      p.vals_gene_level_raw[l,]<-as.numeric(temp$test$pvalues)
+      temp<-summary(temp2)
+      p.vals_gene_level_adjust[l,]<-as.numeric(temp$test$pvalues)
       }
-      ,error=function(e){print(paste0("Error at ",l))})
+      ,error=function(e){print(paste0("Error at Gene ",l, "in the Dataset"))})
     }
     print(paste("Finished Gene Number",i,"of",ngenes))
   }
@@ -198,8 +194,8 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
     }
 
   if(return_fits==TRUE){
-    return(list(gene_level_fits=fit_twosigmag,z_stats_gene_level_all=stats_all,set_p.val=p.val,p.vals_gene_level=p.vals_gene_level,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
+    return(list(gene_level_fits=fit_twosigmag,z_stats_gene_level_all=stats_all,set_p.val=p.val,p.vals_gene_level_raw=p.vals_gene_level_raw,p.vals_gene_level_adjust_anova=p.vals_gene_level_adjust,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
   }else{
-    return(list(z_stats_gene_level_all=stats_all,set_p.val=p.val,p.vals_gene_level=p.vals_gene_level,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
+    return(list(z_stats_gene_level_all=stats_all,set_p.val=p.val,p.vals_gene_level_raw=p.vals_gene_level_raw,p.vals_gene_level_adjust_anova=p.vals_gene_level_adjust,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
   }
 }

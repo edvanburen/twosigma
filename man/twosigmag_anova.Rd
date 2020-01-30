@@ -5,9 +5,10 @@
 \title{Gene set testing adjusting for inter-gene correlation using the TWO-SIGMA model of ... with custom user-specified model formulas.}
 \usage{
 twosigmag_anova(count_matrix, index_test, index_ref = NULL,
-  all_as_ref = FALSE, mean_form, zi_form, id, lr.df, rho = NULL,
-  disp_covar = NULL, return_fits = FALSE, weights = rep(1,
-  length(count_matrix[1, ])), control = glmmTMBControl())
+  all_as_ref = FALSE, mean_form, zi_form, id, contrast = NULL,
+  rho = NULL, disp_covar = NULL, return_fits = FALSE,
+  weights = rep(1, length(count_matrix[1, ])),
+  control = glmmTMBControl())
 }
 \arguments{
 \item{count_matrix}{Matrix of non-negative integer read counts. If specifying custom formula(s) via the arguments mean_form and zi_form the expression in mean_form will supersede.}
@@ -18,7 +19,7 @@ twosigmag_anova(count_matrix, index_test, index_ref = NULL,
 
 \item{id}{Vector of individual-level ID's. Used for random effect prediction and the adhoc method but required regardless.}
 
-\item{lr.df}{degrees of freedom for the asymptotic chi-square approximation to the liklihood ratio statistic.}
+\item{contrast}{Either a string indicating the column name of the covariate to test or an integer referring to its column position in BOTH the mean_covar and zi_covar matrices (if the two matrices differ using a string name is preferred). Argument is ignored if mean_covar and zi_covar are both a single covariate (that covariate is assumed of interest).}
 
 \item{rho}{Inter-gene correlation value. If NULL (default), estimated using TWO-SIGMA model residuals.}
 
@@ -28,11 +29,11 @@ twosigmag_anova(count_matrix, index_test, index_ref = NULL,
 
 \item{control}{Control parameters for optimization in \code{glmmTMB}.}
 
-\item{contrast}{Either a string indicating the column name of the covariate to test or an integer referring to its column position in BOTH the mean_covar and zi_covar matrices (if the two matrices differ using a string name is preferred). Argument is ignored if mean_covar and zi_covar are both a single covariate (that covariate is assumed of interest).}
-
 \item{mean_re}{Should random intercepts be included in the (conditional) mean model? Ignored if adhoc=TRUE.}
 
 \item{zi_re}{Should random intercepts be included in the zero-inflation model? Ignored if adhoc=TRUE.}
+
+\item{lr.df}{degrees of freedom for the asymptotic chi-square approximation to the liklihood ratio statistic.}
 }
 \value{
 An object of class \code{glmmTMB}.
