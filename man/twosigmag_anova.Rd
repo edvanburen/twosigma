@@ -6,16 +6,22 @@
 \usage{
 twosigmag_anova(count_matrix, index_test, index_ref = NULL,
   all_as_ref = FALSE, mean_form, zi_form, id, contrast = NULL,
-  rho = NULL, disp_covar = NULL, return_fits = FALSE,
-  weights = rep(1, length(count_matrix[1, ])),
+  rho = NULL, allow_neg_corr = FALSE, disp_covar = NULL,
+  return_fits = FALSE, weights = rep(1, length(count_matrix[1, ])),
   control = glmmTMBControl())
 }
 \arguments{
 \item{count_matrix}{Matrix of non-negative integer read counts. If specifying custom formula(s) via the arguments mean_form and zi_form the expression in mean_form will supersede.}
 
-\item{index_test}{Index corresponding to rows of the count matrix that are in the test set.}
+\item{index_test}{Index corresponding to rows of the count matrix that are in the test set. Either a list with each element being a different set or a numeric vector to test only a single set.}
 
-\item{index_ref}{Index corresponding to rows of the count matrix that are in the reference set.  If NULL, a reference set is randomly selected of the same size as test size using genes not in the test set.}
+\item{index_ref}{Index corresponding to rows of the count matrix that are in the reference set.  If NULL, a reference set is randomly selected of the same size as test size using genes not in the test set or using all other genes. See all_as_ref.}
+
+\item{all_as_ref}{Should all genes not in the test set be used as the reference? If FALSE, a random subset is taken of size equal to the test size.}
+
+\item{mean_form}{Custom two-sided model formula for the (conditional) mean model under the alternative. Formula is passed directly into glmmTMB with random effects specified as in the lme4 package. Users should ensure that the dependent variable matches the argument to the parameter "count."}
+
+\item{zi_form}{Custom one-sided model formula for the zero-inflation model under the alternative. Formula is passed directly into glmmTMB with random effects specified as in lme4.}
 
 \item{id}{Vector of individual-level ID's. Used for random effect prediction and the adhoc method but required regardless.}
 
@@ -23,17 +29,15 @@ twosigmag_anova(count_matrix, index_test, index_ref = NULL,
 
 \item{rho}{Inter-gene correlation value. If NULL (default), estimated using TWO-SIGMA model residuals.}
 
+\item{allow_neg_corr}{Should negative correlation values be allowed? If FALSE, correlation is set to zero (leads to conservative inference).}
+
 \item{disp_covar}{Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model. Defaults to NULL for constant dispersion.}
+
+\item{return_fits}{Should complete model fits be returned?}
 
 \item{weights}{weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.}
 
 \item{control}{Control parameters for optimization in \code{glmmTMB}.}
-
-\item{mean_re}{Should random intercepts be included in the (conditional) mean model? Ignored if adhoc=TRUE.}
-
-\item{zi_re}{Should random intercepts be included in the zero-inflation model? Ignored if adhoc=TRUE.}
-
-\item{lr.df}{degrees of freedom for the asymptotic chi-square approximation to the liklihood ratio statistic.}
 }
 \value{
 An object of class \code{glmmTMB}.

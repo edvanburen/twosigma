@@ -1,14 +1,20 @@
 ##' Gene set testing adjusting for inter-gene correlation using the TWO-SIGMA model of ...
 ##' @param count_matrix Matrix of non-negative integer read counts. If specifying custom formula(s) via the arguments mean_form and zi_form the expression in mean_form will supersede.
+##' @param index_test Index corresponding to rows of the count matrix that are in the test set. Either a list with each element being a different set or a numeric vector to test only a single set.
+##' @param index_ref Index corresponding to rows of the count matrix that are in the reference set.  If NULL, a reference set is randomly selected of the same size as test size using genes not in the test set or using all other genes. See \code{all_as_ref}.
+##' @param all_as_ref Should all genes not in the test set be used as the reference? If FALSE, a random subset is taken of size equal to the test size.
+##' @param contrast Either a string indicating the column name of the covariate to test or an integer referring to its column position in BOTH the mean_covar and zi_covar matrices (if the two matrices differ using a string name is preferred). Argument is ignored if mean_covar and zi_covar are both a single covariate (that covariate is assumed of interest).
 ##' @param mean_covar Covariates for the (conditional) mean model. Must be a matrix (without an intercept column) or = 1 to indicate an intercept only model.
 ##' @param zi_covar Covariates for the zero-inflation model. Must be a matrix (without an intercept column), = 1 to indicate an intercept only model, or = 0 to indicate no zero-inflation model desired.
 ##' @param mean_re Should random intercepts be included in the (conditional) mean model? Ignored if adhoc=TRUE.
 ##' @param zi_re Should random intercepts be included in the zero-inflation model? Ignored if adhoc=TRUE.
 ##' @param id Vector of individual-level ID's. Used for random effect prediction and the adhoc method but required regardless.
 ##' @param rho Inter-gene correlation value. If NULL (default), estimated using model residuals from TWO-SIGMAG.
+##' @param allow_neg_corr Should negative correlation values be allowed? If FALSE, correlation is set to zero (leads to conservative inference).
 ##' @param adhoc Should the adhoc method be used by default to judge if random effects are needed? Defaults to FALSE. Setting to TRUE means that different genes could have different models used, which may not be desirable for interpretability.
 ##' @param adhoc_thresh Value below which the adhoc p-value is deemed significant (and thus RE are deemed necessary). Only used if adhoc==TRUE.
 ##' @param disp_covar Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model. Defaults to NULL for constant dispersion.
+##' @param return_fits Should complete model fits be returned?
 ##' @param weights weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.
 ##' @param control Control parameters for optimization in \code{glmmTMB}.
 ##' @section Details:  If adhoc=TRUE, any input in mean_re and zi_re will be ignored.
@@ -21,7 +27,9 @@
 
 twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,contrast,mean_covar,zi_covar
   ,mean_re=TRUE,zi_re=TRUE
-  ,id,rho=NULL,adhoc=TRUE,adhoc_thresh=0.1
+  ,id,rho=NULL
+  ,allow_neg_corr=FALSE
+  ,adhoc=FALSE,adhoc_thresh=0.1
   ,disp_covar=NULL #need to be able to use data option?
   ,return_fits=FALSE
   ,weights=rep(1,length(count_matrix[1,]))
@@ -157,13 +165,14 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,cont
       }
       rho_est[i]<-mean(cor_temp)
     }
+    if(!allow_neg_corr & rho_est[i]<0){rho_est[i]<-0}
     var<-(1/(2*pi))*test_size*ref_size*(asin(1)+(ref_size-1)*asin(.5)+(test_size-1)*(ref_size-1)*asin(.5*rho_est[i])+(test_size-1)*asin((rho_est[i]+1)/2))
     wilcox_stat<-sum(rank(c(stats_test[[i]],stats_ref[[i]]))[1:test_size]) - .5*test_size*(test_size+1)
     p.val[i]<-2*pnorm(-1*abs((wilcox_stat-.5*test_size*ref_size)/sqrt(var)))
   }
 
    if(return_fits==TRUE){
-     return(list(gene_level_fits=fits_twosigmag,LR_stats_gene_level_all=stats_all,set_p.val=p.val,p.vals_gene_level=p.vals_gene_level,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
+     return(list(gene_level_fits=fit_twosigmag,LR_stats_gene_level_all=stats_all,set_p.val=p.val,p.vals_gene_level=p.vals_gene_level,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
    }else{
     return(list(LR_stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
   }

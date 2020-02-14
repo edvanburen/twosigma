@@ -6,12 +6,21 @@
 \usage{
 twosigmag(count_matrix, index_test, index_ref = NULL,
   all_as_ref = FALSE, contrast, mean_covar, zi_covar, mean_re = TRUE,
-  zi_re = TRUE, id, rho = NULL, adhoc = TRUE, adhoc_thresh = 0.1,
-  disp_covar = NULL, return_fits = FALSE, weights = rep(1,
-  length(count_matrix[1, ])), control = glmmTMBControl())
+  zi_re = TRUE, id, rho = NULL, allow_neg_corr = FALSE,
+  adhoc = FALSE, adhoc_thresh = 0.1, disp_covar = NULL,
+  return_fits = FALSE, weights = rep(1, length(count_matrix[1, ])),
+  control = glmmTMBControl())
 }
 \arguments{
 \item{count_matrix}{Matrix of non-negative integer read counts. If specifying custom formula(s) via the arguments mean_form and zi_form the expression in mean_form will supersede.}
+
+\item{index_test}{Index corresponding to rows of the count matrix that are in the test set. Either a list with each element being a different set or a numeric vector to test only a single set.}
+
+\item{index_ref}{Index corresponding to rows of the count matrix that are in the reference set.  If NULL, a reference set is randomly selected of the same size as test size using genes not in the test set or using all other genes. See \code{all_as_ref}.}
+
+\item{all_as_ref}{Should all genes not in the test set be used as the reference? If FALSE, a random subset is taken of size equal to the test size.}
+
+\item{contrast}{Either a string indicating the column name of the covariate to test or an integer referring to its column position in BOTH the mean_covar and zi_covar matrices (if the two matrices differ using a string name is preferred). Argument is ignored if mean_covar and zi_covar are both a single covariate (that covariate is assumed of interest).}
 
 \item{mean_covar}{Covariates for the (conditional) mean model. Must be a matrix (without an intercept column) or = 1 to indicate an intercept only model.}
 
@@ -25,11 +34,15 @@ twosigmag(count_matrix, index_test, index_ref = NULL,
 
 \item{rho}{Inter-gene correlation value. If NULL (default), estimated using model residuals from TWO-SIGMAG.}
 
+\item{allow_neg_corr}{Should negative correlation values be allowed? If FALSE, correlation is set to zero (leads to conservative inference).}
+
 \item{adhoc}{Should the adhoc method be used by default to judge if random effects are needed? Defaults to FALSE. Setting to TRUE means that different genes could have different models used, which may not be desirable for interpretability.}
 
 \item{adhoc_thresh}{Value below which the adhoc p-value is deemed significant (and thus RE are deemed necessary). Only used if adhoc==TRUE.}
 
 \item{disp_covar}{Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model. Defaults to NULL for constant dispersion.}
+
+\item{return_fits}{Should complete model fits be returned?}
 
 \item{weights}{weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.}
 

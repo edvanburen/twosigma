@@ -1,14 +1,18 @@
 ##' Gene set testing adjusting for inter-gene correlation using the TWO-SIGMA model of ... with custom user-specified model formulas.
 ##' @param count_matrix Matrix of non-negative integer read counts. If specifying custom formula(s) via the arguments mean_form and zi_form the expression in mean_form will supersede.
-##' @param index_test Index corresponding to rows of the count matrix that are in the test set.
-##' @param index_ref Index corresponding to rows of the count matrix that are in the reference set.  If NULL, a reference set is randomly selected of the same size as test size using genes not in the test set.
-##' @param contrast Either a string indicating the column name of the covariate to test or an integer referring to its column position in BOTH the mean_covar and zi_covar matrices (if the two matrices differ using a string name is preferred). Argument is ignored if mean_covar and zi_covar are both a single covariate (that covariate is assumed of interest).
-##' @param mean_re Should random intercepts be included in the (conditional) mean model? Ignored if adhoc=TRUE.
-##' @param zi_re Should random intercepts be included in the zero-inflation model? Ignored if adhoc=TRUE.
+##' @param index_test Index corresponding to rows of the count matrix that are in the test set. Either a list with each element being a different set or a numeric vector to test only a single set.
+##' @param index_ref Index corresponding to rows of the count matrix that are in the reference set.  If NULL, a reference set is randomly selected of the same size as test size using genes not in the test set or using all other genes. See all_as_ref.
+##' @param all_as_ref Should all genes not in the test set be used as the reference? If FALSE, a random subset is taken of size equal to the test size.
+##' @param mean_form_alt Custom two-sided model formula for the (conditional) mean model under the null. Formula is passed directly into glmmTMB with random effects specified as in the lme4 package. Users should ensure that the dependent variable matches the argument to the parameter "count."
+##' @param zi_form_alt Custom one-sided model formula for the zero-inflation model under the alternative. Formula is passed directly into glmmTMB with random effects specified as in lme4.
+##' @param mean_form_null Custom two-sided model formula for the (conditional) mean model under the null. Syntax is as in \code{mean_form_alt}.
+##' @param zi_form_null Custom one-sided model formula for the zero-inflation model under the null. Syntax is as in \code{zi_form_alt}.
 ##' @param id Vector of individual-level ID's. Used for random effect prediction and the adhoc method but required regardless.
 ##' @param lr.df degrees of freedom for the asymptotic chi-square approximation to the liklihood ratio statistic.
 ##' @param rho Inter-gene correlation value. If NULL (default), estimated using TWO-SIGMA model residuals.
+##' @param allow_neg_corr Should negative correlation values be allowed? If FALSE, correlation is set to zero (leads to conservative inference).
 ##' @param disp_covar Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model. Defaults to NULL for constant dispersion.
+##' @param return_fits Should complete model fits be returned?
 ##' @param weights weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.
 ##' @param control Control parameters for optimization in \code{glmmTMB}.
 ##' @section Details:  If adhoc=TRUE, any input in mean_re and zi_re will be ignored.
@@ -16,12 +20,13 @@
 ##' @import glmmTMB
 ##' @import methods
 ##' @import pscl
-##' @importFrom stats anova as.formula lm pchisq rbinom residuals rnbinom rnorm
+##' @importFrom stats anova as.formula lm pchisq rbinom residuals rnbinom rnorm cor pnorm vcov
 ##' @export twosigmag_custom
 
 twosigmag_custom<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean_form_alt,zi_form_alt,mean_form_null,zi_form_null
   ,id,lr.df
   ,rho=NULL
+  ,allow_neg_corr=FALSE
   ,disp_covar=NULL #need to be able to use data option?
   ,return_fits=FALSE
   ,weights=rep(1,length(count_matrix[1,]))
@@ -152,6 +157,7 @@ twosigmag_custom<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FAL
       }
       rho_est[i]<-mean(cor_temp)
     }
+    if(!allow_neg_corr & rho_est[i]<0){rho_est[i]<-0}
     var<-(1/(2*pi))*test_size*ref_size*(asin(1)+(ref_size-1)*asin(.5)+(test_size-1)*(ref_size-1)*asin(.5*rho_est[i])+(test_size-1)*asin((rho_est[i]+1)/2))
     wilcox_stat<-sum(rank(c(stats_test[[i]],stats_ref[[i]]))[1:test_size]) - .5*test_size*(test_size+1)
     p.val[i]<-2*pnorm(-1*abs((wilcox_stat-.5*test_size*ref_size)/sqrt(var)))
