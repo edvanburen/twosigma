@@ -101,7 +101,7 @@ lr.twosigma<-function(count,mean_covar,zi_covar,contrast
       #formulas$zi_form<-as.formula(gsub("zi_covar","1",format(formulas$zi_form)))
     }
     if(is.matrix(mean_covar) & is.vector(zi_covar)){
-      mean_covar<-mean_covar[,-contrast]
+      mean_covar<-mean_covar[,-contrast,drop=FALSE]
       zi_covar<-1
       formulas<-create_model_formulas(mean_covar,zi_covar
         ,mean_form=NULL,zi_form=NULL
@@ -112,7 +112,7 @@ lr.twosigma<-function(count,mean_covar,zi_covar,contrast
     }
     if(is.vector(mean_covar) & is.matrix(zi_covar)){
       mean_covar<-1
-      zi_covar<-zi_covar[,-contrast]
+      zi_covar<-zi_covar[,-contrast,drop=FALSE]
       formulas<-create_model_formulas(mean_covar,zi_covar
         ,mean_form=NULL,zi_form=NULL
         ,mean_re,zi_re
@@ -121,8 +121,8 @@ lr.twosigma<-function(count,mean_covar,zi_covar,contrast
       #formulas$zi_form<-as.formula(gsub("zi_covar","zi_covar[,-contrast]",format(formulas$zi_form)))
     }
     if(is.matrix(mean_covar) & is.matrix(zi_covar)){
-      mean_covar<-mean_covar[,-contrast]
-      zi_covar<-zi_covar[,-contrast]
+      mean_covar<-mean_covar[,-contrast,drop=FALSE]
+      zi_covar<-zi_covar[,-contrast,drop=FALSE]
       formulas<-create_model_formulas(mean_covar,zi_covar
         ,mean_form=NULL,zi_form=NULL
         ,mean_re,zi_re
@@ -137,7 +137,7 @@ lr.twosigma<-function(count,mean_covar,zi_covar,contrast
         stop("Contrast Name not found in colnames of mean model covariate data matrix")
       }
       #formulas$mean_form<-as.formula(gsub("mean_covar","mean_covar[,-index]",format(formulas$mean_form)))
-      mean_covar<-mean_covar[,-index]
+      mean_covar<-mean_covar[,-index,drop=FALSE]
     }
     if(is.vector(mean_covar)){
       #formulas$mean_form<-as.formula(gsub("mean_covar","1",format(formulas$mean_form)))
@@ -149,7 +149,7 @@ lr.twosigma<-function(count,mean_covar,zi_covar,contrast
       stop("Contrast Name not found in colnames of zi model covariate data matrix")
     }
     #formulas$zi_form<-as.formula(gsub("zi_covar","zi_covar[,-index]",format(formulas$zi_form)))
-    zi_covar<-zi_covar[,-index]
+    zi_covar<-zi_covar[,-index,drop=FALSE]
     }
     if(is.vector(zi_covar)){
       #formulas$zi_form<-as.formula(gsub("zi_covar","1",format(formulas$zi_form)))
