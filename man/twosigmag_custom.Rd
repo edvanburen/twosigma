@@ -37,11 +37,25 @@ twosigmag_custom(count_matrix, index_test, index_ref = NULL,
 
 \item{disp_covar}{Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model. Defaults to NULL for constant dispersion.}
 
-\item{return_fits}{Should complete model fits be returned?}
+\item{return_fits}{Should complete model fits be returned? Use cautiously because fit objects can be very large.}
 
 \item{weights}{weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.}
 
 \item{control}{Control parameters for optimization in \code{glmmTMB}.}
+
+\item{LR_stats_gene_level_all:}{Gives all gene-level likelihood ratio statistics.  Order matches the order of the inputted count matrix}
+
+\item{p.vals_gene_level:}{Gives p-values associated with `LR_stats_gene_level_all`.}
+
+\item{set_p.val:}{Vector of unadjusted set-level p-values. Order matches the order of inputted test sets.}
+
+\item{corr:}{Vector of estimated inter-gene correlations for each test set. Order matches the order of inputted test sets.}
+
+\item{test_sets:}{Vector of numeric indices corresponding to genes in each test set.}
+
+\item{ref_sets:}{Vector of numeric indices corresponding to the genes in each reference set.}
+
+\item{gene_level_fits:}{List of gene-level fits, returned only if `return_fits` is TRUE.}
 }
 \value{
 An object of class \code{glmmTMB}.

@@ -42,7 +42,7 @@ twosigmag(count_matrix, index_test, index_ref = NULL,
 
 \item{disp_covar}{Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model. Defaults to NULL for constant dispersion.}
 
-\item{return_fits}{Should complete model fits be returned?}
+\item{return_fits}{Should complete model fits be returned? Use cautiously because fit objects can be very large.}
 
 \item{weights}{weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.}
 

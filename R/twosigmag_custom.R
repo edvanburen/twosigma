@@ -12,11 +12,18 @@
 ##' @param rho Inter-gene correlation value. If NULL (default), estimated using TWO-SIGMA model residuals.
 ##' @param allow_neg_corr Should negative correlation values be allowed? If FALSE, correlation is set to zero (leads to conservative inference).
 ##' @param disp_covar Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model. Defaults to NULL for constant dispersion.
-##' @param return_fits Should complete model fits be returned?
+##' @param return_fits Should complete model fits be returned? Use cautiously because fit objects can be very large.
 ##' @param weights weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.
 ##' @param control Control parameters for optimization in \code{glmmTMB}.
 ##' @section Details:  If adhoc=TRUE, any input in mean_re and zi_re will be ignored.
 ##' @return An object of class \code{glmmTMB}.
+##' @param LR_stats_gene_level_all: Gives all gene-level likelihood ratio statistics.  Order matches the order of the inputted count matrix
+##' @param p.vals_gene_level: Gives p-values associated with `LR_stats_gene_level_all`.
+##' @param set_p.val: Vector of unadjusted set-level p-values. Order matches the order of inputted test sets.
+##' @param corr: Vector of estimated inter-gene correlations for each test set. Order matches the order of inputted test sets.
+##' @param test_sets: Vector of numeric indices corresponding to genes in each test set.
+##' @param ref_sets: Vector of numeric indices corresponding to the genes in each reference set.
+##' @param gene_level_fits: List of gene-level fits, returned only if `return_fits` is TRUE.
 ##' @import glmmTMB
 ##' @import methods
 ##' @import pscl
@@ -31,15 +38,19 @@ twosigmag_custom<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FAL
   ,return_fits=FALSE
   ,weights=rep(1,length(count_matrix[1,]))
   ,control = glmmTMBControl()){
+
+  if(!(adhoc==FALSE)){print("The adhoc method is not recommended for gene set testing due to interpretability.")}
+
   count_matrix<-as.matrix(count_matrix)
   if(is.list(index_test)){
     nsets<-length(index_test)
     list_lengths<-lapply(index_test,FUN=length)
     if(sum(list_lengths<2)>0){stop("All test sets must have at least two genes. Please remove singleton or empty sets.")}
-  }else{
+  }else{ #index.test is a single numeric vector
     nsets<-1
     if(length(index_test)<2){stop("All test sets must have at least two genes. Please remove singleton or empty sets.")}
   }
+
   if(all_as_ref==TRUE & !is.null(index_ref)){stop("Please specify either all_as_ref=TRUE or index_ref as a non-NULL input. If all_as_ref is TRUE, then index_ref must be NULL.")}
   if(!is.null(index_ref)){
     if(is.list(index_ref)){
@@ -86,6 +97,7 @@ twosigmag_custom<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FAL
 
   if(max(unlist(index_test))>nrow(count_matrix) | min(unlist(index_test))<1){stop("Test Index seems to be invalid, must be numeric within the dimensions of the input count_matrix")}
   ncells<-ncol(count_matrix)
+
   # Fit all gene level statistics that are needed
   if(return_fits==FALSE){
     fit_twosigmag<-list()
@@ -150,6 +162,7 @@ twosigmag_custom<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FAL
       cor_temp<-numeric(length=nind)
       unique_id<-unique(id)
       j<-0
+      #browser()
       for(y in unique_id){
         j<-j+1
         temp<-cor(t(residuals_test[,which(id==y)])) # any checks for id behavior needed here?
@@ -162,10 +175,10 @@ twosigmag_custom<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FAL
     wilcox_stat<-sum(rank(c(stats_test[[i]],stats_ref[[i]]))[1:test_size]) - .5*test_size*(test_size+1)
     p.val[i]<-2*pnorm(-1*abs((wilcox_stat-.5*test_size*ref_size)/sqrt(var)))
   }
-
+#browser()
   if(return_fits==TRUE){
-    return(list(gene_level_fits=fit_twosigmag,LR_stats_gene_level_all=stats_all,set_p.val=p.val,p.vals_gene_level=p.vals_gene_level,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
+    return(list(LR_stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,corr=rho_est,test_sets=index_test,ref_sets=index_ref,gene_level_fits=fit_twosigmag))
   }else{
-    return(list(LR_stats_gene_level_all=stats_all,set_p.val=p.val,p.vals_gene_level=p.vals_gene_level,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
+    return(list(LR_stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
   }
 }

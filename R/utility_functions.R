@@ -75,7 +75,6 @@ check_twosigma_custom_input<-function(count
   }
 }
 
-
 create_model_formulas<-function(mean_covar=NULL,zi_covar=NULL
                                 ,mean_form=NULL,zi_form=NULL
                                 ,mean_re=TRUE,zi_re=TRUE
@@ -289,3 +288,4 @@ modelparm.glmmTMB <- function (model, coef. = function(x) fixef(x)[[component]],
   multcomp:::modelparm.default(model, coef. = coef., vcov. = vcov.,
     df = df, ...)
 }
+

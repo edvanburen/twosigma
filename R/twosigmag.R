@@ -14,7 +14,7 @@
 ##' @param adhoc Should the adhoc method be used by default to judge if random effects are needed? Defaults to FALSE. Setting to TRUE means that different genes could have different models used, which may not be desirable for interpretability.
 ##' @param adhoc_thresh Value below which the adhoc p-value is deemed significant (and thus RE are deemed necessary). Only used if adhoc==TRUE.
 ##' @param disp_covar Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model. Defaults to NULL for constant dispersion.
-##' @param return_fits Should complete model fits be returned?
+##' @param return_fits Should complete model fits be returned? Use cautiously because fit objects can be very large.
 ##' @param weights weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.
 ##' @param control Control parameters for optimization in \code{glmmTMB}.
 ##' @section Details:  If adhoc=TRUE, any input in mean_re and zi_re will be ignored.
@@ -34,6 +34,10 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,cont
   ,return_fits=FALSE
   ,weights=rep(1,length(count_matrix[1,]))
   ,control = glmmTMBControl()){
+
+  if(!(adhoc==FALSE)){print("The adhoc method is not recommended for gene set testing due to interpretability.")}
+
+
   count_matrix<-as.matrix(count_matrix)
   if(is.list(index_test)){
     nsets<-length(index_test)

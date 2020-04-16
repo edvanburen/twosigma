@@ -148,6 +148,7 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
     }
     #gene_error[l]<-gene_err
     print(paste("Finished Gene Number",i,"of",ngenes))
+    #browser()
   }
   #browser()
   #residuals_all[which(gene_error),]<-rep(NA,ncells)
