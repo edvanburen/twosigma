@@ -162,7 +162,9 @@ summary(lr.fit_custom$fit_alt)
 # Perform adhoc method to see if random effects are needed
 adhoc.twosigma(count=counts,zi_covar=Z,mean_covar=X,id=id)
 
-#Perform Gene-Set Testing
+#--------------------------------------------------
+# Perform Gene-Set Testing
+#--------------------------------------------------
 
 #----------
 # First, simulate some DE genes
@@ -185,7 +187,8 @@ gst<-twosigmag(sim_dat2,index_test = 6:10,index_ref = 1:5,contrast="t2d_sim",mea
 names(gst)
 gst$set_p.val
 
-gst<-twosigmag_custom(sim_dat2,index_test = 6:10,index_ref = 1:5,mean_form_alt = count~t2d_sim+cdr_sim+age_sim,zi_form_alt = ~t2d_sim+cdr_sim+age_sim,mean_form_null = count~cdr_sim+age_sim,zi_form_null = ~cdr_sim+age_sim,id=id,lr.df=2)
+gst<-twosigmag_custom(sim_dat2,index_test = 6:10,index_ref = 1:5,mean_form_alt =count~t2d_sim+cdr_sim+age_sim
+,zi_form_alt = ~t2d_sim+cdr_sim+age_sim,mean_form_null = count~cdr_sim+age_sim,zi_form_null = ~cdr_sim+age_sim,id=id,lr.df=2)
 
 names(gst)
 gst$set_p.val
