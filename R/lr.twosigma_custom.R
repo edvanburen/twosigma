@@ -17,7 +17,9 @@
 # Likely will want to remove the ability to input a formula for this fn to work properly
 
 lr.twosigma_custom<-function(count,mean_form_alt,zi_form_alt,mean_form_null,zi_form_null
-                      ,id,lr.df,disp_covar=NULL
+                      ,id,lr.df,
+                      covar_logFC=NULL,
+                      disp_covar=NULL
                       ,weights=rep(1,length(count))
                       ,control=glmmTMBControl())
                       #,control = glmmTMBControl(optCtrl=list(iter.max=1e5,eval.max=1e5
@@ -61,10 +63,20 @@ fit_null<-glmmTMB(formula=formulas_null$mean_form
     ,family=nbinom2,verbose = F
     ,control = control)
 
+sum_null<-summary(fit_null)
+sum_alt<-summary(fit_alt)
+#browser()
+#if(is.character(contrast)){}
+names_null<-rownames(sum_null$coefficients$cond)
+names_alt<-rownames(sum_alt$coefficients$cond)
+
+index<-which(grepl(covar_logFC,names_alt))
+est<-sum_alt$coefficients$cond[index,1]
+
 LR_stat<- as.numeric(-2*(summary(fit_null)$logLik-summary(fit_alt)$logLik))
 if(LR_stat<0 | (!fit_alt$sdr$pdHess) | (!fit_null$sdr$pdHess)){
   LR_stat<-NA
   message("LR stat set to NA, indicative of model specification or fitting problem")}
 p.val<-1-pchisq(LR_stat,df=lr.df)
-return(list(fit_null=fit_null,fit_alt=fit_alt,LR_stat=LR_stat,LR_p.val=p.val,mean_form_alt=mean_form_alt,zi_form_alt=zi_form_alt,mean_form_null=mean_form_null,zi_form_null=zi_form_null))
+return(list(fit_null=fit_null,fit_alt=fit_alt,LR_stat=LR_stat,LR_p.val=p.val,mean_comp_logFC=est,mean_form_alt=mean_form_alt,zi_form_alt=zi_form_alt,mean_form_null=mean_form_null,zi_form_null=zi_form_null))
 }

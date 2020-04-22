@@ -103,6 +103,8 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,cont
   residuals_all<-matrix(nrow=nrow(count_matrix),ncol=ncells)
   stats_all<-rep(NA,length=nrow(count_matrix))
   p.vals_gene_level<-rep(NA,length=nrow(count_matrix))
+  avg_logFC_gene_level<-rep(NA,length=nrow(count_matrix))
+  #browser()
   for(i in 1:ngenes){
     l<-genes[i]
     if(return_fits==TRUE){
@@ -113,6 +115,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,cont
       residuals_all[l,]<-residuals(fit_twosigmag[[l]]$fit_alt)
       stats_all[l]<-fit_twosigmag[[l]]$LR_stat
       p.vals_gene_level[l]<-fit_twosigmag[[l]]$LR_p.val
+      avg_logFC_gene_level[l]<-fit_twosigmag[[l]]$mean_comp_logFC
     }else{
       fit_twosigmag<-lr.twosigma(count_matrix[l,],contrast = contrast
         ,mean_covar=mean_covar,zi_covar=zi_covar
@@ -121,39 +124,48 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,cont
       residuals_all[l,]<-residuals(fit_twosigmag$fit_alt)
       stats_all[l]<-fit_twosigmag$LR_stat
       p.vals_gene_level[l]<-fit_twosigmag$LR_p.val
+      avg_logFC_gene_level[l]<-fit_twosigmag$mean_comp_logFC
     }
 
     print(paste("Finished Gene Number",i,"of",ngenes))
   }
+  #browser()
   stats_test<-vector('list',length=nsets)
   stats_ref<-vector('list',length=nsets)
+  direction<-vector(length=nsets)
   p.val<-numeric(length=nsets)
   rho_est<-numeric(length=nsets)
   if(is.null(index_ref)){index_ref<-vector('list',length=nsets)}
   for(i in 1:nsets){
     if(is.list(index_test)){
       stats_test[[i]]<-stats_all[index_test[[i]]]
-      test_size<-length(index_test[[i]])
+      stats_test[[i]]<-stats_test[[i]][!is.na(stats_test[[i]])]
+      test_size<-length(stats_test[[i]])
       residuals_test<-residuals_all[index_test[[i]],]
+      direction[i]<-ifelse(sign(mean(avg_logFC_gene_level[index_test[[i]]]))==1,"Up","Down")
     }else{
       stats_test[[i]]<-stats_all[index_test]
-      test_size<-length(index_test)
+      stats_test[[i]]<-stats_test[[i]][!is.na(stats_test[[i]])]
+      test_size<-length(stats_test[[i]])
       residuals_test<-residuals_all[index_test,]
+      direction[i]<-ifelse(sign(mean(avg_logFC_gene_level[index_test]))==1,"Up","Down")
     }
 
-    if(ref_inputted==FALSE){
-    #index_ref[[i]]<-setdiff(1:nrow(count_matrix),index_test[[i]])
-    stats_ref[[i]]<-stats_all[index_ref[[i]]]
-    ref_size<-length(index_ref[[i]])
-    }else{
+    # if(ref_inputted==FALSE){
+    # #index_ref[[i]]<-setdiff(1:nrow(count_matrix),index_test[[i]])
+    # stats_ref[[i]]<-stats_all[-index_test[[i]]]
+    # ref_size<-length(index_ref[[i]])
+    # }else{
       if(is.list(index_ref)){
         stats_ref[[i]]<-stats_all[index_ref[[i]]]
-        ref_size<-length(index_ref[[i]])
+        stats_ref[[i]]<-stats_ref[[i]][!is.na(stats_ref[[i]])]
+        ref_size<-length(stats_ref[[i]])
       }else{
         stats_ref[[i]]<-stats_all[index_ref]
-        ref_size<-length(index_ref)
+        stats_ref[[i]]<-stats_ref[[i]][!is.na(stats_ref[[i]])]
+        ref_size<-length(stats_ref[[i]])
       }
-    }
+   # }
 
     if(!is.null(rho)){rho_est[i]<-rho}
     if(is.null(rho)){
@@ -169,6 +181,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,cont
       }
       rho_est[i]<-mean(cor_temp)
     }
+    #browser()
     if(!allow_neg_corr & rho_est[i]<0){rho_est[i]<-0}
     var<-(1/(2*pi))*test_size*ref_size*(asin(1)+(ref_size-1)*asin(.5)+(test_size-1)*(ref_size-1)*asin(.5*rho_est[i])+(test_size-1)*asin((rho_est[i]+1)/2))
     wilcox_stat<-sum(rank(c(stats_test[[i]],stats_ref[[i]]))[1:test_size]) - .5*test_size*(test_size+1)
@@ -176,8 +189,8 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,cont
   }
 
    if(return_fits==TRUE){
-     return(list(gene_level_fits=fit_twosigmag,LR_stats_gene_level_all=stats_all,set_p.val=p.val,p.vals_gene_level=p.vals_gene_level,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
+     return(list(gene_level_fits=fit_twosigmag,LR_stats_gene_level_all=stats_all,set_p.val=p.val,direction=direction,p.vals_gene_level=p.vals_gene_level,corr=rho_est,avg_logFC_gene_level=avg_logFC_gene_level,test_sets=index_test,ref_sets=index_ref))
    }else{
-    return(list(LR_stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
+    return(list(LR_stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,direction=direction,corr=rho_est,avg_logFC_gene_level=avg_logFC_gene_level,test_sets=index_test,ref_sets=index_ref))
   }
 }

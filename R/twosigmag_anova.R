@@ -164,7 +164,7 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
   p.val<-matrix(NA,nrow=nsets,ncol=ncomps)
   rho_est<-numeric(length=nsets)
   #browser()
-  if(is.null(index_ref)){index_ref<-vector('list',length=nsets)}
+  #if(is.null(index_ref)){index_ref<-vector('list',length=nsets)}
   for(i in 1:nsets){
     if(is.list(index_test)){
       stats_test_temp<-matrix(NA,nrow=length(index_test[[i]]),ncol=nrow(contrast))
@@ -191,19 +191,31 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
     }
     if(is.list(index_test)){
       stats_test_temp<-stats_all[index_test[[i]],]
-      test_size<-length(index_test[[i]])
+      stats_test[[i]]<-stats_test_temp
+      stats_test[[i]]<-stats_test[[i]][!is.na(stats_test[[i]])]
+      test_size<-length(stats_test[[i]])
+
       residuals_test<-residuals_all[index_test[[i]],]
       stats_ref_temp<-stats_all[index_ref[[i]],]
-      ref_size<-length(index_ref[[i]])
+      stats_ref[[i]]<-stats_ref_temp
+      stats_ref[[i]]<-stats_ref[[i]][!is.na(stats_ref[[i]])]
+      ref_size<-length(stats_ref[[i]])
     }else{# then both index_test and index_ref should be numeric vectors
       stats_test_temp<-stats_all[index_test,]
-      test_size<-length(index_test)
+      stats_test[[i]]<-stats_test_temp
+      stats_test[[i]]<-stats_test[[i]][!is.na(stats_test[[i]])]
+      test_size<-length(stats_test[[i]])
+
       residuals_test<-residuals_all[index_test,]
       stats_ref_temp<-stats_all[index_ref,]
-      ref_size<-length(index_ref)
+      stats_ref[[i]]<-stats_ref_temp
+      stats_ref[[i]]<-stats_ref[[i]][!is.na(stats_ref[[i]])]
+      ref_size<-length(stats_ref[[i]])
+
+
     }
-    stats_test[[i]]<-stats_test_temp
-    stats_ref[[i]]<-stats_ref_temp
+
+
 
     if(!is.null(rho)){rho_est[i]<-rho}
     if(is.null(rho)){
@@ -226,7 +238,8 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
       p.val[i,b]<-2*pnorm(-1*abs((wilcox_stat-.5*test_size*ref_size)/sqrt(var)))
     }
     #need to add code to take test and ref set test statistics by column for test and output set level p-values as a matrix
-    }
+  }
+  #browser()
   if(re_present){
     if(return_fits==TRUE){
       return(list(gene_level_fits=fit_twosigmag,z_stats_gene_level_all=stats_all,set_p.val=p.val,p.vals_gene_level_raw=p.vals_gene_level_raw

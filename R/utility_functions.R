@@ -59,15 +59,15 @@ check_twosigma_custom_input<-function(count
   ,disp_covar=NULL){
 
   # Override count with mean_form if specified then check the inputs
-  if(mean_form[[2]]!="count"){stop("Please begin the mean_form input with the name 'count'. Failure to do so will cause an error downstream.")}
+  if(mean_form[[2]]!="count"){stop("Please begin the two-sided formula mean_form with the name 'count'. Failure to do so will cause an error downstream.")}
   if(length(zi_form)>2){stop("ZI Formula should be one-sided and thus only have a length of 2.")}
   if(sum(!as.matrix(count,ncol=1)%%1==0)>0 | min(count)<0){
     stop("When using the Negative Binomial Distribution data must contain only non-negative integers")
   }
 
-  if(mean(count==0)>.9){
-    warning("More than 90% of data are zeros. Mean model results may be misleading for such sparse data")
-  }
+  # if(mean(count==0)>.9){
+  #   warning("More than 90% of data are zeros. Mean model results may be misleading for such sparse data")
+  # }
   if(mean(count==0)<.1){
     if(!(zi_form==~0)){
       warning("Less than 10% of data are zeros. Zero-Inflation model results may be misleading or unnecessary")

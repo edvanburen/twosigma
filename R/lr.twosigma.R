@@ -167,10 +167,19 @@ fit_null<-glmmTMB(formula=formulas$mean_form
     ,dispformula = formulas$disp_form
     ,family=nbinom2,verbose = F
     ,control = control)
+sum_null<-summary(fit_null)
+sum_alt<-summary(fit_alt)
+
+#if(is.character(contrast)){}
+names_null<-rownames(sum_null$coefficients$cond)
+names_alt<-rownames(sum_alt$coefficients$cond)
+
+est<-sum_alt$coefficients$cond[which(!names_alt%in%names_null),1]
+
 LR_stat<- as.numeric(-2*(summary(fit_null)$logLik-summary(fit_alt)$logLik))
 if(LR_stat<0 | (!fit_alt$sdr$pdHess) | (!fit_null$sdr$pdHess)){
   LR_stat<-NA
   message("LR stat set to NA, indicative of model specification or fitting problem")}
 p.val<-1-pchisq(LR_stat,df=2)
-return(list(fit_null=fit_null,fit_alt=fit_alt,LR_stat=LR_stat,LR_p.val=p.val))
+return(list(fit_null=fit_null,fit_alt=fit_alt,LR_stat=LR_stat,LR_p.val=p.val,mean_comp_logFC=est))
 }
