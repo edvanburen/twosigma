@@ -142,9 +142,10 @@ confint(fit)
 #--- Fit TWO-SIGMA without a zero-inflation component
 fit_noZI<-twosigma(count=counts,zi_covar=0,mean_covar = X,id=id,mean_re=F,zi_re=F,adhoc=F)
 fit_noZ2I<-twosigma_custom(count=counts,zi_form=~0,mean_form=count~X,id=id)
+
 #--- Fit TWO-SIGMA with an intercept only zero-inflation component and no random effects
 fit_meanZI<-twosigma(count=counts,zi_covar=1,mean_covar = X,id=id,mean_re=F,zi_re=F,adhoc=F)
-fit_meanZI2<-twosigma_custom(count=counts, mean_form=count~X+(1|id),zi_form=~1,id=id)
+fit_meanZI2<-twosigma_custom(count=counts, mean_form=count~X,zi_form=~1,id=id)
 
 summary(fit_noZI)
 summary(fit_meanZI)
