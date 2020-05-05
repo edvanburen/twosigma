@@ -191,6 +191,11 @@ twosigmag_custom<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FAL
     p.val[i]<-2*pnorm(-1*abs((wilcox_stat-.5*test_size*ref_size)/sqrt(var)))
   }
   names(p.val)<-names(index_test)
+  names(stats_all)<-rownames(count_matrix)
+  names(p.vals_gene_level)<-rownames(count_matrix)
+  names(avg_logFC_gene_level)<-rownames(count_matrix)
+  names(rho_est)<-names(index_test)
+  names(direction)<-names(index_test)
   #browser()
   if(return_fits==TRUE){
     return(list(LR_stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,direction=direction,avg_logFC_gene_level=avg_logFC_gene_level,corr=rho_est,test_sets=index_test,ref_sets=index_ref,gene_level_fits=fit_twosigmag))
