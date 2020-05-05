@@ -108,6 +108,7 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
   #browser()
   for(i in 1:ngenes){
     l<-genes[i]
+    #browser()
     if(return_fits==TRUE){
       fit_twosigmag[[l]]<-twosigma_custom(count=count_matrix[l,]
         ,mean_form=mean_form,zi_form=zi_form,id=id)
@@ -189,28 +190,29 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
         }
       }
     }
+    #browser()
     if(is.list(index_test)){
-      stats_test_temp<-stats_all[index_test[[i]],]
+      stats_test_temp<-stats_all[index_test[[i]],,drop=FALSE]
       stats_test[[i]]<-stats_test_temp
-      stats_test[[i]]<-stats_test[[i]][!is.na(stats_test[[i]])]
-      test_size<-length(stats_test[[i]])
+      #stats_test[[i]]<-stats_test[[i]][!is.na(stats_test[[i]])]
+      #test_size<-length(stats_test[[i]])
 
       residuals_test<-residuals_all[index_test[[i]],]
-      stats_ref_temp<-stats_all[index_ref[[i]],]
+      stats_ref_temp<-stats_all[index_ref[[i]],,drop=FALSE]
       stats_ref[[i]]<-stats_ref_temp
-      stats_ref[[i]]<-stats_ref[[i]][!is.na(stats_ref[[i]])]
-      ref_size<-length(stats_ref[[i]])
+      #stats_ref[[i]]<-stats_ref[[i]][!is.na(stats_ref[[i]])]
+      #ref_size<-length(stats_ref[[i]])
     }else{# then both index_test and index_ref should be numeric vectors
       stats_test_temp<-stats_all[index_test,]
       stats_test[[i]]<-stats_test_temp
-      stats_test[[i]]<-stats_test[[i]][!is.na(stats_test[[i]])]
-      test_size<-length(stats_test[[i]])
+      #stats_test[[i]]<-stats_test[[i]][!is.na(stats_test[[i]])]
+      #test_size<-length(stats_test[[i]])
 
       residuals_test<-residuals_all[index_test,]
       stats_ref_temp<-stats_all[index_ref,]
       stats_ref[[i]]<-stats_ref_temp
-      stats_ref[[i]]<-stats_ref[[i]][!is.na(stats_ref[[i]])]
-      ref_size<-length(stats_ref[[i]])
+      #stats_ref[[i]]<-stats_ref[[i]][!is.na(stats_ref[[i]])]
+      #ref_size<-length(stats_ref[[i]])
 
 
     }
@@ -232,13 +234,26 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
       rho_est[i]<-mean(cor_temp)
     }
     if(!allow_neg_corr & rho_est[i]<0){rho_est[i]<-0}
-    var<-(1/(2*pi))*test_size*ref_size*(asin(1)+(ref_size-1)*asin(.5)+(test_size-1)*(ref_size-1)*asin(.5*rho_est[i])+(test_size-1)*asin((rho_est[i]+1)/2))
+    #browser()
     for(b in 1:ncomps){
-      wilcox_stat<-sum(rank(c(stats_test[[i]][,b],stats_ref[[i]][,b]))[1:test_size]) - .5*test_size*(test_size+1)
+      #stats_test[[i]][,b]<-stats_test[[i]][,b][!is.na(stats_test[[i]][,b])]
+      #stats_ref[[i]][,b]<-stats_ref[[i]][,b][!is.na(stats_ref[[i]][,b])]
+      # Missing values will get dropped in rank statement
+      # so make sure sizes of test and reference sets don't include them
+      test_size<-length(stats_test[[i]][,b][!is.na(stats_test[[i]][,b])])
+      ref_size<-length(stats_ref[[i]][,b][!is.na(stats_ref[[i]][,b])])
+      var<-(1/(2*pi))*test_size*ref_size*(asin(1)+(ref_size-1)*asin(.5)+(test_size-1)*(ref_size-1)*asin(.5*rho_est[i])+(test_size-1)*asin((rho_est[i]+1)/2))
+      wilcox_stat<-sum(rank(c(stats_test[[i]][,b],stats_ref[[i]][,b]),na.last = NA)[1:test_size]) - .5*test_size*(test_size+1)
       p.val[i,b]<-2*pnorm(-1*abs((wilcox_stat-.5*test_size*ref_size)/sqrt(var)))
     }
-    #need to add code to take test and ref set test statistics by column for test and output set level p-values as a matrix
   }
+  #browser()
+  colnames(p.val)<-rownames(contrast)
+  rownames(p.val)<-names(index_test)
+  names(stats_all)<-rownames(count_matrix)
+  names(p.vals_gene_level_raw)<-rownames(count_matrix)
+  names(estimates_gene_level)<-rownames(count_matrix)
+  names(rho_est)<-names(index_test)
   #browser()
   if(re_present){
     if(return_fits==TRUE){

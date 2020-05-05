@@ -187,7 +187,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,cont
     wilcox_stat<-sum(rank(c(stats_test[[i]],stats_ref[[i]]))[1:test_size]) - .5*test_size*(test_size+1)
     p.val[i]<-2*pnorm(-1*abs((wilcox_stat-.5*test_size*ref_size)/sqrt(var)))
   }
-
+  names(p.val)<-names(index_test)
    if(return_fits==TRUE){
      return(list(gene_level_fits=fit_twosigmag,LR_stats_gene_level_all=stats_all,set_p.val=p.val,direction=direction,p.vals_gene_level=p.vals_gene_level,corr=rho_est,avg_logFC_gene_level=avg_logFC_gene_level,test_sets=index_test,ref_sets=index_ref))
    }else{
