@@ -245,6 +245,9 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
       var<-(1/(2*pi))*test_size*ref_size*(asin(1)+(ref_size-1)*asin(.5)+(test_size-1)*(ref_size-1)*asin(.5*rho_est[i])+(test_size-1)*asin((rho_est[i]+1)/2))
       wilcox_stat<-sum(rank(c(stats_test[[i]][,b],stats_ref[[i]][,b]),na.last = NA)[1:test_size]) - .5*test_size*(test_size+1)
       p.val[i,b]<-2*pnorm(-1*abs((wilcox_stat-.5*test_size*ref_size)/sqrt(var)))
+      # This only happens if all genes in the test set are NA
+      # In this case p-value will report as zero when it's really NA
+      if(test_size==0){p.val[i,b]<-NA}
     }
   }
   #browser()
