@@ -179,7 +179,8 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,cont
         temp<-cor(t(residuals_test[,which(id==y)])) # any checks for id behavior needed here?
         cor_temp[j]<-mean(temp[upper.tri(temp)],na.rm = T)
       }
-      rho_est[i]<-mean(cor_temp)
+      # There will be an NA here if residuals for an individual are zero for a given gene
+      rho_est[i]<-mean(cor_temp,na.rm=T)
     }
     #browser()
     if(!allow_neg_corr & rho_est[i]<0){rho_est[i]<-0}

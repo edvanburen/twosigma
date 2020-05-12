@@ -128,6 +128,7 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
       tryCatch({
       fit_twosigmag<-twosigma_custom(count=count_matrix[l,]
         ,mean_form=mean_form,zi_form=zi_form,id=id)
+      #browser()
       if(re_present){
         re_sigma_est[l]<-exp(fit_twosigmag$sdr$par.fixed['theta'])
       }
@@ -231,7 +232,7 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
         temp<-cor(t(residuals_test[,which(id==y)])) # any checks for id behavior needed here?
         cor_temp[j]<-mean(temp[upper.tri(temp)],na.rm = T)
       }
-      rho_est[i]<-mean(cor_temp)
+      rho_est[i]<-mean(cor_temp,na.rm=T)
     }
     if(!allow_neg_corr & rho_est[i]<0){rho_est[i]<-0}
     #browser()
