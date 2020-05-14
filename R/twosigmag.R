@@ -134,6 +134,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,cont
   stats_ref<-vector('list',length=nsets)
   direction<-vector(length=nsets)
   p.val<-numeric(length=nsets)
+  p.val_ttest<-numeric(length=nsets)
   rho_est<-numeric(length=nsets)
   if(is.null(index_ref)){index_ref<-vector('list',length=nsets)}
   for(i in 1:nsets){
@@ -187,11 +188,17 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,cont
     var<-(1/(2*pi))*test_size*ref_size*(asin(1)+(ref_size-1)*asin(.5)+(test_size-1)*(ref_size-1)*asin(.5*rho_est[i])+(test_size-1)*asin((rho_est[i]+1)/2))
     wilcox_stat<-sum(rank(c(stats_test[[i]],stats_ref[[i]]))[1:test_size]) - .5*test_size*(test_size+1)
     p.val[i]<-2*pnorm(-1*abs((wilcox_stat-.5*test_size*ref_size)/sqrt(var)))
+    delta<-ngenes/ref_size*(mean(stats_test[[i]])-mean(c(stats_test[[i]],stats_ref[[i]])))
+    vif<-1+(test_size-1)*rho_est[i]
+    varStatPooled<-((ngenes-1)*var(c(stats_test[[i]],stats_ref[[i]])-delta^2*test_size*ref_size/ngenes)/(ngenes-2))
+    two.sample.t <- delta / sqrt( varStatPooled * (vif/test_size + 1/ref_size) )
+    p.val_ttest[i]<-2*pt(-1*abs(two.sample.t),df=ngenes-2)
     # This only happens if all genes in the test set are NA
     # In this case p-value will report as zero when it's really NA
-    if(test_size==0){p.val[i]<-NA}
+    if(test_size==0){p.val[i]<-NA;p.val_ttest[i]<-NA}
   }
   names(p.val)<-names(index_test)
+  names(p.val_ttest)<-names(index_test)
   names(stats_all)<-rownames(count_matrix)
   names(p.vals_gene_level)<-rownames(count_matrix)
   names(avg_logFC_gene_level)<-rownames(count_matrix)
@@ -200,6 +207,6 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,cont
    if(return_fits==TRUE){
      return(list(gene_level_fits=fit_twosigmag,LR_stats_gene_level_all=stats_all,set_p.val=p.val,direction=direction,p.vals_gene_level=p.vals_gene_level,corr=rho_est,avg_logFC_gene_level=avg_logFC_gene_level,test_sets=index_test,ref_sets=index_ref))
    }else{
-    return(list(LR_stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,direction=direction,corr=rho_est,avg_logFC_gene_level=avg_logFC_gene_level,test_sets=index_test,ref_sets=index_ref))
+    return(list(LR_stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,direction=direction,corr=rho_est,avg_logFC_gene_level=avg_logFC_gene_level,test_sets=index_test,ref_sets=index_ref,set_p.val_ttest=p.val_ttest))
   }
 }
