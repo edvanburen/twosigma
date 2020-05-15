@@ -164,6 +164,7 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
   stats_test<-vector('list',length=nsets)
   stats_ref<-vector('list',length=nsets)
   p.val<-matrix(NA,nrow=nsets,ncol=ncomps)
+  p.val_ttest<-matrix(NA,nrow=nsets,ncol=ncomps)
   rho_est<-numeric(length=nsets)
   #browser()
   #if(is.null(index_ref)){index_ref<-vector('list',length=nsets)}
@@ -246,14 +247,21 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
       var<-(1/(2*pi))*test_size*ref_size*(asin(1)+(ref_size-1)*asin(.5)+(test_size-1)*(ref_size-1)*asin(.5*rho_est[i])+(test_size-1)*asin((rho_est[i]+1)/2))
       wilcox_stat<-sum(rank(c(stats_test[[i]][,b],stats_ref[[i]][,b]),na.last = NA)[1:test_size]) - .5*test_size*(test_size+1)
       p.val[i,b]<-2*pnorm(-1*abs((wilcox_stat-.5*test_size*ref_size)/sqrt(var)))
+      delta<-ngenes/ref_size*(mean(stats_test[[i]][,b])-mean(c(stats_test[[i]][,b],stats_ref[[i]][,b])))
+      vif<-1+(test_size-1)*rho_est[i]
+      varStatPooled<-((ngenes-1)*var(c(stats_test[[i]][,b],stats_ref[[i]][,b])-delta^2*test_size*ref_size/ngenes)/(ngenes-2))
+      two.sample.t <- delta / sqrt( varStatPooled * (vif/test_size + 1/ref_size) )
+      p.val_ttest[i,b]<-2*pt(-1*abs(two.sample.t),df=ngenes-2)
       # This only happens if all genes in the test set are NA
       # In this case p-value will report as zero when it's really NA
-      if(test_size==0){p.val[i,b]<-NA}
+      if(test_size==0){p.val[i,b]<-NA;p.val_ttest[i,b]<-NA}
     }
   }
   #browser()
   colnames(p.val)<-rownames(contrast)
   rownames(p.val)<-names(index_test)
+  colnames(p.val_ttest)<-rownames(contrast)
+  rownames(p.val_ttest)<-names(index_test)
   rownames(stats_all)<-rownames(count_matrix)
   colnames(stats_all)<-rownames(contrast)
   rownames(p.vals_gene_level_raw)<-rownames(count_matrix)
@@ -267,25 +275,25 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
       return(list(gene_level_fits=fit_twosigmag,z_stats_gene_level_all=stats_all,set_p.val=p.val,p.vals_gene_level_raw=p.vals_gene_level_raw
         #,p.vals_gene_level_adjust_anova=p.vals_gene_level_adjust
         ,estimates_gene_level=estimates_gene_level
-        ,re_sigma_est=re_sigma_est
+        ,re_sigma_est=re_sigma_est,set_p.val_ttest=p.val_ttest
         ,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
     }else{
       return(list(z_stats_gene_level_all=stats_all,set_p.val=p.val,p.vals_gene_level_raw=p.vals_gene_level_raw
         #,p.vals_gene_level_adjust_anova=p.vals_gene_level_adjust
         ,estimates_gene_level=estimates_gene_level
-        ,re_sigma_est=re_sigma_est
+        ,re_sigma_est=re_sigma_est,set_p.val_ttest=p.val_ttest
         ,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
     }
   }else{
       if(return_fits==TRUE){
         return(list(gene_level_fits=fit_twosigmag,z_stats_gene_level_all=stats_all,set_p.val=p.val,p.vals_gene_level_raw=p.vals_gene_level_raw
           #,p.vals_gene_level_adjust_anova=p.vals_gene_level_adjust
-          ,estimates_gene_level=estimates_gene_level
+          ,estimates_gene_level=estimates_gene_level,set_p.val_ttest=p.val_ttest
           ,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
       }else{
         return(list(z_stats_gene_level_all=stats_all,set_p.val=p.val,p.vals_gene_level_raw=p.vals_gene_level_raw
           #,p.vals_gene_level_adjust_anova=p.vals_gene_level_adjust
-          ,estimates_gene_level=estimates_gene_level
+          ,estimates_gene_level=estimates_gene_level,set_p.val_ttest=p.val_ttest
           ,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
       }}
 }
