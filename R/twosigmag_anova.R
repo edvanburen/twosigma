@@ -247,14 +247,14 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
       var<-(1/(2*pi))*test_size*ref_size*(asin(1)+(ref_size-1)*asin(.5)+(test_size-1)*(ref_size-1)*asin(.5*rho_est[i])+(test_size-1)*asin((rho_est[i]+1)/2))
       wilcox_stat<-sum(rank(c(stats_test[[i]][,b],stats_ref[[i]][,b]),na.last = NA)[1:test_size]) - .5*test_size*(test_size+1)
       p.val[i,b]<-2*pnorm(-1*abs((wilcox_stat-.5*test_size*ref_size)/sqrt(var)))
-      delta<-ngenes/ref_size*(mean(stats_test[[i]][,b])-mean(c(stats_test[[i]][,b],stats_ref[[i]][,b])))
+      delta<-ngenes/ref_size*(mean(stats_test[[i]][,b],na.rm=T)-mean(c(stats_test[[i]][,b],stats_ref[[i]][,b]),na.rm=T))
       vif<-1+(test_size-1)*rho_est[i]
-      varStatPooled<-((ngenes-1)*var(c(stats_test[[i]][,b],stats_ref[[i]][,b])-delta^2*test_size*ref_size/ngenes)/(ngenes-2))
+      varStatPooled<-((ngenes-1)*var(c(stats_test[[i]][,b],stats_ref[[i]][,b]),na.rm=T)-delta^2*test_size*ref_size/ngenes)/(ngenes-2)
       two.sample.t <- delta / sqrt( varStatPooled * (vif/test_size + 1/ref_size) )
       p.val_ttest[i,b]<-2*pt(-1*abs(two.sample.t),df=ngenes-2)
       # This only happens if all genes in the test set are NA
       # In this case p-value will report as zero when it's really NA
-      if(test_size==0){p.val[i,b]<-NA;p.val_ttest[i,b]<-NA}
+      if(test_size==0 | ref_size==0){p.val[i,b]<-NA;p.val_ttest[i,b]<-NA}
     }
   }
   #browser()

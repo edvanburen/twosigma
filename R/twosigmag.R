@@ -188,9 +188,9 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,cont
     var<-(1/(2*pi))*test_size*ref_size*(asin(1)+(ref_size-1)*asin(.5)+(test_size-1)*(ref_size-1)*asin(.5*rho_est[i])+(test_size-1)*asin((rho_est[i]+1)/2))
     wilcox_stat<-sum(rank(c(stats_test[[i]],stats_ref[[i]]))[1:test_size]) - .5*test_size*(test_size+1)
     p.val[i]<-2*pnorm(-1*abs((wilcox_stat-.5*test_size*ref_size)/sqrt(var)))
-    delta<-ngenes/ref_size*(mean(stats_test[[i]])-mean(c(stats_test[[i]],stats_ref[[i]])))
+    delta<-ngenes/ref_size*(mean(stats_test[[i]],na.rm=T)-mean(c(stats_test[[i]],stats_ref[[i]]),na.rm=T))
     vif<-1+(test_size-1)*rho_est[i]
-    varStatPooled<-((ngenes-1)*var(c(stats_test[[i]],stats_ref[[i]])-delta^2*test_size*ref_size/ngenes)/(ngenes-2))
+    varStatPooled<-((ngenes-1)*var(c(stats_test[[i]],stats_ref[[i]]),na.rm=T)-delta^2*test_size*ref_size/ngenes)/(ngenes-2)
     two.sample.t <- delta / sqrt( varStatPooled * (vif/test_size + 1/ref_size) )
     p.val_ttest[i]<-2*pt(-1*abs(two.sample.t),df=ngenes-2)
     # This only happens if all genes in the test set are NA
