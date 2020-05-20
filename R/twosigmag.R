@@ -185,8 +185,10 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,cont
     }
     #browser()
     if(!allow_neg_corr & rho_est[i]<0){rho_est[i]<-0}
+    test_size<-length(stats_test[[i]][!is.na(stats_test[[i]])])
+    ref_size<-length(stats_ref[[i]][!is.na(stats_ref[[i]])])
     var<-(1/(2*pi))*test_size*ref_size*(asin(1)+(ref_size-1)*asin(.5)+(test_size-1)*(ref_size-1)*asin(.5*rho_est[i])+(test_size-1)*asin((rho_est[i]+1)/2))
-    wilcox_stat<-sum(rank(c(stats_test[[i]],stats_ref[[i]]))[1:test_size]) - .5*test_size*(test_size+1)
+    wilcox_stat<-sum(rank(c(stats_test[[i]],stats_ref[[i]]),na.last = NA)[1:test_size]) - .5*test_size*(test_size+1)
     p.val[i]<-2*pnorm(-1*abs((wilcox_stat-.5*test_size*ref_size)/sqrt(var)))
     n_genes_tested<-test_size+ref_size
     delta<-n_genes_tested/ref_size*(mean(stats_test[[i]],na.rm=T)-mean(c(stats_test[[i]],stats_ref[[i]]),na.rm=T))
