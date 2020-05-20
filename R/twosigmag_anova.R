@@ -219,7 +219,7 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
 
     if(!is.null(rho)){rho_est[i]<-rho}
     if(is.null(rho)){
-      print(paste("Estimating Set-Level correlation and calculating p-value"))
+      #print(paste("Estimating Set-Level correlation and calculating p-value"))
       nind<-length(unique(id))
       cor_temp<-numeric(length=nind)
       unique_id<-unique(id)
@@ -238,23 +238,26 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
       #stats_ref[[i]][,b]<-stats_ref[[i]][,b][!is.na(stats_ref[[i]][,b])]
       # Missing values will get dropped in rank statement
       # so make sure sizes of test and reference sets don't include them
+      # Don't want to drop missing values because want them documented in output
       test_size<-length(stats_test[[i]][,b][!is.na(stats_test[[i]][,b])])
       ref_size<-length(stats_ref[[i]][,b][!is.na(stats_ref[[i]][,b])])
       var<-(1/(2*pi))*test_size*ref_size*(asin(1)+(ref_size-1)*asin(.5)+(test_size-1)*(ref_size-1)*asin(.5*rho_est[i])+(test_size-1)*asin((rho_est[i]+1)/2))
       wilcox_stat<-sum(rank(c(stats_test[[i]][,b],stats_ref[[i]][,b]),na.last = NA)[1:test_size]) - .5*test_size*(test_size+1)
       p.val[i,b]<-2*pnorm(-1*abs((wilcox_stat-.5*test_size*ref_size)/sqrt(var)))
-      delta<-ngenes/ref_size*(mean(stats_test[[i]][,b],na.rm=T)-mean(c(stats_test[[i]][,b],stats_ref[[i]][,b]),na.rm=T))
+      n_genes_tested<-test_size+ref_size
+      delta<-(n_genes_tested)/ref_size*(mean(stats_test[[i]][,b],na.rm=T)-mean(c(stats_test[[i]][,b],stats_ref[[i]][,b]),na.rm=T))
       vif<-1+(test_size-1)*rho_est[i]
-      varStatPooled<-((ngenes-1)*var(c(stats_test[[i]][,b],stats_ref[[i]][,b]),na.rm=T)-delta^2*test_size*ref_size/ngenes)/(ngenes-2)
+      varStatPooled<-((n_genes_tested-1)*var(c(stats_test[[i]][,b],stats_ref[[i]][,b]),na.rm=T)-delta^2*test_size*ref_size/n_genes_tested)/(n_genes_tested-2)
       two.sample.t <- delta / sqrt( varStatPooled * (vif/test_size + 1/ref_size) )
-      p.val_ttest[i,b]<-2*pt(-1*abs(two.sample.t),df=ngenes-2)
+      p.val_ttest[i,b]<-2*pt(-1*abs(two.sample.t),df=n_genes_tested-2)
       # This only happens if all genes in the test set are NA
       # In this case p-value will report as zero when it's really NA
       if(test_size==0 | ref_size==0){p.val[i,b]<-NA;p.val_ttest[i,b]<-NA}
     }
     #browser()
+    if(i%%100==0){print(paste0("Set ",i," of ",nsets," Finished"))}
   }
-  #browser()
+  browser()
   colnames(p.val)<-rownames(contrast)
   rownames(p.val)<-names(index_test)
   colnames(p.val_ttest)<-rownames(contrast)
@@ -283,12 +286,12 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
     }
   }else{
       if(return_fits==TRUE){
-        return(list(gene_level_fits=fit_twosigmag,z_stats_gene_level_all=stats_all,set_p.val=p.val,p.vals_gene_level_raw=p.vals_gene_level_raw
+        return(list(gene_level_fits=fit_twosigmag,z_stats_gene_level_all=stats_all,set_p.val=p.val,set_p.val_ttest=p.val_ttest,p.vals_gene_level_raw=p.vals_gene_level_raw
           #,p.vals_gene_level_adjust_anova=p.vals_gene_level_adjust
           ,estimates_gene_level=estimates_gene_level,set_p.val_ttest=p.val_ttest
           ,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
       }else{
-        return(list(z_stats_gene_level_all=stats_all,set_p.val=p.val,p.vals_gene_level_raw=p.vals_gene_level_raw
+        return(list(z_stats_gene_level_all=stats_all,set_p.val=p.val,set_p.val_ttest=p.val_ttest,p.vals_gene_level_raw=p.vals_gene_level_raw
           #,p.vals_gene_level_adjust_anova=p.vals_gene_level_adjust
           ,estimates_gene_level=estimates_gene_level,set_p.val_ttest=p.val_ttest
           ,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
