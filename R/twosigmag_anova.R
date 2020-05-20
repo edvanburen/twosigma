@@ -215,11 +215,7 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
       stats_ref[[i]]<-stats_ref_temp
       #stats_ref[[i]]<-stats_ref[[i]][!is.na(stats_ref[[i]])]
       #ref_size<-length(stats_ref[[i]])
-
-
     }
-
-
 
     if(!is.null(rho)){rho_est[i]<-rho}
     if(is.null(rho)){
@@ -256,6 +252,7 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
       # In this case p-value will report as zero when it's really NA
       if(test_size==0 | ref_size==0){p.val[i,b]<-NA;p.val_ttest[i,b]<-NA}
     }
+    #browser()
   }
   #browser()
   colnames(p.val)<-rownames(contrast)
