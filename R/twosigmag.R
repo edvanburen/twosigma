@@ -185,6 +185,9 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,cont
     }
     #browser()
     if(!allow_neg_corr & rho_est[i]<0){rho_est[i]<-0}
+    # Missing values will get dropped in rank statement
+    # so make sure sizes of test and reference sets don't include them
+    # Don't want to drop missing values because want them documented in output
     test_size<-length(stats_test[[i]][!is.na(stats_test[[i]])])
     ref_size<-length(stats_ref[[i]][!is.na(stats_ref[[i]])])
     var<-(1/(2*pi))*test_size*ref_size*(asin(1)+(ref_size-1)*asin(.5)+(test_size-1)*(ref_size-1)*asin(.5*rho_est[i])+(test_size-1)*asin((rho_est[i]+1)/2))
