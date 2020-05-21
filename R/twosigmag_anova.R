@@ -23,7 +23,7 @@
 ##' @export twosigmag_anova
 
 twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean_form,zi_form
-  ,id,contrast=NULL
+  ,id,contrast=NULL,zi_covar_return=NULL
   ,rho=NULL
   ,allow_neg_corr=FALSE
   ,disp_covar=NULL #need to be able to use data option?
@@ -93,6 +93,7 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
   }else{
     fit_twosigmag<-vector('list',length=nrow(count_matrix))
   }
+  if(!is.null(zi_covar_return)){zi_stat<-rep(NA,length=nrow(count_matrix))}
   residuals_all<-matrix(nrow=nrow(count_matrix),ncol=ncells)
   stats_all<-matrix(NA,nrow=nrow(count_matrix),ncol=nrow(contrast))
   p.vals_gene_level_raw<-matrix(NA,nrow=nrow(count_matrix),ncol=nrow(contrast))
@@ -128,10 +129,16 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
       tryCatch({
       fit_twosigmag<-twosigma_custom(count=count_matrix[l,]
         ,mean_form=mean_form,zi_form=zi_form,id=id)
-      #browser()
       if(re_present){
         re_sigma_est[l]<-exp(fit_twosigmag$sdr$par.fixed['theta'])
       }
+      #browser()
+      if(!is.null(zi_covar_return)){
+        names_zi<-rownames(summary(fit_twosigmag)$coefficients$zi)
+        index<-which(grepl(zi_covar_return,names_zi))
+        zi_stat[l]<-summary(fit_twosigmag)$coefficients$zi[index,3]
+      }
+
       residuals_all[l,]<-residuals(fit_twosigmag)
       temp2<-glht_glmmTMB(fit_twosigmag,
           linfct = mcp(combined_num2_factor = contrast))
@@ -273,13 +280,13 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
     if(return_fits==TRUE){
       return(list(gene_level_fits=fit_twosigmag,z_stats_gene_level_all=stats_all,set_p.val=p.val,p.vals_gene_level_raw=p.vals_gene_level_raw
         #,p.vals_gene_level_adjust_anova=p.vals_gene_level_adjust
-        ,estimates_gene_level=estimates_gene_level
+        ,estimates_gene_level=estimates_gene_level,zi_stat=zi_stat
         ,re_sigma_est=re_sigma_est,set_p.val_ttest=p.val_ttest
         ,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
     }else{
       return(list(z_stats_gene_level_all=stats_all,set_p.val=p.val,p.vals_gene_level_raw=p.vals_gene_level_raw
         #,p.vals_gene_level_adjust_anova=p.vals_gene_level_adjust
-        ,estimates_gene_level=estimates_gene_level
+        ,estimates_gene_level=estimates_gene_level,zi_stat=zi_stat
         ,re_sigma_est=re_sigma_est,set_p.val_ttest=p.val_ttest
         ,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
     }
@@ -287,12 +294,12 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
       if(return_fits==TRUE){
         return(list(gene_level_fits=fit_twosigmag,z_stats_gene_level_all=stats_all,set_p.val=p.val,set_p.val_ttest=p.val_ttest,p.vals_gene_level_raw=p.vals_gene_level_raw
           #,p.vals_gene_level_adjust_anova=p.vals_gene_level_adjust
-          ,estimates_gene_level=estimates_gene_level,set_p.val_ttest=p.val_ttest
+          ,estimates_gene_level=estimates_gene_level,zi_stat=zi_stat,set_p.val_ttest=p.val_ttest
           ,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
       }else{
         return(list(z_stats_gene_level_all=stats_all,set_p.val=p.val,set_p.val_ttest=p.val_ttest,p.vals_gene_level_raw=p.vals_gene_level_raw
           #,p.vals_gene_level_adjust_anova=p.vals_gene_level_adjust
-          ,estimates_gene_level=estimates_gene_level,set_p.val_ttest=p.val_ttest
+          ,estimates_gene_level=estimates_gene_level,zi_stat=zi_stat,set_p.val_ttest=p.val_ttest
           ,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
       }}
 }

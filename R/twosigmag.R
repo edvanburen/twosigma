@@ -36,8 +36,6 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,cont
   ,control = glmmTMBControl()){
 
   if(!(adhoc==FALSE)){print("The adhoc method is not recommended for gene set testing due to interpretability.")}
-
-
   count_matrix<-as.matrix(count_matrix)
   if(is.list(index_test)){
     nsets<-length(index_test)
@@ -104,6 +102,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,cont
   stats_all<-rep(NA,length=nrow(count_matrix))
   p.vals_gene_level<-rep(NA,length=nrow(count_matrix))
   avg_logFC_gene_level<-rep(NA,length=nrow(count_matrix))
+  est_ZI_gene_level<-rep(NA,length=nrow(count_matrix))
   #browser()
   for(i in 1:ngenes){
     l<-genes[i]
@@ -116,6 +115,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,cont
       stats_all[l]<-fit_twosigmag[[l]]$LR_stat
       p.vals_gene_level[l]<-fit_twosigmag[[l]]$LR_p.val
       avg_logFC_gene_level[l]<-fit_twosigmag[[l]]$mean_comp_logFC
+      est_ZI_gene_level[l]<-fit_twosigmag[[l]]$zi_comp_est
     }else{
       fit_twosigmag<-lr.twosigma(count_matrix[l,],contrast = contrast
         ,mean_covar=mean_covar,zi_covar=zi_covar
@@ -125,6 +125,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,cont
       stats_all[l]<-fit_twosigmag$LR_stat
       p.vals_gene_level[l]<-fit_twosigmag$LR_p.val
       avg_logFC_gene_level[l]<-fit_twosigmag$mean_comp_logFC
+      est_ZI_gene_level[l]<-fit_twosigmag$zi_comp_est
     }
 
     print(paste("Finished Gene Number",i,"of",ngenes))
@@ -209,11 +210,12 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,cont
   names(stats_all)<-rownames(count_matrix)
   names(p.vals_gene_level)<-rownames(count_matrix)
   names(avg_logFC_gene_level)<-rownames(count_matrix)
+  names(est_ZI_gene_level)<-rownames(count_matrix)
   names(rho_est)<-names(index_test)
   names(direction)<-names(index_test)
    if(return_fits==TRUE){
-     return(list(gene_level_fits=fit_twosigmag,LR_stats_gene_level_all=stats_all,set_p.val=p.val,set_p.val_ttest=p.val_ttest,direction=direction,p.vals_gene_level=p.vals_gene_level,corr=rho_est,avg_logFC_gene_level=avg_logFC_gene_level,test_sets=index_test,ref_sets=index_ref))
+     return(list(gene_level_fits=fit_twosigmag,LR_stats_gene_level_all=stats_all,set_p.val=p.val,set_p.val_ttest=p.val_ttest,direction=direction,p.vals_gene_level=p.vals_gene_level,corr=rho_est,avg_logFC_gene_level=avg_logFC_gene_level,est_ZI_gene_level=est_ZI_gene_level,test_sets=index_test,ref_sets=index_ref))
    }else{
-    return(list(LR_stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,set_p.val_ttest=p.val_ttest,direction=direction,corr=rho_est,avg_logFC_gene_level=avg_logFC_gene_level,test_sets=index_test,ref_sets=index_ref,set_p.val_ttest=p.val_ttest))
+    return(list(LR_stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,set_p.val_ttest=p.val_ttest,direction=direction,corr=rho_est,avg_logFC_gene_level=avg_logFC_gene_level,est_ZI_gene_level=est_ZI_gene_level,test_sets=index_test,ref_sets=index_ref,set_p.val_ttest=p.val_ttest))
   }
 }

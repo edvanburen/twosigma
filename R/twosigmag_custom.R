@@ -109,6 +109,7 @@ twosigmag_custom<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FAL
   stats_all<-rep(NA,length=nrow(count_matrix))
   p.vals_gene_level<-rep(NA,length=nrow(count_matrix))
   avg_logFC_gene_level<-rep(NA,length=nrow(count_matrix))
+  est_ZI_gene_level<-rep(NA,length=nrow(count_matrix))
   #browser()
   for(i in 1:ngenes){
     l<-genes[i]
@@ -120,6 +121,7 @@ twosigmag_custom<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FAL
       stats_all[l]<-fit_twosigmag[[l]]$LR_stat
       p.vals_gene_level[l]<-fit_twosigmag[[l]]$LR_p.val
       avg_logFC_gene_level[l]<-fit_twosigmag[[l]]$mean_comp_logFC
+      est_ZI_gene_level[l]<-fit_twosigmag[[l]]$zi_comp_est
     }else{
       fit_twosigmag<-lr.twosigma_custom(count=count_matrix[l,]
         ,mean_form_alt,zi_form_alt,mean_form_null,zi_form_null,id=id
@@ -128,6 +130,7 @@ twosigmag_custom<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FAL
       stats_all[l]<-fit_twosigmag$LR_stat
       p.vals_gene_level[l]<-fit_twosigmag$LR_p.val
       avg_logFC_gene_level[l]<-fit_twosigmag$mean_comp_logFC
+      est_ZI_gene_level[l]<-fit_twosigmag$zi_comp_est
     }
     print(paste("Finished Gene Number",i,"of",ngenes))
   }
@@ -215,8 +218,8 @@ twosigmag_custom<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FAL
   names(direction)<-names(index_test)
   #browser()
   if(return_fits==TRUE){
-    return(list(LR_stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,set_p.val_ttest=p.val_ttest,direction=direction,avg_logFC_gene_level=avg_logFC_gene_level,corr=rho_est,test_sets=index_test,ref_sets=index_ref,gene_level_fits=fit_twosigmag))
+    return(list(LR_stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,set_p.val_ttest=p.val_ttest,direction=direction,avg_logFC_gene_level=avg_logFC_gene_level,est_ZI_gene_level=est_ZI_gene_level,corr=rho_est,test_sets=index_test,ref_sets=index_ref,gene_level_fits=fit_twosigmag))
   }else{
-    return(list(LR_stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,set_p.val_ttest=p.val_ttest,direction=direction,avg_logFC_gene_level=avg_logFC_gene_level,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
+    return(list(LR_stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,set_p.val_ttest=p.val_ttest,direction=direction,avg_logFC_gene_level=avg_logFC_gene_level,est_ZI_gene_level=est_ZI_gene_level,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
   }
 }

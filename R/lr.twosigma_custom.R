@@ -73,10 +73,14 @@ names_alt<-rownames(sum_alt$coefficients$cond)
 index<-which(grepl(covar_logFC,names_alt))
 est<-sum_alt$coefficients$cond[index,1]
 
+names_alt<-rownames(sum_alt$coefficients$cond)
+index<-which(grepl(covar_logFC,names_alt))
+est_zi<-sum_alt$coefficients$zi[index,1]
+
 LR_stat<- as.numeric(-2*(summary(fit_null)$logLik-summary(fit_alt)$logLik))
 if(LR_stat<0 | (!fit_alt$sdr$pdHess) | (!fit_null$sdr$pdHess)){
   LR_stat<-NA
   message("LR stat set to NA, indicative of model specification or fitting problem")}
 p.val<-1-pchisq(LR_stat,df=lr.df)
-return(list(fit_null=fit_null,fit_alt=fit_alt,LR_stat=LR_stat,LR_p.val=p.val,mean_comp_logFC=est,mean_form_alt=mean_form_alt,zi_form_alt=zi_form_alt,mean_form_null=mean_form_null,zi_form_null=zi_form_null))
+return(list(fit_null=fit_null,fit_alt=fit_alt,LR_stat=LR_stat,LR_p.val=p.val,mean_comp_logFC=est,zi_comp_est=est_zi,mean_form_alt=mean_form_alt,zi_form_alt=zi_form_alt,mean_form_null=mean_form_null,zi_form_null=zi_form_null))
 }

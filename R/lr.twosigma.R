@@ -175,11 +175,13 @@ names_null<-rownames(sum_null$coefficients$cond)
 names_alt<-rownames(sum_alt$coefficients$cond)
 
 est<-sum_alt$coefficients$cond[which(!names_alt%in%names_null),1]
+est_zi<-sum_alt$coefficients$zi[which(!names_alt%in%names_null),1]
 
 LR_stat<- as.numeric(-2*(summary(fit_null)$logLik-summary(fit_alt)$logLik))
 if(LR_stat<0 | (!fit_alt$sdr$pdHess) | (!fit_null$sdr$pdHess)){
   LR_stat<-NA
   message("LR stat set to NA, indicative of model specification or fitting problem")}
 p.val<-1-pchisq(LR_stat,df=2)
-return(list(fit_null=fit_null,fit_alt=fit_alt,LR_stat=LR_stat,LR_p.val=p.val,mean_comp_logFC=est))
+return(list(fit_null=fit_null,fit_alt=fit_alt,LR_stat=LR_stat,LR_p.val=p.val
+  ,mean_comp_logFC=est,zi_comp_est=est_zi))
 }
