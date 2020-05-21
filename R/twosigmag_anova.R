@@ -257,7 +257,6 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
     #browser()
     if(i%%100==0){print(paste0("Set ",i," of ",nsets," Finished"))}
   }
-  browser()
   colnames(p.val)<-rownames(contrast)
   rownames(p.val)<-names(index_test)
   colnames(p.val_ttest)<-rownames(contrast)
