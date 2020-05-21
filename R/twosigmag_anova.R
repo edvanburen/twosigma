@@ -93,7 +93,7 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
   }else{
     fit_twosigmag<-vector('list',length=nrow(count_matrix))
   }
-  if(!is.null(zi_covar_return)){zi_stat<-rep(NA,length=nrow(count_matrix))}
+  zi_stat<-rep(NA,length=nrow(count_matrix))
   residuals_all<-matrix(nrow=nrow(count_matrix),ncol=ncells)
   stats_all<-matrix(NA,nrow=nrow(count_matrix),ncol=nrow(contrast))
   p.vals_gene_level_raw<-matrix(NA,nrow=nrow(count_matrix),ncol=nrow(contrast))
