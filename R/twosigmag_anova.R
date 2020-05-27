@@ -27,10 +27,10 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
   ,rho=NULL
   ,allow_neg_corr=FALSE
   ,disp_covar=NULL #need to be able to use data option?
-  ,return_fits=FALSE
+  ,return_summary_fits=FALSE
   ,weights=rep(1,length(count_matrix[1,]))
   ,control = glmmTMBControl()){
-  count_matrix<-as.matrix(count_matrix)
+  if(!is.matrix(count_matrix)){stop("Please ensure the input count_matrix is of class matrix.")}
   ncomps<-nrow(contrast)
   #browser()
   if(is.list(index_test)){
@@ -88,10 +88,8 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
   if(max(unlist(index_test))>nrow(count_matrix) | min(unlist(index_test))<1){stop("Test Index seems to be invalid, must be numeric within the dimensions of the input count_matrix")}
   ncells<-ncol(count_matrix)
   # Fit all gene level statistics that are needed
-  if(return_fits==FALSE){
-    fit_twosigmag<-list()
-  }else{
-    fit_twosigmag<-vector('list',length=nrow(count_matrix))
+  if(return_summary_fits==TRUE){
+    fit<-vector('list',length=nrow(count_matrix))
   }
   zi_stat<-rep(NA,length=nrow(count_matrix))
   residuals_all<-matrix(nrow=nrow(count_matrix),ncol=ncells)
@@ -110,37 +108,26 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
   for(i in 1:ngenes){
     l<-genes[i]
     #browser()
-    if(return_fits==TRUE){
-      fit_twosigmag[[l]]<-twosigma_custom(count=count_matrix[l,]
-        ,mean_form=mean_form,zi_form=zi_form,id=id)
-      if(re_present){
-        re_sigma_est[l]<-exp(fit_twosigmag$sdr$par.fixed['theta'])
-      }
-      residuals_all[l,]<-residuals(fit_twosigmag[[l]])
-      temp2<-glht_glmmTMB(fit_twosigmag[[l]],
-        linfct = mcp(combined_num2_factor = contrast))
-      temp<-summary(temp2,test=adjusted("none"))
-      stats_all[l,]<-temp$test$tstat
-      p.vals_gene_level_raw[l,]<-2*pnorm(-1*abs(temp$test$tstat))
-      temp<-summary(temp2)
-      estimates_gene_level[l,]<-temp$test$coefficients
-      #p.vals_gene_level_adjust[l,]<-as.numeric(temp$test$pvalues)
-    }else{
+
       tryCatch({
-      fit_twosigmag<-twosigma_custom(count=count_matrix[l,]
-        ,mean_form=mean_form,zi_form=zi_form,id=id)
-      if(re_present){
-        re_sigma_est[l]<-exp(fit_twosigmag$sdr$par.fixed['theta'])
-      }
+      fit_twosigmag<-twosigma_custom(count=count_matrix[l,,drop=FALSE]
+        ,mean_form=mean_form,zi_form=zi_form,id=id,return_summary = FALSE,silent=TRUE)
       #browser()
+      if(return_summary_fits==TRUE){
+        fit[[l]]<-summary(fit_twosigmag[[1]])
+      }
+     # browser()
+      if(re_present){
+        re_sigma_est[l]<-exp(fit_twosigmag[[1]]$sdr$par.fixed['theta'])
+      }
       if(!is.null(zi_covar_return)){
         names_zi<-rownames(summary(fit_twosigmag)$coefficients$zi)
         index<-which(grepl(zi_covar_return,names_zi))
         zi_stat[l]<-summary(fit_twosigmag)$coefficients$zi[index,3]
       }
 
-      residuals_all[l,]<-residuals(fit_twosigmag)
-      temp2<-glht_glmmTMB(fit_twosigmag,
+      residuals_all[l,]<-residuals(fit_twosigmag[[1]])
+      temp2<-glht_glmmTMB(fit_twosigmag[[1]],
           linfct = mcp(combined_num2_factor = contrast))
       temp<-summary(temp2,test=adjusted("none"))
       stats_all[l,]<-temp$test$tstat
@@ -154,7 +141,7 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
         print(paste0("Error at Gene ",l, " in the Dataset"))
         #print(gene_err)
         })
-    }
+
     #gene_error[l]<-gene_err
     print(paste("Finished Gene Number",i,"of",ngenes))
     #browser()
@@ -277,8 +264,9 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
   names(rho_est)<-names(index_test)
   #browser()
   if(re_present){
-    if(return_fits==TRUE){
-      return(list(gene_level_fits=fit_twosigmag,z_stats_gene_level_all=stats_all,set_p.val=p.val,p.vals_gene_level_raw=p.vals_gene_level_raw
+    if(return_summary_fits==TRUE){
+      names(fit)<-rownames(count_matrix)
+      return(list(summary_gene_level_fits=fit,z_stats_gene_level_all=stats_all,set_p.val=p.val,p.vals_gene_level_raw=p.vals_gene_level_raw
         #,p.vals_gene_level_adjust_anova=p.vals_gene_level_adjust
         ,estimates_gene_level=estimates_gene_level,zi_stat=zi_stat
         ,re_sigma_est=re_sigma_est,set_p.val_ttest=p.val_ttest
@@ -291,8 +279,9 @@ twosigmag_anova<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALS
         ,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
     }
   }else{
-      if(return_fits==TRUE){
-        return(list(gene_level_fits=fit_twosigmag,z_stats_gene_level_all=stats_all,set_p.val=p.val,set_p.val_ttest=p.val_ttest,p.vals_gene_level_raw=p.vals_gene_level_raw
+      if(return_summary_fits==TRUE){
+        names(fit)<-rownames(count_matrix)
+        return(list(summary_gene_level_fits=fit,z_stats_gene_level_all=stats_all,set_p.val=p.val,set_p.val_ttest=p.val_ttest,p.vals_gene_level_raw=p.vals_gene_level_raw
           #,p.vals_gene_level_adjust_anova=p.vals_gene_level_adjust
           ,estimates_gene_level=estimates_gene_level,zi_stat=zi_stat,set_p.val_ttest=p.val_ttest
           ,corr=rho_est,test_sets=index_test,ref_sets=index_ref))

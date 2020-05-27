@@ -31,12 +31,12 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,cont
   ,allow_neg_corr=FALSE
   ,adhoc=FALSE,adhoc_thresh=0.1
   ,disp_covar=NULL #need to be able to use data option?
-  ,return_fits=FALSE
+  ,return_summary_fits=FALSE
   ,weights=rep(1,length(count_matrix[1,]))
   ,control = glmmTMBControl()){
 
-  if(!(adhoc==FALSE)){print("The adhoc method is not recommended for gene set testing due to interpretability.")}
-  count_matrix<-as.matrix(count_matrix)
+  #if(!(adhoc==FALSE)){print("The adhoc method is not recommended for gene set testing due to interpretability.")}
+  if(!is.matrix(count_matrix)){stop("Please ensure the input count_matrix is of class matrix.")}
   if(is.list(index_test)){
     nsets<-length(index_test)
     list_lengths<-lapply(index_test,FUN=length)
@@ -93,44 +93,48 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,cont
   ncells<-ncol(count_matrix)
 
   # Fit all gene level statistics that are needed
-  if(return_fits==FALSE){
-    fit_twosigmag<-list()
-  }else{
-    fit_twosigmag<-vector('list',length=nrow(count_matrix))
+  if(return_summary_fits==TRUE){
+    fit<-vector('list',length=nrow(count_matrix))
   }
   residuals_all<-matrix(nrow=nrow(count_matrix),ncol=ncells)
   stats_all<-rep(NA,length=nrow(count_matrix))
   p.vals_gene_level<-rep(NA,length=nrow(count_matrix))
   avg_logFC_gene_level<-rep(NA,length=nrow(count_matrix))
-  est_ZI_gene_level<-rep(NA,length=nrow(count_matrix))
+  #est_ZI_gene_level<-rep(NA,length=nrow(count_matrix))
   #browser()
   for(i in 1:ngenes){
     l<-genes[i]
-    if(return_fits==TRUE){
-      fit_twosigmag[[l]]<-lr.twosigma(count_matrix[l,],contrast = contrast
-        ,mean_covar=mean_covar,zi_covar=zi_covar
-        ,mean_re=mean_re,zi_re=zi_re
+      fit_twosigmag<-lr.twosigma(count_matrix[l,,drop=FALSE],contrast = contrast
+        ,mean_covar=mean_covar,zi_covar=zi_covar,return_full_fits = T
+        ,mean_re=mean_re,zi_re=zi_re,silent = T
         ,id=id,adhoc=adhoc)
-      residuals_all[l,]<-residuals(fit_twosigmag[[l]]$fit_alt)
-      stats_all[l]<-fit_twosigmag[[l]]$LR_stat
-      p.vals_gene_level[l]<-fit_twosigmag[[l]]$LR_p.val
-      avg_logFC_gene_level[l]<-fit_twosigmag[[l]]$mean_comp_logFC
-      est_ZI_gene_level[l]<-fit_twosigmag[[l]]$zi_comp_est
-    }else{
-      fit_twosigmag<-lr.twosigma(count_matrix[l,],contrast = contrast
-        ,mean_covar=mean_covar,zi_covar=zi_covar
-        ,mean_re=mean_re,zi_re=zi_re
-        ,id=id,adhoc=adhoc)
-      residuals_all[l,]<-residuals(fit_twosigmag$fit_alt)
-      stats_all[l]<-fit_twosigmag$LR_stat
-      p.vals_gene_level[l]<-fit_twosigmag$LR_p.val
-      avg_logFC_gene_level[l]<-fit_twosigmag$mean_comp_logFC
-      est_ZI_gene_level[l]<-fit_twosigmag$zi_comp_est
-    }
+      if(return_summary_fits==TRUE){
+        fit[[l]]<-fit_twosigmag$summary_fit_alt[[1]]
+      }
+      #browser()
+      sum_fit_alt<-fit_twosigmag$summary_fit_alt[[1]]$coefficients$cond
+      names<-rownames(sum_fit_alt)
+      if(is.numeric(contrast)){
+        # +1 for the intercept
+        avg_logFC_gene_level[l]<-sum_fit_alt[contrast+1,'Estimate']
+      }else{
+        avg_logFC_gene_level[l]<-sum_fit_alt[grepl(contrast,names),'Estimate']
+      }
+
+
+      residuals_all[l,]<-residuals(fit_twosigmag$full_fit_alt[[1]])
+      stats_all[l]<-fit_twosigmag$LR_stat[1]
+      p.vals_gene_level[l]<-fit_twosigmag$LR_p.val[1]
+      #browser()
+      #est_ZI_gene_level[l]<-fit_twosigmag[[1]]$zi_comp_est
+
 
     print(paste("Finished Gene Number",i,"of",ngenes))
   }
   #browser()
+  if(return_summary_fits==TRUE){
+    fit<-vector('list',length=nrow(count_matrix))
+  }
   stats_test<-vector('list',length=nsets)
   stats_ref<-vector('list',length=nsets)
   direction<-vector(length=nsets)
@@ -210,12 +214,12 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,cont
   names(stats_all)<-rownames(count_matrix)
   names(p.vals_gene_level)<-rownames(count_matrix)
   names(avg_logFC_gene_level)<-rownames(count_matrix)
-  names(est_ZI_gene_level)<-rownames(count_matrix)
+  #names(est_ZI_gene_level)<-rownames(count_matrix)
   names(rho_est)<-names(index_test)
   names(direction)<-names(index_test)
-   if(return_fits==TRUE){
-     return(list(gene_level_fits=fit_twosigmag,LR_stats_gene_level_all=stats_all,set_p.val=p.val,set_p.val_ttest=p.val_ttest,direction=direction,p.vals_gene_level=p.vals_gene_level,corr=rho_est,avg_logFC_gene_level=avg_logFC_gene_level,est_ZI_gene_level=est_ZI_gene_level,test_sets=index_test,ref_sets=index_ref))
+   if(return_summary_fits==TRUE){
+     return(list(summary_gene_level_fits=fit,LR_stats_gene_level_all=stats_all,set_p.val=p.val,set_p.val_ttest=p.val_ttest,direction=direction,p.vals_gene_level=p.vals_gene_level,corr=rho_est,avg_logFC_gene_level=avg_logFC_gene_level,test_sets=index_test,ref_sets=index_ref))
    }else{
-    return(list(LR_stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,set_p.val_ttest=p.val_ttest,direction=direction,corr=rho_est,avg_logFC_gene_level=avg_logFC_gene_level,est_ZI_gene_level=est_ZI_gene_level,test_sets=index_test,ref_sets=index_ref,set_p.val_ttest=p.val_ttest))
+    return(list(LR_stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,set_p.val_ttest=p.val_ttest,direction=direction,corr=rho_est,avg_logFC_gene_level=avg_logFC_gene_level,test_sets=index_test,ref_sets=index_ref,set_p.val_ttest=p.val_ttest))
   }
 }
