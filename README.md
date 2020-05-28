@@ -26,10 +26,10 @@ The full TWO-SIGMA specification is therefore as follows:
 ## Usage  
 The workhorse function is twosigma, which can be easiest called as
 ```r
-twosigma(count, mean_covar, zi_covar,id)
+twosigma(count_matrix, mean_covar, zi_covar,id)
 ```
 
-- **count**: A vector of non-negative integer counts. No normalization is done.
+- **count_matrix**: A vector of non-negative integer counts. No normalization is done.
 - **mean_covar**: A matrix (such as from model.matrix) of covariates for the (conditional) mean model without an intercept term. Columns give covariates and the number of rows should correspond to the number of cells.
 - **zi_covar**: A matrix (such as from model.matrix) of covariates for the zero-inflation model without an intercept term. Columns give covariates and the number of rows should correspond to the number of cells.
 - **id**: Vector of individual-level ID's (length equal to the total number of cells). Used for random effect prediction and the ad hoc method and is currently required even if neither is being used.
@@ -43,9 +43,9 @@ If <code> adhoc=TRUE</code>, mean_re and zi_re are ignored and a warning is prin
 
 If users wish to customize the random effect specification, they may do so via the function <code> twosigma_custom </code>, which has the following basic syntax:
 ```r
-twosigma_custom(count, mean_form, zi_form, id)
+twosigma_custom(count_matrix, mean_form, zi_form, id)
 ````
-- **count**: A vector of non-negative integer counts. No normalization is done. Batch can be controlled for by inclusion in the design matrices.
+- **count_matrix**: A vector of non-negative integer counts. No normalization is done. Batch can be controlled for by inclusion in the design matrices.
 - **mean_form** a two-sided formula for the (conditional) mean model. Left side specifies the response and right side includes fixed and random effect terms. Users should ensure that the response has the name "count", e.g. <code> mean_form = count ~ 1 </code>
 - **zi_form** a one-sided formula for the zero-inflation model including fixed and random effect terms, e.g. <code>  ~ 1 </code>
 - **id**: Vector of individual-level ID's. Used for random effect prediction.
@@ -55,16 +55,16 @@ Some care must be taken, however, because these formulas are used directly. **It
 For example, each of the following function calls reproduces the default TWO-SIGMA specification with random intercepts in both components:
 
 ```r
-twosigma(count=counts, mean_covar=mean_covar_matrix, zi_covar=zi_covar_matrix, mean_re = TRUE, zi_re = TRUE, id=id,adhoc=F)
-twosigma_custom(count=counts, mean_form=count~mean_covar_matrix+(1|id),zi_form=~zi_covar_matrix+(1|id),id=id)
+twosigma(count_matrix, mean_covar=mean_covar_matrix, zi_covar=zi_covar_matrix, mean_re = TRUE, zi_re = TRUE, id=id,adhoc=F)
+twosigma_custom(count, mean_form=count~mean_covar_matrix+(1|id),zi_form=~zi_covar_matrix+(1|id),id=id)
 ```
 ## Fixed Effect Testing  
 If users wish to jointly test a fixed effect using the twosigma model with a non-custom specification via the likelihood ratio test, they may do so using the <code> lr.twosigma </code> or <code> lr.twosigma_custom </code> functions:
 ```r
-lr.twosigma(count, mean_covar, zi_covar, contrast, mean_re = TRUE,zi_re = TRUE, disp_covar = NULL,adhoc=TRUE)
-lr.twosigma_custom(count, mean_form_alt, zi_form_alt, mean_form_null, zi_form_null, id, lr.df)
+lr.twosigma(count_matrix, mean_covar, zi_covar, covar_to_test, mean_re = TRUE,zi_re = TRUE, disp_covar = NULL,adhoc=TRUE)
+lr.twosigma_custom(count_matrix, mean_form_alt, zi_form_alt, mean_form_null, zi_form_null, id, lr.df)
 ```
-- **contrast**: Either a string indicating the column name of the covariate to test or an integer referring to its column position in BOTH the mean_covar and zi_covar matrices. If an integer is specified there is no check that it corresponds to the same covariate in both the mean_covar and zi_covar matrices. 
+- **covar_to_test**: Either a string indicating the column name of the covariate to test or an integer referring to its column position in BOTH the mean_covar and zi_covar matrices. If an integer is specified there is no check that it corresponds to the same covariate in both the mean_covar and zi_covar matrices. 
 - **lr.df** If custom formulas are input users must provide the degrees of freedom from which the likelihood ratio p-value can be calculated. Must be a non-negative integer. 
 
 The <code> lr.twosigma </code> function assumes that the variable being tested is in both components of the model (and thus that the zero-inflation component exists and contains more than an Intercept). Users wishing to do fixed effect testing in other cases can use the <code> lr.twosigma_custom </code> function with custom formulas or construct the test themselves using two calls to <code>twosigma</code> or <code> twosigma_custom</code>. The formula inputs <code> mean_form_alt </code>, <code> mean_form_null</code>, <code> zi_form_alt</code>, and `zi_form_null` should be specified as in the <code> lr.twosigma_custom</code> function and once again **users must ensure custom formulas represent a valid likelihood ratio test**.  
@@ -127,38 +127,38 @@ sim_dat<-simulate_zero_inflated_nb_random_effect_data(ncellsper,X,Z,alpha,beta,p
 
 #--- Fit TWO-SIGMA to simulated data
 id<-sim_dat$id
-counts<-sim_dat$Y
+counts<-matrix(sim_dat$Y,ncol=1)
 
-fit<-twosigma(count=counts,zi_covar=Z,mean_covar = X,id=id,mean_re=TRUE,zi_re=TRUE,adhoc=F)
-fit2<-twosigma_custom(count=counts, mean_form=count~X+(1|id),zi_form=~Z+(1|id),id=id)
+fit<-twosigma(counts,zi_covar=Z,mean_covar = X,id=id,mean_re=TRUE,zi_re=TRUE,adhoc=F)
+fit2<-twosigma_custom(counts, mean_form=count~X+(1|id),zi_form=~Z+(1|id),id=id)
 
 #fit and fit2 are the same
 
-summary(fit)
-summary(fit2)
+summary(fit[[1]])
+summary(fit2[[1]])
 
-confint(fit)
+confint(fit[[1]])
 
 #--- Fit TWO-SIGMA without a zero-inflation component
-fit_noZI<-twosigma(count=counts,zi_covar=0,mean_covar = X,id=id,mean_re=F,zi_re=F,adhoc=F)
-fit_noZ2I<-twosigma_custom(count=counts,zi_form=~0,mean_form=count~X,id=id)
+fit_noZI<-twosigma(counts,zi_covar=0,mean_covar = X,id=id,mean_re=F,zi_re=F,adhoc=F)
+fit_noZ2I<-twosigma_custom(counts,zi_form=~0,mean_form=count~X,id=id)
 
 #--- Fit TWO-SIGMA with an intercept only zero-inflation component and no random effects
-fit_meanZI<-twosigma(count=counts,zi_covar=1,mean_covar = X,id=id,mean_re=F,zi_re=F,adhoc=F)
-fit_meanZI2<-twosigma_custom(count=counts, mean_form=count~X,zi_form=~1,id=id)
+fit_meanZI<-twosigma(counts,zi_covar=1,mean_covar = X,id=id,mean_re=F,zi_re=F,adhoc=F)
+fit_meanZI2<-twosigma_custom(counts, mean_form=count~X,zi_form=~1,id=id)
 
-summary(fit_noZI)
-summary(fit_meanZI)
+summary(fit_noZI[[1]])
+summary(fit_meanZI[[1]])
 
 # Perform Likelihood Ratio Test on variable "t2d_sim"
           
-lr.fit<-lr.twosigma(contrast="t2d_sim",count=counts,mean_covar = X,zi_covar=Z,id=id)
+lr.fit<-lr.twosigma(counts,covar_to_test="t2d_sim",mean_covar = X,zi_covar=Z,id=id)
 lr.fit$p.val
 summary(lr.fit$fit_alt)
 
-lr.fit_custom<-lr.twosigma_custom(count=counts,mean_form_alt=count~X, zi_form_alt=~Z, mean_form_null=count~X[,-1],zi_form_null=~Z[,-1],id=id,lr.df=2)
+lr.fit_custom<-lr.twosigma_custom(counts,mean_form_alt=count~X, zi_form_alt=~Z, mean_form_null=count~X[,-1],zi_form_null=~Z[,-1],id=id,lr.df=2)
 lr.fit_custom$p.val
-summary(lr.fit_custom$fit_alt)
+(lr.fit_custom$summary_fit_alt[[1]]
 
 # Perform adhoc method to see if random effects are needed
 adhoc.twosigma(count=counts,zi_covar=Z,mean_covar=X,id=id)
