@@ -2,31 +2,36 @@
 % Please edit documentation in R/twosigma_custom.R
 \name{twosigma_custom}
 \alias{twosigma_custom}
-\title{Fit the TWO-component SInGle cell Model-based Association method of ... with custom user-specified model formulas.}
+\title{Fit the TWO-SIGMA model with custom user-specified model formulas.}
 \usage{
-twosigma_custom(count, mean_form, zi_form, id, disp_covar = NULL,
-  weights = rep(1, length(count)), control = glmmTMBControl())
+twosigma_custom(count_matrix, mean_form, zi_form, id,
+  return_summary_fits = TRUE, silent = FALSE, disp_covar = NULL,
+  weights = rep(1, ncol(count_matrix)), control = glmmTMBControl())
 }
 \arguments{
-\item{count}{Vector of non-negative integer read counts. Users should ensure that this matches matches the LHS of the formula in "mean_form."}
+\item{count_matrix}{Matrix of non-negative integer read counts, with rows corresponding to genes and columns correspoding to cells. It is recommended to make the rownames the gene names for better output.}
 
-\item{mean_form}{Custom two-sided model formula for the (conditional) mean model. Formula is passed directly into glmmTMB with random effects specified as in the lme4 package. Users should ensure that the dependent variable matches the argument to the parameter "count."}
+\item{mean_form}{Custom two-sided model formula for the (conditional) mean model. Formula is passed directly into glmmTMB with random effects specified as in the lme4 package. Users should ensure that the LHS of the formula begins with "count."}
 
 \item{zi_form}{Custom one-sided model formula for the zero-inflation model. Formula is passed directly into glmmTMB with random effects specified as in lme4.}
 
-\item{id}{Vector of individual-level ID's. Used for random effect prediction.}
+\item{id}{Vector of individual-level (sample-level) ID's. Used for random effect prediction but required regardless of their presence in the model.}
+
+\item{return_summary_fits}{If TRUE, the package returns a summary.glmmTMB object for each gene.  If TRUE, a glmmTMB object is returned for each gene. The latter requires far more storage space.}
+
+\item{silent}{If TRUE, progress is not printed.}
 
 \item{disp_covar}{Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model.}
 
 \item{weights}{weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.}
 
-\item{control}{Control parameters for optimization in \code{glmmTMB}.}
+\item{control}{Control parameters for optimization in \code{glmmTMB}.  See \code{?glmmTMBControl}.}
 }
 \value{
-An object of class \code{glmmTMB}.
+If \code{return_summary_fits=TRUE}, returns a list of objects of class \code{summary.glmmTMB}. If \code{return_summary_fits=FALSE}, returns a list of model fit objects of class \code{glmmTMB}. In either case, the order matches the row order of \code{count_matrix}, and the names of the list elements are taken as the rownames of \code{count_matrix}.
 }
 \description{
-Fit the TWO-component SInGle cell Model-based Association method of ... with custom user-specified model formulas.
+Fit the TWO-SIGMA model with custom user-specified model formulas.
 }
 \section{Details}{
 

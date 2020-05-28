@@ -1,32 +1,35 @@
-##' Conveinent wrapper function for performing joint likelihood ratio tests with the TWO-SIGMA model of ... with custom user-specified formulas.
-##' @param count Vector of non-negative integer read counts.
+##' Conveinent wrapper function for performing joint likelihood ratio tests with the TWO-SIGMA model using custom user-specified formulas.
+##' @param count_matrix Matrix of non-negative integer read counts, with rows corresponding to genes and columns correspoding to cells. It is recommended to make the rownames the gene names for better output.
 ##' @param mean_form_alt Custom two-sided model formula for the (conditional) mean model under the null. Formula is passed directly into glmmTMB with random effects specified as in the lme4 package. Users should ensure that the dependent variable matches the argument to the parameter "count."
 ##' @param zi_form_alt Custom one-sided model formula for the zero-inflation model under the alternative. Formula is passed directly into glmmTMB with random effects specified as in lme4.
 ##' @param mean_form_null Custom two-sided model formula for the (conditional) mean model under the null. Syntax is as in \code{mean_form_alt}.
 ##' @param zi_form_null Custom one-sided model formula for the zero-inflation model under the null. Syntax is as in \code{zi_form_alt}.
-##' @param id Vector of individual-level ID's. Used for random effect prediction and the adhoc method but required regardless.
+##' @param id Vector of individual-level (sample-level) ID's. Used for random effect prediction but required regardless of their presence in the model.
 ##' @param lr.df Degrees of Freedom for the constructed likelihood ratio test. Must be a non-negative integer.
+##' @param return_full_fits If TRUE, full fit objects of class glmmTMB are returned.  If FALSE, only fit objects of class summary.glmmTMB are returned.  The latter requires far less memory to store.
+##' @param silent If TRUE, progress is not printed.
 ##' @param disp_covar Covariates for a log-linear model for the dispersion. Either a matrix or = 1 to indicate an intercept only model.
 ##' @param weights weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.
-##' @param control Control parameters for optimization in glmmTMB.
+##' @param control Control parameters for optimization in glmmTMB.  See \code{?glmmTMBControl}.
 ##' @section Details:
 ##' This function is a wrapper for conducting fixed effect likelihood ratio tests with twosigma.  There is no checking to make sure that the alt and null model formulas represent a valid likelihood ratio test when fit together.  Users must ensure that inputted formulas represent valid nested models. If either model fails to converge, or the LR statistic is negative, both the statistic and p-value are assigned as NA.
 ##'
-##' @return A list containing glmmTMB objects of model fits under the null and alternative, the Likelihood Ratio statistic, associated p-value, and all model formulas used.
+##' @return A list containing model fit objects of class \code{glmmTMB} (only if \code{return_full_fits}=TRUE), model fit summary objects of class \code{summary.glmmTMB}, the 2 d.f. Likelihood Ratio statistic, and the p-value, and all model formulas used.
 ##' @export lr.twosigma_custom
-# Likely will want to remove the ability to input a formula for this fn to work properly
 
 lr.twosigma_custom<-function(count_matrix,mean_form_alt,zi_form_alt,mean_form_null,zi_form_null
                       ,id,lr.df,return_full_fits=TRUE,
-                      covar_logFC=NULL,
                       disp_covar=NULL
-                      ,weights=rep(1,length(count))
+                      ,weights=rep(1,ncol(count_matrix))
                       ,control=glmmTMBControl(),silent=FALSE)
-                      #,control = glmmTMBControl(optCtrl=list(iter.max=1e5,eval.max=1e5
-                      #  ,step.max=.00001,step.min=.00001
-                      #  ,rel.tol=1e-5,x.tol=1e-5)))
   {
+  passed_args <- names(as.list(match.call())[-1])
+  required_args<-c("count_matrix","mean_form_alt","zi_form_alt","mean_form_null","zi_form_null","id","lr.df")
+  if (any(!required_args %in% passed_args)) {
+    stop(paste("Argument(s)",paste(setdiff(required_args, passed_args), collapse=", "),"missing and must be specified."))
+  }
   if(!is.matrix(count_matrix)){stop("Please ensure the input count_matrix is of class matrix.")}
+  if(length(id)!=ncol(count_matrix)){stop("Argument id should be a numeric vector with length equal to the number of columns of count_matrix (i.e. the number of cells).")}
   ngenes<-nrow(count_matrix)
 
   LR_stat<-rep(NA,length=ngenes)
@@ -40,7 +43,7 @@ lr.twosigma_custom<-function(count_matrix,mean_form_alt,zi_form_alt,mean_form_nu
   }
 
   for(i in 1:ngenes){
-    count<-count_matrix[i,]
+    count<-count_matrix[i,,drop=FALSE]
     check_twosigma_custom_input(count,mean_form_alt,zi_form_alt,id,disp_covar)
     check_twosigma_custom_input(count,mean_form_null,zi_form_null,id,disp_covar)
     count<-as.numeric(count)
@@ -78,27 +81,12 @@ lr.twosigma_custom<-function(count_matrix,mean_form_alt,zi_form_alt,mean_form_nu
       ,dispformula = formulas_null$disp_form
       ,family=nbinom2,verbose = F
       ,control = control)
-#browser()
-    #sum_null<-summary(fit_null)
-    #sum_alt<-summary(fit_alt)
-    #browser()
-    #if(is.character(contrast)){}
-    #names_null<-rownames(sum_null$coefficients$cond)
-    #names_alt<-rownames(sum_alt$coefficients$cond)
-
-    #index<-which(grepl(covar_logFC,names_alt))
-    #est<-sum_alt$coefficients$cond[index,1]
-
-    #names_alt<-rownames(sum_alt$coefficients$cond)
-    #index<-which(grepl(covar_logFC,names_alt))
-    #est_zi<-sum_alt$coefficients$zi[index,1]
 
     LR_stat[i]<- as.numeric(-2*(summary(fit_null)$logLik-summary(fit_alt)$logLik))
     if(LR_stat[i]<0 | (!fit_alt$sdr$pdHess) | (!fit_null$sdr$pdHess)){
       LR_stat[i]<-NA
       message("LR stat set to NA, indicative of model specification or fitting problem")}
     p.val[i]<-1-pchisq(LR_stat[i],df=lr.df)
-    #browser()
     sum_fit_alt[[i]]<-summary(fit_alt)
     sum_fit_null[[i]]<-summary(fit_null)
     if(return_full_fits==TRUE){
@@ -107,7 +95,6 @@ lr.twosigma_custom<-function(count_matrix,mean_form_alt,zi_form_alt,mean_form_nu
     }
     if(!silent){print(paste("Finished Gene Number",i,"of",ngenes))}
   }
-  #browser()
   names(p.val)<-rownames(count_matrix)
   names(LR_stat)<-rownames(count_matrix)
   names(sum_fit_alt)<-rownames(count_matrix)

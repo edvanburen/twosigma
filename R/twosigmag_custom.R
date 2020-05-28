@@ -1,33 +1,39 @@
-##' Gene set testing adjusting for inter-gene correlation using the TWO-SIGMA model of ... with custom user-specified model formulas.
-##' @param count_matrix Matrix of non-negative integer read counts. If specifying custom formula(s) via the arguments mean_form and zi_form the expression in mean_form will supersede.
-##' @param index_test Index corresponding to rows of the count matrix that are in the test set. Either a list with each element being a different set or a numeric vector to test only a single set.
-##' @param index_ref Index corresponding to rows of the count matrix that are in the reference set.  If NULL, a reference set is randomly selected of the same size as test size using genes not in the test set or using all other genes. See all_as_ref.
+##' Gene set testing for single-cell RNA-sequencing data adjusting for inter-gene correlation using custom user-specified model formulas.
+##' @param count_matrix Matrix of non-negative integer read counts. If specifying custom formula(s) via the arguments mean_form and zi_form the expression in mean_form will supersede. It is recommended to make the rownames the gene names for better output.
+##' @param index_test List of indices corresponding to rows of the count matrix that are in the test set. Names of each list element (i.e. Gene Set Names) are carried forward to output if present.
+##' @param index_ref List of indices corresponding to rows of the count matrix that are in the reference set.  If NULL, a reference set is randomly selected of the same size as the test size using genes not in the test set (if all_as_ref=FALSE) or using all other genes (if all_as_ref=TRUE). See \code{all_as_ref}. Must be either NULL or a list with the same length as index_test.
 ##' @param all_as_ref Should all genes not in the test set be used as the reference? If FALSE, a random subset is taken of size equal to the test size.
-##' @param mean_form_alt Custom two-sided model formula for the (conditional) mean model under the null. Formula is passed directly into glmmTMB with random effects specified as in the lme4 package. Users should ensure that the dependent variable matches the argument to the parameter "count."
+##' @param mean_form_alt Custom two-sided model formula for the (conditional) mean model under the null. Formula is passed directly into glmmTMB with random effects specified as in the lme4 package. Users should ensure that the LHS of the formula begins with "count."
 ##' @param zi_form_alt Custom one-sided model formula for the zero-inflation model under the alternative. Formula is passed directly into glmmTMB with random effects specified as in lme4.
-##' @param mean_form_null Custom two-sided model formula for the (conditional) mean model under the null. Syntax is as in \code{mean_form_alt}.
+##' @param mean_form_null Custom two-sided model formula for the (conditional) mean model under the null. Syntax is as in \code{mean_form_alt}. Users should ensure that the LHS of the formula begins with "count."
 ##' @param zi_form_null Custom one-sided model formula for the zero-inflation model under the null. Syntax is as in \code{zi_form_alt}.
-##' @param id Vector of individual-level ID's. Used for random effect prediction and the adhoc method but required regardless.
+##' @param id Vector of individual-level (sample-level) ID's. Used to estimate inter-gene correlation and random effect prediction (if present) and is currently required.
 ##' @param lr.df degrees of freedom for the asymptotic chi-square approximation to the liklihood ratio statistic.
+##' @param mean_covar_logFC Covariate used for reporting direction (as Up or Down) of the test set. Either a string indicating the name of the covariate to use or an integer giving its associated position in the RHS of the mean_form_alt argument.
 ##' @param rho Inter-gene correlation value. If NULL (default), estimated using TWO-SIGMA model residuals.
 ##' @param allow_neg_corr Should negative correlation values be allowed? If FALSE, correlation is set to zero (leads to conservative inference).
 ##' @param disp_covar Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model. Defaults to NULL for constant dispersion.
-##' @param return_fits Should complete model fits be returned? Use cautiously because fit objects can be very large.
+##' @param return_summary_fits If TRUE, returns a summary.glmmTMB object for the Alternative model.
 ##' @param weights weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.
-##' @param control Control parameters for optimization in \code{glmmTMB}.
+##' @param control Control parameters for optimization in \code{glmmTMB}.  See \code{?glmmTMBControl}.
 ##' @section Details:  If adhoc=TRUE, any input in mean_re and zi_re will be ignored.
-##' @return An object of class \code{glmmTMB}.
-##' @param LR_stats_gene_level_all: Gives all gene-level likelihood ratio statistics.  Order matches the order of the inputted count matrix
-##' @param p.vals_gene_level: Gives p-values associated with `LR_stats_gene_level_all`.
-##' @param set_p.val: Vector of unadjusted set-level p-values. Order matches the order of inputted test sets.
-##' @param corr: Vector of estimated inter-gene correlations for each test set. Order matches the order of inputted test sets.
-##' @param test_sets: Vector of numeric indices corresponding to genes in each test set.
-##' @param ref_sets: Vector of numeric indices corresponding to the genes in each reference set.
-##' @param gene_level_fits: List of gene-level fits, returned only if `return_fits` is TRUE.
+##' @return A list with the following elements:
+##' ##' \itemize{
+##' \item{\code{gene_summary_fits: }}{Summary.glmmTMB objects for each gene from the alternative model (if return_summary_fits=TRUE)}
+##' \item{\code{LR_stats_gene_level_all: }}{Gives all gene-level likelihood ratio statistics.  Order matches the order of the inputted count matrix}
+##' \item{\code{p.vals_gene_level: }}{Gives p-values associated with \code{LR_stats_gene_level_all}.}
+##' \item{\code{set_p.val: }}{Vector of unadjusted set-level p-values. Order matches the order of inputted test sets.}
+##' \item{\code{set_p.val_ttest: }}{Vector of unadjusted set-level p-values using the t-test. Order matches the order of inputted test sets.}
+##' \item{\code{avg_logFC_gene_level: }}{Gives the average logFC for the covariate specified in the mean_covar_logFC argument.}
+##' \item{\code{direction: }}{Reports whether the test set tends to be Up or Down Regulated based on the covariate specified in the mean_covar_logFC argument.}
+##' \item{\code{corr: }}{Vector of estimated inter-gene correlations for each test set. Order matches the order of inputted test sets.}
+##' \item{\code{test_sets: }}{Vector of numeric indices corresponding to genes in each test set.}
+##' \item{\code{ref_sets: }}{Vector of numeric indices corresponding to the genes in each reference set.}
+##' }
 ##' @import glmmTMB
 ##' @import methods
 ##' @import pscl
-##' @importFrom stats anova as.formula lm pchisq rbinom residuals rnbinom rnorm cor pnorm vcov
+##' @importFrom stats anova as.formula lm pchisq rbinom residuals rnbinom rnorm cor pnorm vcov pt
 ##' @export twosigmag_custom
 
 twosigmag_custom<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean_form_alt,zi_form_alt,mean_form_null,zi_form_null
@@ -35,68 +41,49 @@ twosigmag_custom<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FAL
   ,rho=NULL
   ,allow_neg_corr=FALSE
   ,disp_covar=NULL #need to be able to use data option?
-  ,return_summary_fits=FALSE
-  ,weights=rep(1,length(count_matrix[1,]))
+  ,return_summary_fits=TRUE
+  ,weights=rep(1,ncol(count_matrix))
   ,control = glmmTMBControl()){
 
   #if(!(adhoc==FALSE)){print("The adhoc method is not recommended for gene set testing due to interpretability.")}
 
-  if(!is.matrix(count_matrix)){stop("Please ensure the input count_matrix is of class matrix.")}
-  if(is.list(index_test)){
-    nsets<-length(index_test)
-    list_lengths<-lapply(index_test,FUN=length)
-    if(sum(list_lengths<2)>0){stop("All test sets must have at least two genes. Please remove singleton or empty sets.")}
-  }else{ #index.test is a single numeric vector
-    nsets<-1
-    if(length(index_test)<2){stop("All test sets must have at least two genes. Please remove singleton or empty sets.")}
+  passed_args <- names(as.list(match.call())[-1])
+  required_args<-c("count_matrix","index_test","mean_form_alt","zi_form_alt","mean_form_null","zi_form_null","id"
+    ,"lr.df","mean_covar_logFC")
+  if (any(!required_args %in% passed_args)) {
+    stop(paste("Argument(s)",paste(setdiff(required_args, passed_args), collapse=", "),"missing and must be specified."))
   }
-
+  if(!is.list(index_test)){stop("Please ensure the input index_test is a list, even if only testing one set.")}
+  if(!is.null(index_ref) & !is.list(index_ref)){stop("Please ensure the input index_ref is a list, even if only testing one set.")}
+  ncells<-ncol(count_matrix)
+  nsets<-length(index_test)
+  list_lengths<-lapply(index_test,FUN=length)
+  if(sum(list_lengths<2)>0){stop("All test sets must have at least two genes. Please remove singleton or empty sets.")}
   if(all_as_ref==TRUE & !is.null(index_ref)){stop("Please specify either all_as_ref=TRUE or index_ref as a non-NULL input. If all_as_ref is TRUE, then index_ref must be NULL.")}
+
   if(!is.null(index_ref)){
-    if(is.list(index_ref)){
-      for(i in 1:nsets){
-        if(sum(index_test[[i]]%in%index_ref[[i]])>0){stop(paste("A gene should not be in both the test and reference sets. Check element number",i,"in test set or reference set."))}
-      }
-
-      if(is.list(index_test) & length(index_ref)!=length(index_test)){
-        stop("If index_test and index_ref are both lists they should be the same length.")
-      }
-    }else{
-      for(i in 1:nsets){
-        if(sum(index_test[[i]]%in%index_ref)>0){stop(paste("A gene should not be in both the test and reference sets. Check element number",i,"in test set or reference set."))}
-      }
-
-      index_ref<-rep(list(index_ref),nsets)
-    }
+    for(i in 1:nsets){
+      if(sum(index_test[[i]]%in%index_ref[[i]])>0){stop(paste("A gene should not be in both the test and reference sets. Check element number",i,"in test set or reference set."))}}
+    if(is.list(index_test) & length(index_ref)!=nsets){
+      stop("index_test and index_ref should be lists of the same length.")}
     genes<-unique(c(unlist(index_test),unlist(index_ref)))
     ngenes<-length(genes)
     ref_inputted<-TRUE
   }else {# will need to construct reference set
-    if(is.list(index_test)){
-      index_ref<-vector('list',length=nsets)
-      for(i in 1:nsets){
-        if(all_as_ref==FALSE){
-          index_ref[[i]]<-sample(setdiff(1:nrow(count_matrix),index_test[[i]]),size=length(index_test[[i]]))
-        }else{#all_as_ref==TRUE
-          index_ref[[i]]<-setdiff(1:nrow(count_matrix),index_test[[i]])
-        }
-      }
-      genes<-unique(c(unlist(index_test),unlist(index_ref)))
-    }else{#index_test is just a single gene set
+    index_ref<-vector('list',length=nsets)
+    for(i in 1:nsets){
       if(all_as_ref==FALSE){
-        index_ref<-sample(setdiff(1:nrow(count_matrix),index_test),size=length(index_test))
-      }else{
-        index_ref<-setdiff(1:nrow(count_matrix),index_test)
+        index_ref[[i]]<-sample(setdiff(1:nrow(count_matrix),index_test[[i]]),size=length(index_test[[i]]))
+      }else{#all_as_ref==TRUE
+        index_ref[[i]]<-setdiff(1:nrow(count_matrix),index_test[[i]])
       }
-
-      genes<-unique(c(unlist(index_test),unlist(index_ref)))
     }
+    genes<-unique(c(unlist(index_test),unlist(index_ref)))
     ngenes<-length(genes)
     ref_inputted<-FALSE
   }
 
-  if(max(unlist(index_test))>nrow(count_matrix) | min(unlist(index_test))<1){stop("Test Index seems to be invalid, must be numeric within the dimensions of the input count_matrix")}
-  ncells<-ncol(count_matrix)
+  if(max(unlist(index_test))>nrow(count_matrix) | min(unlist(index_test))<1){stop("index_test seems to be invalid, indices must be numeric within the row dimensions of the input count_matrix")}
 
   # Fit all gene level statistics that are needed
   if(return_summary_fits==TRUE){
@@ -106,28 +93,26 @@ twosigmag_custom<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FAL
   stats_all<-rep(NA,length=nrow(count_matrix))
   p.vals_gene_level<-rep(NA,length=nrow(count_matrix))
   avg_logFC_gene_level<-rep(NA,length=nrow(count_matrix))
-  #est_ZI_gene_level<-rep(NA,length=nrow(count_matrix))
-  #browser()
   for(i in 1:ngenes){
     l<-genes[i]
-      fit_twosigmag<-lr.twosigma_custom(count=count_matrix[l,,drop=FALSE],silent=TRUE
+      fit_twosigmag<-lr.twosigma_custom(count_matrix[l,,drop=FALSE],silent=TRUE
         ,mean_form_alt,zi_form_alt,mean_form_null,zi_form_null,id=id,return_full_fits = TRUE
         ,lr.df = lr.df)
-    #browser()
       residuals_all[l,]<-residuals(fit_twosigmag$full_fit_alt[[1]])
       stats_all[l]<-fit_twosigmag$LR_stat[1]
       p.vals_gene_level[l]<-fit_twosigmag$LR_p.val[1]
       if(return_summary_fits==TRUE){
         fit[[l]]<-fit_twosigmag$summary_fit_alt[[1]]
       }
-      #browser()
       sum_fit_alt<-fit_twosigmag$summary_fit_alt[[1]]$coefficients$cond
       names<-rownames(sum_fit_alt)
-      avg_logFC_gene_level[l]<-sum_fit_alt[grepl(mean_covar_logFC,names),'Estimate']
-      #sum_fit_alt_zi<-summary(fit_twosigmag[[1]]$fit_alt)$coefficients$zi
-      #names_zi<-rownames(sum_fit_alt_zi)
-      #est_ZI_gene_level[l]<-sum_fit_alt_zi[grepl(mean_covar_logFC,names),'Estimate']
-
+      if(is.numeric(mean_covar_logFC)){
+        #+1 for intercept
+        avg_logFC_gene_level[l]<-sum_fit_alt[mean_covar_logFC+1,'Estimate']
+      }
+      if(is.character(mean_covar_logFC)){
+        avg_logFC_gene_level[l]<-sum_fit_alt[grepl(mean_covar_logFC,names),'Estimate']
+      }
     print(paste("Finished Gene Number",i,"of",ngenes))
   }
   stats_test<-vector('list',length=nsets)
@@ -136,47 +121,20 @@ twosigmag_custom<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FAL
   p.val<-numeric(length=nsets)
   p.val_ttest<-numeric(length=nsets)
   rho_est<-numeric(length=nsets)
-  #browser()
   if(is.null(index_ref)){index_ref<-vector('list',length=nsets)}
-  #print(paste("Estimating Set-Level correlations and calculating p-values"))
   for(i in 1:nsets){
-    if(is.list(index_test)){
       stats_test[[i]]<-stats_all[index_test[[i]]]
-      stats_test[[i]]<-stats_test[[i]][!is.na(stats_test[[i]])]
-      test_size<-length(stats_test[[i]])
       residuals_test<-residuals_all[index_test[[i]],]
       direction[i]<-ifelse(sign(mean(avg_logFC_gene_level[index_test[[i]]]))==1,"Up","Down")
-    }else{
-      stats_test[[i]]<-stats_all[index_test]
-      stats_test[[i]]<-stats_test[[i]][!is.na(stats_test[[i]])]
-      test_size<-length(stats_test[[i]])
-      residuals_test<-residuals_all[index_test,]
-      direction[i]<-ifelse(sign(mean(avg_logFC_gene_level[index_test]))==1,"Up","Down")
-    }
-    # if(ref_inputted==FALSE){
-    #   #index_ref[[i]]<-setdiff(1:nrow(count_matrix),index_test[[i]])
-    #   stats_ref[[i]]<-stats_all[index_ref[[i]]]
-    #   ref_size<-length(index_ref[[i]])
-    # }else{
-    if(is.list(index_ref)){
       stats_ref[[i]]<-stats_all[index_ref[[i]]]
-      stats_ref[[i]]<-stats_ref[[i]][!is.na(stats_ref[[i]])]
-      ref_size<-length(stats_ref[[i]])
-    }else{
-      stats_ref[[i]]<-stats_all[index_ref]
-      stats_ref[[i]]<-stats_ref[[i]][!is.na(stats_ref[[i]])]
-      ref_size<-length(stats_ref[[i]])
-    }
     # }
 
     if(!is.null(rho)){rho_est[i]<-rho}
     if(is.null(rho)){
-      #print(paste("Estimating Set-Level correlation and calculating p-value"))
       nind<-length(unique(id))
       cor_temp<-numeric(length=nind)
       unique_id<-unique(id)
       j<-0
-      #browser()
       for(y in unique_id){
         j<-j+1
         temp<-cor(t(residuals_test[,which(id==y)])) # any checks for id behavior needed here?
@@ -184,7 +142,6 @@ twosigmag_custom<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FAL
       }
       rho_est[i]<-mean(cor_temp,na.rm=T)
     }
-    #browser()
     if(!allow_neg_corr & rho_est[i]<0){rho_est[i]<-0}
     # Missing values will get dropped in rank statement
     # so make sure sizes of test and reference sets don't include them
@@ -216,7 +173,6 @@ twosigmag_custom<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FAL
   #browser()
   if(return_summary_fits==TRUE){
     names(fit)<-rownames(count_matrix)
-    #return(list(LR_stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,set_p.val_ttest=p.val_ttest,direction=direction,avg_logFC_gene_level=avg_logFC_gene_level,est_ZI_gene_level=est_ZI_gene_level,corr=rho_est,test_sets=index_test,ref_sets=index_ref,gene_level_fits=fit_twosigmag))
     return(list(gene_summary_fits=fit,LR_stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,set_p.val_ttest=p.val_ttest,avg_logFC_gene_level=avg_logFC_gene_level,direction=direction,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
   }else{
     return(list(LR_stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,set_p.val_ttest=p.val_ttest,avg_logFC_gene_level=avg_logFC_gene_level,direction=direction,corr=rho_est,test_sets=index_test,ref_sets=index_ref))

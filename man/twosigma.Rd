@@ -2,14 +2,15 @@
 % Please edit documentation in R/twosigma.R
 \name{twosigma}
 \alias{twosigma}
-\title{TWO-SIGMA: Fit the TWO-component SInGle cell Model-based Association method of...}
+\title{Fit the TWO-SIGMA Model.}
 \usage{
-twosigma(count, mean_covar, zi_covar, mean_re = TRUE, zi_re = TRUE, id,
-  adhoc = TRUE, adhoc_thresh = 0.1, disp_covar = NULL,
-  weights = rep(1, length(count)), control = glmmTMBControl())
+twosigma(count_matrix, mean_covar, zi_covar, mean_re = TRUE,
+  zi_re = TRUE, id, adhoc = TRUE, adhoc_thresh = 0.1,
+  return_summary_fits = TRUE, disp_covar = NULL, weights = rep(1,
+  ncol(count_matrix)), control = glmmTMBControl())
 }
 \arguments{
-\item{count}{Vector of non-negative integer read counts. If specifying custom formula(s) via the arguments mean_form and zi_form the expression in mean_form will supersede.}
+\item{count_matrix}{Matrix of non-negative integer read counts, with rows corresponding to genes and columns correspoding to cells. It is recommended to make the rownames the gene names for better output.}
 
 \item{mean_covar}{Covariates for the (conditional) mean model. Must be a matrix (without an intercept column) or = 1 to indicate an intercept only model.}
 
@@ -25,17 +26,19 @@ twosigma(count, mean_covar, zi_covar, mean_re = TRUE, zi_re = TRUE, id,
 
 \item{adhoc_thresh}{Value below which the adhoc p-value is deemed significant (and thus RE are deemed necessary). Only used if adhoc==TRUE.}
 
+\item{return_summary_fits}{If TRUE, the package returns a summary.glmmTMB object for each gene.  If FALSE, an object of class glmmTMB is returned for each gene. The latter requires far more memory to store.}
+
 \item{disp_covar}{Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model. Defaults to NULL for constant dispersion.}
 
 \item{weights}{weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.}
 
-\item{control}{Control parameters for optimization in \code{glmmTMB}.}
+\item{control}{Control parameters for optimization in \code{glmmTMB}.  See \code{?glmmTMBControl}.}
 }
 \value{
-An object of class \code{glmmTMB}.
+If \code{return_summary_fits=TRUE}, returns a list of model fit objects of class \code{summary.glmmTMB}. If \code{return_summary_fits=FALSE}, returns a list of model fit objects of class \code{glmmTMB}. In either case, the order matches the row order of \code{count_matrix}, and the names of the list elements are taken as the rownames of \code{count_matrix}.
 }
 \description{
-TWO-SIGMA: Fit the TWO-component SInGle cell Model-based Association method of...
+Fit the TWO-SIGMA Model.
 }
 \section{Details}{
   If adhoc=TRUE, any input in mean_re and zi_re will be ignored.

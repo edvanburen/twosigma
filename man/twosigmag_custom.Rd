@@ -2,34 +2,37 @@
 % Please edit documentation in R/twosigmag_custom.R
 \name{twosigmag_custom}
 \alias{twosigmag_custom}
-\title{Gene set testing adjusting for inter-gene correlation using the TWO-SIGMA model of ... with custom user-specified model formulas.}
+\title{Gene set testing for single-cell RNA-sequencing data adjusting for inter-gene correlation using custom user-specified model formulas.}
 \usage{
 twosigmag_custom(count_matrix, index_test, index_ref = NULL,
   all_as_ref = FALSE, mean_form_alt, zi_form_alt, mean_form_null,
-  zi_form_null, id, lr.df, rho = NULL, allow_neg_corr = FALSE,
-  disp_covar = NULL, return_fits = FALSE, weights = rep(1,
-  length(count_matrix[1, ])), control = glmmTMBControl())
+  zi_form_null, id, lr.df, mean_covar_logFC, rho = NULL,
+  allow_neg_corr = FALSE, disp_covar = NULL,
+  return_summary_fits = TRUE, weights = rep(1, ncol(count_matrix)),
+  control = glmmTMBControl())
 }
 \arguments{
-\item{count_matrix}{Matrix of non-negative integer read counts. If specifying custom formula(s) via the arguments mean_form and zi_form the expression in mean_form will supersede.}
+\item{count_matrix}{Matrix of non-negative integer read counts. If specifying custom formula(s) via the arguments mean_form and zi_form the expression in mean_form will supersede. It is recommended to make the rownames the gene names for better output.}
 
-\item{index_test}{Index corresponding to rows of the count matrix that are in the test set. Either a list with each element being a different set or a numeric vector to test only a single set.}
+\item{index_test}{List of indices corresponding to rows of the count matrix that are in the test set. Names of each list element (i.e. Gene Set Names) are carried forward to output if present.}
 
-\item{index_ref}{Index corresponding to rows of the count matrix that are in the reference set.  If NULL, a reference set is randomly selected of the same size as test size using genes not in the test set or using all other genes. See all_as_ref.}
+\item{index_ref}{List of indices corresponding to rows of the count matrix that are in the reference set.  If NULL, a reference set is randomly selected of the same size as the test size using genes not in the test set (if all_as_ref=FALSE) or using all other genes (if all_as_ref=TRUE). See \code{all_as_ref}. Must be either NULL or a list with the same length as index_test.}
 
 \item{all_as_ref}{Should all genes not in the test set be used as the reference? If FALSE, a random subset is taken of size equal to the test size.}
 
-\item{mean_form_alt}{Custom two-sided model formula for the (conditional) mean model under the null. Formula is passed directly into glmmTMB with random effects specified as in the lme4 package. Users should ensure that the dependent variable matches the argument to the parameter "count."}
+\item{mean_form_alt}{Custom two-sided model formula for the (conditional) mean model under the null. Formula is passed directly into glmmTMB with random effects specified as in the lme4 package. Users should ensure that the LHS of the formula begins with "count."}
 
 \item{zi_form_alt}{Custom one-sided model formula for the zero-inflation model under the alternative. Formula is passed directly into glmmTMB with random effects specified as in lme4.}
 
-\item{mean_form_null}{Custom two-sided model formula for the (conditional) mean model under the null. Syntax is as in \code{mean_form_alt}.}
+\item{mean_form_null}{Custom two-sided model formula for the (conditional) mean model under the null. Syntax is as in \code{mean_form_alt}. Users should ensure that the LHS of the formula begins with "count."}
 
 \item{zi_form_null}{Custom one-sided model formula for the zero-inflation model under the null. Syntax is as in \code{zi_form_alt}.}
 
-\item{id}{Vector of individual-level ID's. Used for random effect prediction and the adhoc method but required regardless.}
+\item{id}{Vector of individual-level (sample-level) ID's. Used to estimate inter-gene correlation and random effect prediction (if present) and is currently required.}
 
 \item{lr.df}{degrees of freedom for the asymptotic chi-square approximation to the liklihood ratio statistic.}
+
+\item{mean_covar_logFC}{Covariate used for reporting direction (as Up or Down) of the test set. Either a string indicating the name of the covariate to use or an integer giving its associated position in the RHS of the mean_form_alt argument.}
 
 \item{rho}{Inter-gene correlation value. If NULL (default), estimated using TWO-SIGMA model residuals.}
 
@@ -37,31 +40,29 @@ twosigmag_custom(count_matrix, index_test, index_ref = NULL,
 
 \item{disp_covar}{Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model. Defaults to NULL for constant dispersion.}
 
-\item{return_fits}{Should complete model fits be returned? Use cautiously because fit objects can be very large.}
+\item{return_summary_fits}{If TRUE, returns a summary.glmmTMB object for the Alternative model.}
 
 \item{weights}{weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.}
 
-\item{control}{Control parameters for optimization in \code{glmmTMB}.}
-
-\item{LR_stats_gene_level_all:}{Gives all gene-level likelihood ratio statistics.  Order matches the order of the inputted count matrix}
-
-\item{p.vals_gene_level:}{Gives p-values associated with `LR_stats_gene_level_all`.}
-
-\item{set_p.val:}{Vector of unadjusted set-level p-values. Order matches the order of inputted test sets.}
-
-\item{corr:}{Vector of estimated inter-gene correlations for each test set. Order matches the order of inputted test sets.}
-
-\item{test_sets:}{Vector of numeric indices corresponding to genes in each test set.}
-
-\item{ref_sets:}{Vector of numeric indices corresponding to the genes in each reference set.}
-
-\item{gene_level_fits:}{List of gene-level fits, returned only if `return_fits` is TRUE.}
+\item{control}{Control parameters for optimization in \code{glmmTMB}.  See \code{?glmmTMBControl}.}
 }
 \value{
-An object of class \code{glmmTMB}.
+A list with the following elements:
+##' \itemize{
+\item{\code{gene_summary_fits: }}{Summary.glmmTMB objects for each gene from the alternative model (if return_summary_fits=TRUE)}
+\item{\code{LR_stats_gene_level_all: }}{Gives all gene-level likelihood ratio statistics.  Order matches the order of the inputted count matrix}
+\item{\code{p.vals_gene_level: }}{Gives p-values associated with \code{LR_stats_gene_level_all}.}
+\item{\code{set_p.val: }}{Vector of unadjusted set-level p-values. Order matches the order of inputted test sets.}
+\item{\code{set_p.val_ttest: }}{Vector of unadjusted set-level p-values using the t-test. Order matches the order of inputted test sets.}
+\item{\code{avg_logFC_gene_level: }}{Gives the average logFC for the covariate specified in the mean_covar_logFC argument.}
+\item{\code{direction: }}{Reports whether the test set tends to be Up or Down Regulated based on the covariate specified in the mean_covar_logFC argument.}
+\item{\code{corr: }}{Vector of estimated inter-gene correlations for each test set. Order matches the order of inputted test sets.}
+\item{\code{test_sets: }}{Vector of numeric indices corresponding to genes in each test set.}
+\item{\code{ref_sets: }}{Vector of numeric indices corresponding to the genes in each reference set.}
+}
 }
 \description{
-Gene set testing adjusting for inter-gene correlation using the TWO-SIGMA model of ... with custom user-specified model formulas.
+Gene set testing for single-cell RNA-sequencing data adjusting for inter-gene correlation using custom user-specified model formulas.
 }
 \section{Details}{
   If adhoc=TRUE, any input in mean_re and zi_re will be ignored.

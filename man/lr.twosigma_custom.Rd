@@ -2,14 +2,15 @@
 % Please edit documentation in R/lr.twosigma_custom.R
 \name{lr.twosigma_custom}
 \alias{lr.twosigma_custom}
-\title{Conveinent wrapper function for performing joint likelihood ratio tests with the TWO-SIGMA model of ... with custom user-specified formulas.}
+\title{Conveinent wrapper function for performing joint likelihood ratio tests with the TWO-SIGMA model using custom user-specified formulas.}
 \usage{
-lr.twosigma_custom(count, mean_form_alt, zi_form_alt, mean_form_null,
-  zi_form_null, id, lr.df, disp_covar = NULL, weights = rep(1,
-  length(count)), control = glmmTMBControl())
+lr.twosigma_custom(count_matrix, mean_form_alt, zi_form_alt,
+  mean_form_null, zi_form_null, id, lr.df, return_full_fits = TRUE,
+  disp_covar = NULL, weights = rep(1, ncol(count_matrix)),
+  control = glmmTMBControl(), silent = FALSE)
 }
 \arguments{
-\item{count}{Vector of non-negative integer read counts.}
+\item{count_matrix}{Matrix of non-negative integer read counts, with rows corresponding to genes and columns correspoding to cells. It is recommended to make the rownames the gene names for better output.}
 
 \item{mean_form_alt}{Custom two-sided model formula for the (conditional) mean model under the null. Formula is passed directly into glmmTMB with random effects specified as in the lme4 package. Users should ensure that the dependent variable matches the argument to the parameter "count."}
 
@@ -19,21 +20,25 @@ lr.twosigma_custom(count, mean_form_alt, zi_form_alt, mean_form_null,
 
 \item{zi_form_null}{Custom one-sided model formula for the zero-inflation model under the null. Syntax is as in \code{zi_form_alt}.}
 
-\item{id}{Vector of individual-level ID's. Used for random effect prediction and the adhoc method but required regardless.}
+\item{id}{Vector of individual-level (sample-level) ID's. Used for random effect prediction but required regardless of their presence in the model.}
 
 \item{lr.df}{Degrees of Freedom for the constructed likelihood ratio test. Must be a non-negative integer.}
+
+\item{return_full_fits}{If TRUE, full fit objects of class glmmTMB are returned.  If FALSE, only fit objects of class summary.glmmTMB are returned.  The latter requires far less memory to store.}
 
 \item{disp_covar}{Covariates for a log-linear model for the dispersion. Either a matrix or = 1 to indicate an intercept only model.}
 
 \item{weights}{weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.}
 
-\item{control}{Control parameters for optimization in glmmTMB.}
+\item{control}{Control parameters for optimization in glmmTMB.  See \code{?glmmTMBControl}.}
+
+\item{silent}{If TRUE, progress is not printed.}
 }
 \value{
-A list containing glmmTMB objects of model fits under the null and alternative, the Likelihood Ratio statistic, associated p-value, and all model formulas used.
+A list containing model fit objects of class \code{glmmTMB} (only if \code{return_full_fits}=TRUE), model fit summary objects of class \code{summary.glmmTMB}, the 2 d.f. Likelihood Ratio statistic, and the p-value, and all model formulas used.
 }
 \description{
-Conveinent wrapper function for performing joint likelihood ratio tests with the TWO-SIGMA model of ... with custom user-specified formulas.
+Conveinent wrapper function for performing joint likelihood ratio tests with the TWO-SIGMA model using custom user-specified formulas.
 }
 \section{Details}{
 
