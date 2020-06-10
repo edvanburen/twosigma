@@ -162,7 +162,9 @@ lr.fit<-lr.twosigma(counts,covar_to_test="t2d_sim",mean_covar = X,zi_covar=Z,id=
 lr.fit$LR_stat
 lr.fit$LR_p.val
 
-lr.fit_custom<-lr.twosigma_custom(counts,mean_form_alt=count~t2d_sim+age_sim+cdr_sim, zi_form_alt=~t2d_sim+age_sim+cdr_sim, mean_form_null=count~age_sim+cdr_sim,zi_form_null=~age_sim+cdr_sim,id=id,lr.df=2)
+lr.fit_custom<-lr.twosigma_custom(counts,mean_form_alt=count~t2d_sim+age_sim+cdr_sim
+, zi_form_alt=~t2d_sim+age_sim+cdr_sim, mean_form_null=count~age_sim+cdr_sim
+,zi_form_null=~age_sim+cdr_sim,id=id,lr.df=2)
 lr.fit_custom$LR_stat
 lr.fit_custom$LR_p.val
 
@@ -195,14 +197,15 @@ gst$set_p.val
 
 # Use Z-statistic
 
-gst2<-twosigmag(sim_dat2,index_test = list("Set 1" = c(6:10)),mean_form = count~t2d_sim+age_sim+cdr_sim,zi_form = ~t2d_sim+age_sim+cdr_sim,id=id,covar_to_test  = "t2d_sim"
-,ncores = 1,statistic = "Z")
+gst2<-twosigmag(sim_dat2,index_test = list("Set 1" = c(6:10)),mean_form = count~t2d_sim+age_sim+cdr_sim
+,zi_form = ~t2d_sim+age_sim+cdr_sim,id=id,covar_to_test  = "t2d_sim",ncores = 1,statistic = "Z")
 
 gst2$set_p.val
 
 # Testing a simple contrast 
 
-gst3<-twosigmag(sim_dat2,index_test = list("Set 1" = c(6:10)),mean_form = count~t2d_sim+age_sim+cdr_sim,zi_form = ~t2d_sim+age_sim+cdr_sim,id=id,statistic = "contrast"
+gst3<-twosigmag(sim_dat2,index_test = list("Set 1" = c(6:10)),mean_form = count~t2d_sim+age_sim+cdr_sim
+,zi_form = ~t2d_sim+age_sim+cdr_sim,id=id,statistic = "contrast"
 ,contrast_matrix = matrix(c(0,1,0,0),nrow=1),ncores = 1)
 
 # Same result as using Z test
@@ -228,8 +231,9 @@ gst4<-twosigmag(sim_dat2,index_test = list("Set 1" = c(6:10))
 cont_matrix2<-matrix(c(0,0,0,0,1,0,0,0,0,0,0,1),nrow=2,byrow = T)
 rownames(cont_matrix2)<-c("Test 1","Test 2")
 
-gst5<-twosigmag(sim_dat2,index_test = list("Set 1" = c(6:10)),mean_form = count~t2d_sim+age_sim+cdr_sim+fact,zi_form = ~t2d_sim+age_sim+cdr_sim,id=id,statistic = "contrast",contrast_matrix = cont_matrix2
-  ,ncores = 1,return_summary_fits = T)
+gst5<-twosigmag(sim_dat2,index_test = list("Set 1" = c(6:10)),mean_form = count~t2d_sim+age_sim+cdr_sim+fact
+,zi_form = ~t2d_sim+age_sim+cdr_sim,id=id,statistic = "contrast",contrast_matrix = cont_matrix2
+,ncores = 1,return_summary_fits = T)
   
 #Two give the same results
 
