@@ -5,59 +5,65 @@
 \title{Gene set testing for single-cell RNA-sequencing data adjusting for inter-gene correlation.}
 \usage{
 twosigmag(count_matrix, index_test, index_ref = NULL,
-  all_as_ref = FALSE, covar_to_test, mean_covar, zi_covar,
-  mean_re = TRUE, zi_re = TRUE, id, rho = NULL,
-  allow_neg_corr = FALSE, adhoc = FALSE, adhoc_thresh = 0.1,
-  disp_covar = NULL, return_summary_fits = FALSE, weights = rep(1,
-  ncol(count_matrix)), control = glmmTMBControl())
+  all_as_ref = FALSE, mean_form, zi_form, mean_form_null = NULL,
+  zi_form_null = NULL, id, statistic = "LR", lr.df = NULL,
+  covar_to_test = NULL, contrast_matrix = NULL, factor_name = NULL,
+  rho = NULL, allow_neg_corr = FALSE, return_summary_fits = TRUE,
+  weights = rep(1, ncol(count_matrix)), control = glmmTMBControl(),
+  ncores = 1)
 }
 \arguments{
-\item{count_matrix}{Matrix of non-negative integer read counts. If specifying custom formula(s) via the arguments mean_form and zi_form the expression in mean_form will supersede. It is recommended to make the rownames the gene names for better output.}
+\item{count_matrix}{Matrix of non-negative integer read counts. It is recommended to make the rownames the gene names for better output. No missing values can be present in the data.}
 
-\item{index_test}{List of indices corresponding to rows of the count matrix that are in the test set.}
+\item{index_test}{List of indices corresponding to rows of the count matrix that are in the test set. Names of each list element (i.e. Gene Set Names) are carried forward to output if present.}
 
-\item{index_ref}{List of indices corresponding to rows of the count matrix that are in the reference set.  If NULL, a reference set is randomly selected of the same size as the test size using genes not in the test set (if all_as_ref=FALSE) or using all other genes (if all_as_ref=TRUE). See \code{all_as_ref}. Must be either NULL or a list with the same length as index_test.}
+\item{index_ref}{List of indices corresponding to rows of the count matrix that are in the reference set.  If \code{NULL}, a reference set is randomly selected of the same size as the test size using genes not in the test set (if \code{all_as_ref=FALSE}) or using all other genes (if \code{all_as_ref=TRUE}). See \code{all_as_ref}. Must be either \code{NULL} or a list with the same length as \code{index_test}.}
 
-\item{all_as_ref}{Should all genes not in the test set be used as the reference? If FALSE, a random subset is taken of size equal to the test size.}
+\item{all_as_ref}{Should all genes not in the test set be used as the reference? If \code{FALSE}, a random subset is taken of size equal to the test size.}
 
-\item{covar_to_test}{Covariate used for reporting direction (as Up or Down) of the test set. Either a string indicating the name of the covariate to use or an integer giving its associated position in the mean_covar argument.}
+\item{mean_form}{Two-sided model formula for the (conditional) mean model. Formula is passed directly into glmmTMB with random effects specified as in the lme4 package. Users should ensure that the LHS of the formula contains  '\code{count} '.}
 
-\item{mean_covar}{Covariates for the (conditional) mean model. Must be a matrix (without an intercept column) or = 1 to indicate an intercept only model.}
+\item{zi_form}{One-sided model formula for the zero-inflation model under the alternative. Formula is passed directly into glmmTMB with random effects specified as in the lme4 package.}
 
-\item{zi_covar}{Covariates for the zero-inflation model. Must be a matrix (without an intercept column), = 1 to indicate an intercept only model, or = 0 to indicate no zero-inflation model desired.}
+\item{mean_form_null}{Two-sided model formula for the (conditional) mean model under the null. Needed if and only if \code{statistic='LR'}. Syntax is as in \code{mean_form}. Users should ensure that the LHS of the formula contains '\code{count} '.}
 
-\item{mean_re}{Should random intercepts be included in the (conditional) mean model? Ignored if adhoc=TRUE.}
+\item{zi_form_null}{One-sided model formula for the zero-inflation model under the null. Needed if and only if \code{statistic='LR'}. Syntax is as in \code{zi_form}.}
 
-\item{zi_re}{Should random intercepts be included in the zero-inflation model? Ignored if adhoc=TRUE.}
+\item{id}{Vector of individual-level (sample-level) ID's. Used to estimate inter-gene correlation and random effect prediction (if present) and is currently required.}
 
-\item{id}{Vector of individual-level (sample-level) ID's. Used to estimate inter-gene correlation and for random effect prediction (if present).}
+\item{statistic}{Which gene-level statistic should be used. Options are Likelihood Ratio ("LR", default), Z-statistic from the mean model ("Z"),the  Stouffer's method combined Z-statistic ("Stouffer"), or a contrast of regression parameters ("contrast"). If "Stouffer", covar_to_test must be in both components. If "contrast", covar_to_test is not used and must be \code{NULL}.}
 
-\item{rho}{Inter-gene correlation value. If NULL (default), estimated using model residuals from TWO-SIGMAG.}
+\item{lr.df}{degrees of freedom for the asymptotic chi-square approximation to the liklihood ratio statistic. Needed if and only if \code{statistic='LR'}.}
 
-\item{allow_neg_corr}{Should negative correlation values be allowed? If FALSE, correlation is set to zero (leads to conservative inference).}
+\item{covar_to_test}{Covariate used for reporting direction (as Up or Down) of the test set and for collecting gene-level statistics. Either a string indicating the name of the covariate to use or an integer giving its associated position in the RHS of the mean_form argument. If a string, the name is matched to the predictors of the mean model, so users should ensure such a match would be unique. Not required and should be \code{NULL} if \code{statistic='contrast'.}}
 
-\item{adhoc}{Should the adhoc method be used by default to judge if random effects are needed? Defaults to FALSE. Setting to TRUE means that different genes could have different models used, which may not be desirable for interpretability.}
+\item{contrast_matrix}{Matrix of contrasts of regression parameters from the mean model to be tested. Each row will have separate gene-level and set-level statistics.  Rownames of \code{contrast_matrix} should correspond to a meaningful name of the hypothesis for nicely formatted output. If testing a factor, must have a number of columns exactly equal to the number of levels of the factor.  Otherwise, must have one column per parameter in the mean model (including a column for the intercept.)}
 
-\item{adhoc_thresh}{Value below which the adhoc p-value is deemed significant (and thus RE are deemed necessary). Only used if adhoc==TRUE.}
+\item{factor_name}{Name of the factor being tested by \code{contrast_matrix}. Needed if and only if \code{statistic='contrast'} and \code{contrast_matrix} is testing a factor variable in the mean model.}
 
-\item{disp_covar}{Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model. Defaults to NULL for constant dispersion.}
+\item{rho}{Inter-gene correlation value. If \code{NULL} (default), estimated using TWO-SIGMA model residuals.}
 
-\item{return_summary_fits}{If TRUE, returns a summary.glmmTMB object for the Alternative model.}
+\item{allow_neg_corr}{Should negative correlation values be allowed? If FALSE, negative correlations are set to zero (leads to conservative inference)..}
 
-\item{weights}{weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.}
+\item{return_summary_fits}{If \code{TRUE}, returns a list containing objects of class \code{summary.glmmTMB} for each gene.}
 
-\item{control}{Control parameters for optimization in \code{glmmTMB}. See \code{?glmmTMBControl}.}
+\item{weights}{weights, as in \code{glm}. Defaults to 1 for all observations and no scaling or centering of weights is performed.}
+
+\item{control}{Control parameters for optimization in \code{glmmTMB}.  See \code{?glmmTMBControl}.}
+
+\item{ncores}{Number of cores used for parallelization. Defaults to 1.}
 }
 \value{
 A list with the following elements:
-\itemize{
-\item{\code{gene_summary_fits: }}{summary.glmmTMB objects for each gene from the alternative model (if return_summary_fits=TRUE)}
-\item{\code{LR_stats_gene_level_all: }}{Gives all gene-level likelihood ratio statistics.  Order matches the order of the inputted count matrix.}
-\item{\code{p.vals_gene_level: }}{Gives p-values associated with \code{LR_stats_gene_level_all}.}
+##' \itemize{
+\item{\code{gene_summary_fits: }}{Summary.glmmTMB objects for each gene from the alternative model (if return_summary_fits=TRUE)}
+\item{\code{stats_gene_level_all: }}{Gives all gene-level statistics.  Order matches the order of the inputted count matrix.}
+\item{\code{p.vals_gene_level: }}{Gives raw (unadjusted) p-values associated with \code{LR_stats_gene_level_all}.}
 \item{\code{set_p.val: }}{Vector of unadjusted set-level p-values. Order matches the order of inputted test sets.}
 \item{\code{set_p.val_ttest: }}{Vector of unadjusted set-level p-values using the t-test. Order matches the order of inputted test sets.}
-\item{\code{avg_logFC_gene_level: }}{Gives the average logFC for the covariate specified in the mean_covar_logFC argument.}
-\item{\code{direction: }}{Reports whether the test set tends to be Up or Down Regulated based on the covariate specified in the mean_covar_logFC argument.}
+\item{\code{estimates_gene_level: }}{Gives the average logFC or contrast estimate for each gene.}
+\item{\code{estimates_set_level: }}{Gives the set-level average of the gene-level logFC or contrast estimates.}
+\item{\code{direction: }}{Reports whether the test set tends to be Up or Down Regulated based on the sign of \code{estimates_set_level}.}
 \item{\code{corr: }}{Vector of estimated inter-gene correlations for each test set. Order matches the order of inputted test sets.}
 \item{\code{test_sets: }}{Vector of numeric indices corresponding to genes in each test set.}
 \item{\code{ref_sets: }}{Vector of numeric indices corresponding to the genes in each reference set.}
@@ -66,7 +72,3 @@ A list with the following elements:
 \description{
 Gene set testing for single-cell RNA-sequencing data adjusting for inter-gene correlation.
 }
-\section{Details}{
-  If adhoc=TRUE, any input in mean_re and zi_re will be ignored.
-}
-

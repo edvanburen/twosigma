@@ -5,8 +5,9 @@
 \title{Fit the TWO-SIGMA model with custom user-specified model formulas.}
 \usage{
 twosigma_custom(count_matrix, mean_form, zi_form, id,
-  return_summary_fits = TRUE, silent = FALSE, disp_covar = NULL,
-  weights = rep(1, ncol(count_matrix)), control = glmmTMBControl())
+  return_summary_fits = TRUE, silent = FALSE, ncores = 1,
+  disp_covar = NULL, weights = rep(1, ncol(count_matrix)),
+  control = glmmTMBControl())
 }
 \arguments{
 \item{count_matrix}{Matrix of non-negative integer read counts, with rows corresponding to genes and columns correspoding to cells. It is recommended to make the rownames the gene names for better output.}
@@ -17,9 +18,11 @@ twosigma_custom(count_matrix, mean_form, zi_form, id,
 
 \item{id}{Vector of individual-level (sample-level) ID's. Used for random effect prediction but required regardless of their presence in the model.}
 
-\item{return_summary_fits}{If TRUE, the package returns a summary.glmmTMB object for each gene.  If TRUE, a glmmTMB object is returned for each gene. The latter requires far more storage space.}
+\item{return_summary_fits}{If TRUE, the package returns a \code{summary.glmmTMB} object for each gene.  If FALSE, a \code{glmmTMB} object is returned for each gene. The latter requires far more storage space.}
 
 \item{silent}{If TRUE, progress is not printed.}
+
+\item{ncores}{Number of cores used for parallelization. Defaults to 1.}
 
 \item{disp_covar}{Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model.}
 

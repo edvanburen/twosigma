@@ -6,8 +6,8 @@
 \usage{
 lr.twosigma_custom(count_matrix, mean_form_alt, zi_form_alt,
   mean_form_null, zi_form_null, id, lr.df, return_full_fits = TRUE,
-  disp_covar = NULL, weights = rep(1, ncol(count_matrix)),
-  control = glmmTMBControl(), silent = FALSE)
+  ncores = 1, disp_covar = NULL, weights = rep(1,
+  ncol(count_matrix)), control = glmmTMBControl(), silent = FALSE)
 }
 \arguments{
 \item{count_matrix}{Matrix of non-negative integer read counts, with rows corresponding to genes and columns correspoding to cells. It is recommended to make the rownames the gene names for better output.}
@@ -25,6 +25,8 @@ lr.twosigma_custom(count_matrix, mean_form_alt, zi_form_alt,
 \item{lr.df}{Degrees of Freedom for the constructed likelihood ratio test. Must be a non-negative integer.}
 
 \item{return_full_fits}{If TRUE, full fit objects of class glmmTMB are returned.  If FALSE, only fit objects of class summary.glmmTMB are returned.  The latter requires far less memory to store.}
+
+\item{ncores}{Number of cores used for parallelization. Defaults to 1.}
 
 \item{disp_covar}{Covariates for a log-linear model for the dispersion. Either a matrix or = 1 to indicate an intercept only model.}
 

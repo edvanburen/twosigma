@@ -187,7 +187,6 @@ if(is.null(mean_form)){
 
 }
 
-
 create_adhoc_formulas2<-function(count,mean_covar,zi_covar){
   if(is.matrix(mean_covar)&is.matrix(zi_covar)){
     form<-count~mean_covar|zi_covar

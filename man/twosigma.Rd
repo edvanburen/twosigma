@@ -6,8 +6,8 @@
 \usage{
 twosigma(count_matrix, mean_covar, zi_covar, mean_re = TRUE,
   zi_re = TRUE, id, adhoc = TRUE, adhoc_thresh = 0.1,
-  return_summary_fits = TRUE, disp_covar = NULL, weights = rep(1,
-  ncol(count_matrix)), control = glmmTMBControl())
+  return_summary_fits = TRUE, ncores = 1, disp_covar = NULL,
+  weights = rep(1, ncol(count_matrix)), control = glmmTMBControl())
 }
 \arguments{
 \item{count_matrix}{Matrix of non-negative integer read counts, with rows corresponding to genes and columns correspoding to cells. It is recommended to make the rownames the gene names for better output.}
@@ -26,7 +26,9 @@ twosigma(count_matrix, mean_covar, zi_covar, mean_re = TRUE,
 
 \item{adhoc_thresh}{Value below which the adhoc p-value is deemed significant (and thus RE are deemed necessary). Only used if adhoc==TRUE.}
 
-\item{return_summary_fits}{If TRUE, the package returns a summary.glmmTMB object for each gene.  If FALSE, an object of class glmmTMB is returned for each gene. The latter requires far more memory to store.}
+\item{return_summary_fits}{If TRUE, the package returns a \code{summary.glmmTMB} object for each gene.  If FALSE, an object of class \code{glmmTMB} is returned for each gene. The latter requires far more memory to store.}
+
+\item{ncores}{Number of cores used for parallelization. Defaults to 1.}
 
 \item{disp_covar}{Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model. Defaults to NULL for constant dispersion.}
 

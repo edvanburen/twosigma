@@ -13,6 +13,7 @@
 ##' @param disp_covar Covariates for a log-linear model for the dispersion. Either a matrix or = 1 to indicate an intercept only model.
 ##' @param weights weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.  See \code{?glmmTMBControl}.
 ##' @param control Control parameters for optimization in glmmTMB.
+##' @param ncores Number of cores used for parallelization. Defaults to 1.
 ##' @section Details:
 ##' This function assumes that the variable being tested is in both components of the model (and thus that the zero-inflation component exists and contains more than an Intercept). Users wishing to do fixed effect testing in other cases or specify custom model formulas they will need to construct the statistics themselves using either two separate calls to \code{twosigma} or the \code{lr.twosigma_custom} fumction. If \code{adhoc=TRUE}, any input in mean_re and zi_re will be ignored. If either model fails to converge, or the LR statistic is negative, both the statistic and p-value are assigned as NA.
 ##'
@@ -21,7 +22,8 @@
 
 lr.twosigma<-function(count_matrix,mean_covar,zi_covar,covar_to_test
                       ,mean_re=FALSE,zi_re=FALSE,
-                       id,return_full_fits=TRUE,adhoc=FALSE,adhoc_thresh=0.1,silent=FALSE
+                       id,return_full_fits=TRUE,adhoc=FALSE,adhoc_thresh=0.1
+                      ,silent=FALSE,ncores=1
                       ,disp_covar=NULL
                       ,weights=rep(1,ncol(count_matrix))
                       ,control=glmmTMBControl())
@@ -48,7 +50,22 @@ lr.twosigma<-function(count_matrix,mean_covar,zi_covar,covar_to_test
   }
   mc<-mean_covar
   zc<-zi_covar
-  for(i in 1:ngenes){
+  cl <- makeCluster(ncores)
+  vars<-c("mean_covar","zi_covar","mc","zc")
+  clusterExport(cl,list=vars,envir = environment())
+  registerDoSNOW(cl)
+  pb <- progress_bar$new(
+    format = "num genes complete = :num [:bar] :elapsed | eta: :eta",
+    total = ngenes,    # 100
+    width = 60)
+
+  progress <- function(n){
+    pb$tick(tokens = list(num = n))
+  }
+  opts <- list(progress = progress)
+  print("Running Gene-Level Models")
+  #browser()
+  a<-foreach(i=1:ngenes,.options.snow = opts)%dopar%{
     mean_covar<-mc
     zi_covar<-zc
     count<-count_matrix[i,,drop=FALSE]
@@ -67,7 +84,7 @@ lr.twosigma<-function(count_matrix,mean_covar,zi_covar,covar_to_test
       }else{
         mean_re=FALSE
         zi_re=FALSE
-        message("adhoc method used to set both mean_re and zi_re to FALSE. Set adhoc=FALSE to customize user-inputted values for mean_re and zi_re.")
+        print("adhoc method used to set both mean_re and zi_re to FALSE. Set adhoc=FALSE to customize user-inputted values for mean_re and zi_re.")
       }
     }
     formulas<-create_model_formulas(mean_covar,zi_covar
@@ -104,7 +121,7 @@ lr.twosigma<-function(count_matrix,mean_covar,zi_covar,covar_to_test
       ,dispformula = formulas$disp_form
       ,family=nbinom2,verbose = F
       ,control = control)
-
+    rm(formulas)
     #If numeric we are assuming that the variable is in the same position
     # need also to point out that users have some responsibilities here
     if(is.numeric(covar_to_test)){
@@ -195,30 +212,45 @@ lr.twosigma<-function(count_matrix,mean_covar,zi_covar,covar_to_test
       ,dispformula = formulas$disp_form
       ,family=nbinom2,verbose = F
       ,control = control)
-    sum_null<-summary(fit_null)
-    sum_alt<-summary(fit_alt)
+    tryCatch({
+      sum_null<-summary(fit_null)
+      sum_alt<-summary(fit_alt)},error=function(e){})
+    LR_stat<-NA
+    tryCatch({
+      LR_stat<- as.numeric(-2*(summary(fit_null)$logLik-summary(fit_alt)$logLik))
+      if(LR_stat<0 | (!fit_alt$sdr$pdHess) | (!fit_null$sdr$pdHess)){
+        LR_stat<-NA}
+      p.val<-1-pchisq(LR_stat,df=2)},error=function(e){})
 
+    if(return_full_fits==TRUE){
+      return(list(sum_null=sum_null,sum_alt=sum_alt
+        ,fit_null=fit_null,fit_alt=fit_alt,LR_stat=LR_stat,p.val=p.val))
+    }else{
+      return(list(sum_null=sum_null,sum_alt=sum_alt,LR_stat=LR_stat,p.val=p.val))
+    }
+
+  }
+  stopCluster(cl)
     #if(is.character(covar_to_test)){}
-    names_null<-rownames(sum_null$coefficients$cond)
-    names_alt<-rownames(sum_alt$coefficients$cond)
+    #names_null<-rownames(sum_null$coefficients$cond)
+    #names_alt<-rownames(sum_alt$coefficients$cond)
 
     #est<-sum_alt$coefficients$cond[which(!names_alt%in%names_null),1]
     #est_zi<-sum_alt$coefficients$zi[which(!names_alt%in%names_null),1]
-
-
-    LR_stat[i]<- as.numeric(-2*(summary(fit_null)$logLik-summary(fit_alt)$logLik))
-    if(LR_stat[i]<0 | (!fit_alt$sdr$pdHess) | (!fit_null$sdr$pdHess)){
-      LR_stat[i]<-NA
-      message("LR stat set to NA, indicative of model specification or fitting problem")}
-    p.val[i]<-1-pchisq(LR_stat[i],df=2)
+#browser()
+for(i in 1:ngenes){
+  tryCatch({
+    p.val[i]<-a[[i]]$p.val
+    LR_stat[i]<-a[[i]]$LR_stat
     #browser()
-    sum_fit_alt[[i]]<-summary(fit_alt)
-    sum_fit_null[[i]]<-summary(fit_null)
+    sum_fit_alt[[i]]<-a[[i]]$sum_alt
+    sum_fit_null[[i]]<-a[[i]]$sum_null
     if(return_full_fits==TRUE){
-      fits_all_null[[i]]<-fit_null
-      fits_all_alt[[i]]<-fit_alt
+      fits_all_null[[i]]<-a[[i]]$fit_null
+      fits_all_alt[[i]]<-a[[i]]$fit_alt
     }
-    if(!silent){print(paste("Finished Gene Number",i,"of",ngenes))}
+  },error=function(e){})
+    #if(!silent){print(paste("Finished Gene Number",i,"of",ngenes))}
   }
   names(p.val)<-rownames(count_matrix)
   names(LR_stat)<-rownames(count_matrix)

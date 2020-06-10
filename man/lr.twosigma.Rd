@@ -6,7 +6,7 @@
 \usage{
 lr.twosigma(count_matrix, mean_covar, zi_covar, covar_to_test,
   mean_re = FALSE, zi_re = FALSE, id, return_full_fits = TRUE,
-  adhoc = FALSE, adhoc_thresh = 0.1, silent = FALSE,
+  adhoc = FALSE, adhoc_thresh = 0.1, silent = FALSE, ncores = 1,
   disp_covar = NULL, weights = rep(1, ncol(count_matrix)),
   control = glmmTMBControl())
 }
@@ -32,6 +32,8 @@ lr.twosigma(count_matrix, mean_covar, zi_covar, covar_to_test,
 \item{adhoc_thresh}{Value below which the adhoc p-value is deemed significant (and thus RE are deemed necessary). Only used if adhoc==TRUE.}
 
 \item{silent}{If TRUE, progress is not printed.}
+
+\item{ncores}{Number of cores used for parallelization. Defaults to 1.}
 
 \item{disp_covar}{Covariates for a log-linear model for the dispersion. Either a matrix or = 1 to indicate an intercept only model.}
 

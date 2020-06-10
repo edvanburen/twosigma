@@ -11,6 +11,7 @@
 ##' @param disp_covar Covariates for a log-linear model for the dispersion. Either a matrix or = 1 to indicate an intercept only model.
 ##' @param weights weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.
 ##' @param control Control parameters for optimization in glmmTMB.  See \code{?glmmTMBControl}.
+##' @param ncores Number of cores used for parallelization. Defaults to 1.
 ##' @section Details:
 ##' This function is a wrapper for conducting fixed effect likelihood ratio tests with twosigma.  There is no checking to make sure that the alt and null model formulas represent a valid likelihood ratio test when fit together.  Users must ensure that inputted formulas represent valid nested models. If either model fails to converge, or the LR statistic is negative, both the statistic and p-value are assigned as NA.
 ##'
@@ -18,7 +19,7 @@
 ##' @export lr.twosigma_custom
 
 lr.twosigma_custom<-function(count_matrix,mean_form_alt,zi_form_alt,mean_form_null,zi_form_null
-                      ,id,lr.df,return_full_fits=TRUE,
+                      ,id,lr.df,return_full_fits=TRUE,ncores=1,
                       disp_covar=NULL
                       ,weights=rep(1,ncol(count_matrix))
                       ,control=glmmTMBControl(),silent=FALSE)
@@ -31,7 +32,6 @@ lr.twosigma_custom<-function(count_matrix,mean_form_alt,zi_form_alt,mean_form_nu
   if(!is.matrix(count_matrix)){stop("Please ensure the input count_matrix is of class matrix.")}
   if(length(id)!=ncol(count_matrix)){stop("Argument id should be a numeric vector with length equal to the number of columns of count_matrix (i.e. the number of cells).")}
   ngenes<-nrow(count_matrix)
-
   LR_stat<-rep(NA,length=ngenes)
   p.val<-rep(NA,length=ngenes)
   sum_fit_alt<-vector('list',length=ngenes)
@@ -42,7 +42,23 @@ lr.twosigma_custom<-function(count_matrix,mean_form_alt,zi_form_alt,mean_form_nu
     fits_all_alt<-vector('list',length=ngenes)
   }
 
-  for(i in 1:ngenes){
+  cl <- makeCluster(ncores)
+  vars<-unique(c(all.vars(mean_form_alt)[-1],all.vars(zi_form_alt)
+    ,all.vars(mean_form_null)[-1],all.vars(zi_form_null)))
+  vars<-vars[!vars=="id"]
+  clusterExport(cl,list=vars)
+  registerDoSNOW(cl)
+  pb <- progress_bar$new(
+    format = "num genes complete = :num [:bar] :elapsed | eta: :eta",
+    total = ngenes,    # 100
+    width = 60)
+
+  progress <- function(n){
+    pb$tick(tokens = list(num = n))
+  }
+  opts <- list(progress = progress)
+  print("Running Gene-Level Models")
+  a<-foreach(i=1:ngenes,.options.snow = opts)%dopar%{
     count<-count_matrix[i,,drop=FALSE]
     check_twosigma_custom_input(count,mean_form_alt,zi_form_alt,id,disp_covar)
     check_twosigma_custom_input(count,mean_form_null,zi_form_null,id,disp_covar)
@@ -81,19 +97,38 @@ lr.twosigma_custom<-function(count_matrix,mean_form_alt,zi_form_alt,mean_form_nu
       ,dispformula = formulas_null$disp_form
       ,family=nbinom2,verbose = F
       ,control = control)
-
-    LR_stat[i]<- as.numeric(-2*(summary(fit_null)$logLik-summary(fit_alt)$logLik))
-    if(LR_stat[i]<0 | (!fit_alt$sdr$pdHess) | (!fit_null$sdr$pdHess)){
-      LR_stat[i]<-NA
-      message("LR stat set to NA, indicative of model specification or fitting problem")}
-    p.val[i]<-1-pchisq(LR_stat[i],df=lr.df)
-    sum_fit_alt[[i]]<-summary(fit_alt)
-    sum_fit_null[[i]]<-summary(fit_null)
+    tryCatch({
+    sum_null<-summary(fit_null)
+    sum_alt<-summary(fit_alt)},error=function(e){})
+    LR_stat<-NA
+    tryCatch({
+    LR_stat<- as.numeric(-2*(summary(fit_null)$logLik-summary(fit_alt)$logLik))
+    if(LR_stat<0 | (!fit_alt$sdr$pdHess) | (!fit_null$sdr$pdHess)){
+      LR_stat<-NA}
+    p.val<-1-pchisq(LR_stat,df=2)},error=function(e){})
     if(return_full_fits==TRUE){
-      fits_all_null[[i]]<-fit_null
-      fits_all_alt[[i]]<-fit_alt
+      return(list(sum_null=sum_null,sum_alt=sum_alt
+        ,fit_null=fit_null,fit_alt=fit_alt,LR_stat=LR_stat,p.val=p.val))
+    }else{
+      return(list(sum_null=sum_null,sum_alt=sum_alt,LR_stat=LR_stat,p.val=p.val))
     }
-    if(!silent){print(paste("Finished Gene Number",i,"of",ngenes))}
+
+  }
+stopCluster(cl)
+
+for(i in 1:ngenes){
+  tryCatch({
+    p.val[i]<-a[[i]]$p.val
+    LR_stat[i]<-a[[i]]$LR_stat
+    #browser()
+    sum_fit_alt[[i]]<-a[[i]]$sum_alt
+    sum_fit_null[[i]]<-a[[i]]$sum_null
+    if(return_full_fits==TRUE){
+      fits_all_null[[i]]<-a[[i]]$fit_null
+      fits_all_alt[[i]]<-a[[i]]$fit_alt
+    }
+    #if(!silent){print(paste("Finished Gene Number",i,"of",ngenes))}
+  },error=function(e){})
   }
   names(p.val)<-rownames(count_matrix)
   names(LR_stat)<-rownames(count_matrix)
