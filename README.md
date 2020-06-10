@@ -224,7 +224,7 @@ gst4<-twosigmag(sim_dat2,index_test = list("Set 1" = c(6:10))
 ,statistic = "contrast",contrast_matrix = cont_matrix
   ,factor_name="fact",ncores = 1,return_summary_fits = T)
 
-# Finally, test the factor "manually"" to show results are the same
+# Finally, test the factor "manually to show results are the same
 cont_matrix2<-matrix(c(0,0,0,0,1,0,0,0,0,0,0,1),nrow=2,byrow = T)
 rownames(cont_matrix2)<-c("Test 1","Test 2")
 
