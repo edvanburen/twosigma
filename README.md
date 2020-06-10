@@ -1,4 +1,4 @@
-# twosigma (TWO-component SInGle cell Model-based Association method)
+# TWOSIGMA (TWO-component SInGle cell Model-based Association method)
 
 ## Introduction
 
