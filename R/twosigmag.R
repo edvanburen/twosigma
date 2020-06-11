@@ -131,6 +131,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
       p.vals_gene_level<-fit_twosigmag$LR_p.val[1]
       fit<-fit_twosigmag$summary_fit_alt[[1]]
       logLik<-as.numeric(fit$logLik)
+      gene_err<-(is.na(logLik) | fit_twosigmag[[1]]$sdr$pdHess==FALSE)
       sum_fit_alt<-fit_twosigmag$summary_fit_alt[[1]]$coefficients$cond
       names<-rownames(fit$coefficients$cond)
       if(sum(grepl("Intercept",names))>1){num_err=1;stop(paste(c("There seems to be two intercept terms present in the mean model. Please remove the intercept from either the argument mean_form or from the model.matrix inputted. Variable names in the mean model are:",names),collapse=" "))}
@@ -155,6 +156,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
         ,id=id,return_summary_fits = FALSE,weights=weights)
       fit<-summary(fit_twosigmag[[1]])
       logLik<-as.numeric(fit$logLik)
+      gene_err<-(is.na(logLik) | fit_twosigmag[[1]]$sdr$pdHess==FALSE)
       residuals_all<-residuals(fit_twosigmag[[1]])
       names<-rownames(fit$coefficients$cond)
       if(sum(grepl("Intercept",names))>1){num_err=1;stop(paste(c("There seems to be two intercept terms present in the mean model. Please remove the intercept from either the argument mean_form or from the model.matrix inputted. Variable names in the mean model are:",names),collapse=" "))}
@@ -182,6 +184,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
         ,id=id,return_summary_fits = FALSE,weights=weights)
       fit<-summary(fit_twosigmag[[1]])
       logLik<-as.numeric(fit$logLik)
+      gene_err<-(is.na(logLik) | fit_twosigmag[[1]]$sdr$pdHess==FALSE)
       residuals_all<-residuals(fit_twosigmag[[1]])
       names_cond<-rownames(fit$coefficients$cond)
       if(sum(grepl("Intercept",names_cond))>1){num_err=1;stop(paste(c("There seems to be two intercept terms present in the mean model. Please remove the intercept from either the argument mean_form or from the model.matrix inputted. Variable names in the mean model are:",names_cond),collapse=" "))}
@@ -213,6 +216,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
       #if(!fit_twosigmag[[1]]$sdr$pdHess){break}
       fit<-summary(fit_twosigmag[[1]])
       logLik<-as.numeric(fit$logLik)
+      gene_err<-(is.na(logLik) | fit_twosigmag[[1]]$sdr$pdHess==FALSE)
       names<-rownames(fit$coefficients$cond)
       names_zi<-rownames(fit$coefficients$zi)
       if(sum(grepl("Intercept",names))>1){num_err=1;stop(paste(c("There seems to be two intercept terms present in the mean model. Please remove the intercept from either the argument mean_form or from the model.matrix inputted. Variable names in the mean model are:",names),collapse=" "))}
@@ -247,35 +251,53 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
 
     #}else{
       return(list(stats_all=stats_all,p.vals_gene_level=p.vals_gene_level,se_gene_level=se_gene_level,
-        estimates_gene_level=estimates_gene_level,fit=fit,residuals_all=residuals_all,fit=fit,logLik=logLik))
+        estimates_gene_level=estimates_gene_level,fit=fit,residuals_all=residuals_all,fit=fit,logLik=logLik,gene_err=gene_err))
     #}
 
   }
   stopCluster(cl)
   rm(progress,opts)
-#browser()
+  #browser()
   residuals_all<-matrix(nrow=nrow(count_matrix),ncol=ncells)
   stats_all<-matrix(NA,nrow=nrow(count_matrix),ncol=ncomps)
   p.vals_gene_level<-matrix(NA,nrow=nrow(count_matrix),ncol=ncomps)
   estimates_gene_level<-matrix(NA,nrow=nrow(count_matrix),ncol=ncomps)
   se_gene_level<-matrix(NA,nrow=nrow(count_matrix),ncol=ncomps)
   logLik<-numeric(length=nrow(count_matrix))
+  gene_err<-rep(NA,nrow(count_matrix))
   re_present<-any(grepl("id",mean_form[[3]])>0)
   for(i in 1:ngenes){
       tryCatch({
         l<-genes[i]
-        residuals_all[l,]<-a[[i]]$residuals_all
-        logLik[l]<-a[[i]]$logLik
-        stats_all[l,]<-a[[i]]$stats_all
-        p.vals_gene_level[l,]<-a[[i]]$p.vals_gene_level
-        estimates_gene_level[l,]<-a[[i]]$estimates_gene_level
-        se_gene_level[l,]<-a[[i]]$se_gene_level
-        if(return_summary_fits==TRUE){
-          fit[[l]]<-a[[i]]$fit
+        gene_err[l]<-a[[i]]$gene_err
+        if(!a[[i]]$gene_err){
+          residuals_all[l,]<-a[[i]]$residuals_all
+          logLik[l]<-a[[i]]$logLik
+          stats_all[l,]<-a[[i]]$stats_all
+          p.vals_gene_level[l,]<-a[[i]]$p.vals_gene_level
+          estimates_gene_level[l,]<-a[[i]]$estimates_gene_level
+          se_gene_level[l,]<-a[[i]]$se_gene_level
+          if(return_summary_fits==TRUE){
+            fit[[l]]<-a[[i]]$fit
+          }
+          if(re_present){
+            re_sigma_est[l]<-exp(a[[i]]$sdr$par.fixed['theta'])
+          }
+        }else{
+          residuals_all[l,]<-NA
+          logLik[l]<-a[[i]]$logLik
+          stats_all[l,]<-NA
+          p.vals_gene_level[l,]<-NA
+          estimates_gene_level[l,]<-NA
+          se_gene_level[l,]<-NA
+          if(return_summary_fits==TRUE){
+            fit[[l]]<-a[[i]]$fit
+          }
+          if(re_present){
+            re_sigma_est[l]<-NA
+          }
         }
-        if(re_present){
-          re_sigma_est[l]<-exp(a[[i]]$sdr$par.fixed['theta'])
-        }
+
       },error=function(e){})
     a[[i]]<-list(NULL)
   }
@@ -359,6 +381,7 @@ rm(a)
   rownames(se_gene_level)<-rownames(count_matrix)
   rownames(estimates_set_level)<-names(index_test)
   names(logLik)<-rownames(count_matrix)
+  names(gene_err)<-rownames(count_matrix)
   if(statistic=="contrast"){
     colnames(se_gene_level)<-rownames(contrast_matrix)
     colnames(estimates_gene_level)<-rownames(contrast_matrix)
@@ -372,8 +395,8 @@ rm(a)
   #browser()
   if(return_summary_fits==TRUE){
     names(fit)<-rownames(count_matrix)
-    return(list(gene_summary_fits=fit,stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,set_p.val_ttest=p.val_ttest,estimates_gene_level=estimates_gene_level,se_gene_level=se_gene_level,estimates_set_level=estimates_set_level,direction=direction,corr=rho_est,gene_level_logLik=logLik,test_sets=index_test,ref_sets=index_ref))
+    return(list(gene_summary_fits=fit,stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,set_p.val_ttest=p.val_ttest,estimates_gene_level=estimates_gene_level,se_gene_level=se_gene_level,estimates_set_level=estimates_set_level,direction=direction,corr=rho_est,gene_level_logLik=logLik,gene_error=gene_err,test_sets=index_test,ref_sets=index_ref))
   }else{
-    return(list(stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,set_p.val_ttest=p.val_ttest,estimates_gene_level=estimates_gene_level,se_gene_level=se_gene_level,estimates_set_level=estimates_set_level,direction=direction,corr=rho_est,gene_level_logLik=logLik,test_sets=index_test,ref_sets=index_ref))
+    return(list(stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,set_p.val_ttest=p.val_ttest,estimates_gene_level=estimates_gene_level,se_gene_level=se_gene_level,estimates_set_level=estimates_set_level,direction=direction,corr=rho_est,gene_level_logLik=logLik,gene_error=gene_err,test_sets=index_test,ref_sets=index_ref))
   }
 }
