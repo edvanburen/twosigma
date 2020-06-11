@@ -139,11 +139,13 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
       if(is.numeric(covar_to_test)){
         #+1 for intercept
         estimates_gene_level<-sum_fit_alt[covar_to_test+1,'Estimate']
+        se_gene_level<-sum_fit_alt[covar_to_test+1,'Std. Error']
       }
       if(is.character(covar_to_test)){
         if(sum(grepl(covar_to_test,names))>1){num_err=1;stop(paste(c("covar_to_test matches to multiple variables in mean model. Please rename these other variables to not contain the name of covar_to_test. Variable names in the mean model are:",names)),collapse=" ")}
         if(sum(grepl(covar_to_test,names))==0){num_err=1;stop(paste(c("covar_to_test not found in mean model. Variable names in the mean model are:",names),collapse=" "))}
         estimates_gene_level<-sum_fit_alt[grepl(covar_to_test,names),'Estimate']
+        se_gene_level<-sum_fit_alt[grepl(covar_to_test,names),'Std. Error']
       }
     }
     if(statistic=="Z"){
@@ -159,6 +161,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
       if(is.numeric(covar_to_test)){
         #+1 for intercept
         estimates_gene_level<-fit$coefficients$cond[covar_to_test+1,'Estimate']
+        se_gene_level<-fit$coefficients$cond[covar_to_test+1,'Std. Error']
         stats_all<-fit$coefficients$cond[covar_to_test,'z value']
         p.vals_gene_level<-fit$coefficients$cond[covar_to_test,'Pr(>|z|)']
       }
@@ -166,6 +169,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
         if(sum(grepl(covar_to_test,names))>1){num_err=1;stop(paste(c("covar_to_test matches to multiple variables in mean model. Please rename these other variables to not contain the name of covar_to_test. Variable names in the mean model are:",names),collapse=" "))}
         if(sum(grepl(covar_to_test,names))==0){num_err=1;stop(paste(c("covar_to_test not found in mean model. Variable names in the mean model are:",names),collapse=" "))}
         estimates_gene_level<-fit$coefficients$cond[grepl(covar_to_test,names),'Estimate']
+        se_gene_level<-fit$coefficients$cond[grepl(covar_to_test,names),'Std. Error']
         stats_all<-fit$coefficients$cond[grepl(covar_to_test,names),'z value']
         p.vals_gene_level<-fit$coefficients$cond[grepl(covar_to_test,names),'Pr(>|z|)']
       }
@@ -184,6 +188,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
       if(is.numeric(covar_to_test)){
         #+1 for intercept
         estimates_gene_level<-fit$coefficients$cond[covar_to_test+1,'Estimate']
+        se_gene_level<-fit$coefficients$cond[covar_to_test+1,'Std. Error']
         stats_all<-(fit$coefficients$cond[covar_to_test,'z value']+fit$coefficients$zi[covar_to_test,'z value'])/sqrt(2)
         p.vals_gene_level<-fit$coefficients$cond[covar_to_test,'Pr(>|z|)']
       }
@@ -193,6 +198,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
         if(sum(grepl(covar_to_test,names_cond))==0){num_err=1;stop(paste(c("covar_to_test not found in mean model. Variable names in the mean model are: ",names_cond),collapse=" "))}
         if(sum(grepl(covar_to_test,names_zi))==0){num_err=1;stop(paste(c("covar_to_test not found in ZI model. Variable names in the ZI model are: ",names_zi),collapse=" "))}
         estimates_gene_level<-fit$coefficients$cond[grepl(covar_to_test,names_cond),'Estimate']
+        se_gene_level<-fit$coefficients$cond[grepl(covar_to_test,names_cond),'Std. Error']
         stats_all<-(fit$coefficients$cond[grepl(covar_to_test,names_cond),'z value']+fit$coefficients$zi[grepl(covar_to_test,names_zi),'z value'])/sqrt(2)
         p.vals_gene_level<-fit$coefficients$cond[grepl(covar_to_test,names_cond),'Pr(>|z|)']
       }
@@ -230,9 +236,10 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
       p.vals_gene_level<-2*pnorm(-1*abs(temp$test$tstat))
       #temp<-summary(temp2)
       estimates_gene_level<-temp$test$coefficients
+      se_gene_level<-temp$test$sigma
       residuals_all<-residuals(fit_twosigmag[[1]])
     }
-    return(list(stats_all=stats_all,p.vals_gene_level=p.vals_gene_level,
+    return(list(stats_all=stats_all,p.vals_gene_level=p.vals_gene_level,se_gene_level=se_gene_level,
       estimates_gene_level=estimates_gene_level,fit=fit,residuals_all=residuals_all,fit=fit))
   }
   stopCluster(cl)
@@ -241,6 +248,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
   stats_all<-matrix(NA,nrow=nrow(count_matrix),ncol=ncomps)
   p.vals_gene_level<-matrix(NA,nrow=nrow(count_matrix),ncol=ncomps)
   estimates_gene_level<-matrix(NA,nrow=nrow(count_matrix),ncol=ncomps)
+  se_gene_level<-matrix(NA,nrow=nrow(count_matrix),ncol=ncomps)
 
   re_present<-any(grepl("id",mean_form[[3]])>0)
   for(i in 1:ngenes){
@@ -250,6 +258,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
         stats_all[l,]<-a[[i]]$stats_all
         p.vals_gene_level[l,]<-a[[i]]$p.vals_gene_level
         estimates_gene_level[l,]<-a[[i]]$estimates_gene_level
+        se_gene_level[l,]<-a[[i]]$se_gene_level
         if(return_summary_fits==TRUE){
           fit[[l]]<-a[[i]]$fit
         }
@@ -337,8 +346,10 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
   names(rho_est)<-names(index_test)
   rownames(p.vals_gene_level)<-rownames(count_matrix)
   rownames(estimates_gene_level)<-rownames(count_matrix)
+  rownames(se_gene_level)<-rownames(count_matrix)
   rownames(estimates_set_level)<-names(index_test)
   if(statistic=="contrast"){
+    colnames(se_gene_level)<-rownames(contrast_matrix)
     colnames(estimates_gene_level)<-rownames(contrast_matrix)
     colnames(estimates_set_level)<-rownames(contrast_matrix)
     colnames(direction)<-rownames(contrast_matrix)
@@ -350,8 +361,8 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
   #browser()
   if(return_summary_fits==TRUE){
     names(fit)<-rownames(count_matrix)
-    return(list(gene_summary_fits=fit,stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,set_p.val_ttest=p.val_ttest,estimates_gene_level=estimates_gene_level,estimates_set_level=estimates_set_level,direction=direction,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
+    return(list(gene_summary_fits=fit,stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,set_p.val_ttest=p.val_ttest,estimates_gene_level=estimates_gene_level,se_gene_level=se_gene_level,estimates_set_level=estimates_set_level,direction=direction,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
   }else{
-    return(list(stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,set_p.val_ttest=p.val_ttest,estimates_gene_level=estimates_gene_level,estimates_set_level=estimates_set_level,direction=direction,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
+    return(list(stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,set_p.val_ttest=p.val_ttest,estimates_gene_level=estimates_gene_level,se_gene_level=se_gene_level,estimates_set_level=estimates_set_level,direction=direction,corr=rho_est,test_sets=index_test,ref_sets=index_ref))
   }
 }
