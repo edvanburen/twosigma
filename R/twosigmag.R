@@ -124,7 +124,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
   num_err<-0
   a<-foreach(i=1:ngenes,.options.snow = opts)%dopar%{
     l<-genes[i]
-    counts<-t(as.matrix(count_matrix[l,]))
+    counts<-count_matrix[l,,drop=FALSE]
     if(num_err>0){break}
     if(statistic=="LR"){
       fit_twosigmag<-lr.twosigma_custom(counts,silent=TRUE
