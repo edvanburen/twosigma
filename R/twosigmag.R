@@ -99,12 +99,17 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
     fit<-vector('list',length=nrow(count_matrix))
   }
   #browser()
-  cl <- makeCluster(ncores)
-  registerDoSNOW(cl)
-  vars<-unique(c(all.vars(mean_form)[-1],all.vars(mean_form_null)[-1]
-    ,all.vars(zi_form),all.vars(zi_form_null)))
-  vars<-vars[!vars=="id"]
-  clusterExport(cl,list=vars)
+  if(ncores==1){
+    registerDoSEQ()
+  }else{
+    cl <- makeCluster(ncores)
+    registerDoSNOW(cl)
+    vars<-unique(c(all.vars(mean_form)[-1],all.vars(mean_form_null)[-1]
+      ,all.vars(zi_form),all.vars(zi_form_null)))
+    vars<-vars[!vars=="id"]
+    clusterExport(cl,list=vars)
+  }
+
   print("Running Gene-Level Models")
   pb <- progress_bar$new(
     format = "num genes complete = :num [:bar] :elapsed | eta: :eta",
@@ -117,11 +122,12 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
   opts <- list(progress = progress)
   #browser()
   num_err<-0
-  a<-foreach(i=1:ngenes, .combine='c',.options.snow = opts)%dopar%{
+  a<-foreach(i=1:ngenes,.options.snow = opts)%dopar%{
     l<-genes[i]
+    counts<-t(as.matrix(count_matrix[l,]))
     if(num_err>0){break}
     if(statistic=="LR"){
-      fit_twosigmag<-lr.twosigma_custom(count_matrix[l,,drop=FALSE],silent=TRUE
+      fit_twosigmag<-lr.twosigma_custom(counts,silent=TRUE
         ,mean_form_alt=mean_form,zi_form_alt=zi_form
         ,mean_form_null=mean_form_null,zi_form_null=zi_form_null
         ,id=id,return_full_fits = TRUE
@@ -151,7 +157,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
       }
     }
     if(statistic=="Z"){
-      fit_twosigmag<-twosigma_custom(count_matrix[l,,drop=FALSE],silent=TRUE
+      fit_twosigmag<-twosigma_custom(counts,silent=TRUE
         ,mean_form=mean_form,zi_form=zi_form
         ,id=id,return_summary_fits = FALSE,weights=weights)
       fit<-summary(fit_twosigmag[[1]])
@@ -179,7 +185,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
       }
     }
     if(statistic=="Stouffer"){
-      fit_twosigmag<-twosigma_custom(count_matrix[l,,drop=FALSE],silent=TRUE
+      fit_twosigmag<-twosigma_custom(counts,silent=TRUE
         ,mean_form=mean_form,zi_form=zi_form
         ,id=id,return_summary_fits = FALSE,weights=weights)
       fit<-summary(fit_twosigmag[[1]])
@@ -210,7 +216,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
       }
     }
     if(statistic=="contrast"){
-      fit_twosigmag<-twosigma_custom(count_matrix[l,,drop=FALSE],silent=TRUE
+      fit_twosigmag<-twosigma_custom(counts,silent=TRUE
         ,mean_form=mean_form,zi_form=zi_form
         ,id=id,return_summary_fits = FALSE,weights=weights)
       #if(!fit_twosigmag[[1]]$sdr$pdHess){break}
@@ -255,7 +261,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
     #}
 
   }
-  stopCluster(cl)
+  if(ncores>1){stopCluster(cl)}
   rm(progress,opts)
   #browser()
   residuals_all<-matrix(nrow=nrow(count_matrix),ncol=ncells)

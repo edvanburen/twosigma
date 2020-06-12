@@ -29,11 +29,15 @@ twosigma_custom<-function(count_matrix,mean_form,zi_form,id,return_summary_fits=
   ngenes<-nrow(count_matrix)
   fit<-vector('list',length=ngenes)
   #browser()
-  cl <- makeCluster(ncores)
-  vars<-unique(c(all.vars(mean_form)[-1],all.vars(zi_form)))
-  vars<-vars[!vars=="id"]
-  clusterExport(cl,list=vars)
-  registerDoSNOW(cl)
+  if(ncores==1){
+    registerDoSEQ()
+  }else{
+    cl <- makeCluster(ncores)
+    registerDoSNOW(cl)
+    vars<-unique(c(all.vars(mean_form)[-1],all.vars(zi_form)))
+    vars<-vars[!vars=="id"]
+    clusterExport(cl,list=vars)
+  }
   pb <- progress_bar$new(
     format = "num genes complete = :num [:bar] :elapsed | eta: :eta",
     total = ngenes,    # 100
@@ -78,7 +82,8 @@ a<-foreach(i=1:ngenes,.options.snow = opts)%dopar%{
     }
     return(f)
 }
-stopCluster(cl)
+if(ncores>1){stopCluster(cl)}
+
     for(i in 1:ngenes){
       tryCatch({
         fit[[i]]<-a[[i]]
