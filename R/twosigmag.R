@@ -100,11 +100,11 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
   }
   #browser()
   cl <- makeCluster(ncores)
+  registerDoSNOW(cl)
   vars<-unique(c(all.vars(mean_form)[-1],all.vars(mean_form_null)[-1]
     ,all.vars(zi_form),all.vars(zi_form_null)))
   vars<-vars[!vars=="id"]
   clusterExport(cl,list=vars)
-  registerDoSNOW(cl)
   print("Running Gene-Level Models")
   pb <- progress_bar$new(
     format = "num genes complete = :num [:bar] :elapsed | eta: :eta",
@@ -117,7 +117,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
   opts <- list(progress = progress)
   #browser()
   num_err<-0
-  a<-foreach(i=1:ngenes,.options.snow = opts)%dopar%{
+  a<-foreach(i=1:ngenes, .combine='c',.options.snow = opts)%dopar%{
     l<-genes[i]
     if(num_err>0){break}
     if(statistic=="LR"){
