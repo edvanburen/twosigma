@@ -125,8 +125,8 @@ twosigmag2<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mea
   #   pb$tick(tokens = list(num = n))
   # }
   #
-  # opts <- list(progress = progress)
-  pb <- txtProgressBar(0, ngenes, style = 3)
+  opts <- list(progress = progress)
+  #pb <- txtProgressBar(0, ngenes, style = 3)
   #browser()
   nchunks<-ncores
   size<-ceiling(length(genes)/nchunks)
