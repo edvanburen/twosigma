@@ -127,7 +127,7 @@ twosigmag2<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mea
   #
   # opts <- list(progress = progress)
   pb <- txtProgressBar(0, ngenes, style = 3)
-  browser()
+  #browser()
   nchunks<-ncores
   size<-ceiling(length(genes)/nchunks)
   chunks<-split(genes,ceiling(seq_along(genes)/size))
