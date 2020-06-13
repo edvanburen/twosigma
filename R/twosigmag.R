@@ -103,7 +103,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
     registerDoSEQ()
   }else{
     #cl <- makeCluster(ncores)
-    cl<-parallel::makeForkCluster(2)
+    cl<-parallel::makeForkCluster(ncores,outfile="")
     doParallel::registerDoParallel(cl)
     #registerDoSNOW(cl)
     vars<-unique(c(all.vars(mean_form)[-1],all.vars(mean_form_null)[-1]
@@ -122,10 +122,12 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
     pb$tick(tokens = list(num = n))
   }
   opts <- list(progress = progress)
+  #pb <- txtProgressBar(0, n, style = 3)
   #browser()
   num_err<-0
   a<-foreach(i=1:ngenes)%dopar%{
     l<-genes[i]
+    #setTxtProgressBar(pb, i)
     counts<-count_matrix[l,,drop=FALSE]
     if(num_err>0){break}
     if(statistic=="LR"){
