@@ -68,11 +68,11 @@ check_twosigma_custom_input<-function(count
   # if(mean(count==0)>.9){
   #   warning("More than 90% of data are zeros. Mean model results may be misleading for such sparse data")
   # }
-  if(mean(count==0)<.1){
-    if(!(zi_form==~0)){
-      warning("Less than 10% of data are zeros. Zero-Inflation model results may be misleading or unnecessary")
-    }
-  }
+  # if(mean(count==0)<.1){
+  #   if(!(zi_form==~0)){
+  #     warning("Less than 10% of data are zeros. Zero-Inflation model results may be misleading or unnecessary")
+  #   }
+  # }
 }
 
 create_model_formulas<-function(mean_covar=NULL,zi_covar=NULL
