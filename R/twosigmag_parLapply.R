@@ -33,9 +33,9 @@
 ##' \item{\code{test_sets: }}{Vector of numeric indices corresponding to genes in each test set.}
 ##' \item{\code{ref_sets: }}{Vector of numeric indices corresponding to the genes in each reference set.}
 ##' }
-##' @export twosigmag
+##' @export twosigmag2
 
-twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean_form,zi_form,mean_form_null=NULL,zi_form_null=NULL
+twosigmag2<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean_form,zi_form,mean_form_null=NULL,zi_form_null=NULL
   ,id,statistic="LR",lr.df=NULL,covar_to_test=NULL
   ,contrast_matrix=NULL,factor_name=NULL,rho=NULL
   ,allow_neg_corr=FALSE
@@ -44,6 +44,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
   ,control = glmmTMBControl(),ncores=1){
 
   #if(!(adhoc==FALSE)){print("The adhoc method is not recommended for gene set testing due to interpretability.")}
+
   passed_args <- names(as.list(match.call())[-1])
   required_args<-c("count_matrix","index_test","mean_form","zi_form","statistic","id")
   if (any(!required_args %in% passed_args)) {
@@ -114,160 +115,181 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
   }
 
   print("Running Gene-Level Models")
-  pb <- progress_bar$new(
-    format = "num genes complete = :num [:bar] :elapsed | eta: :eta",
-    total = ngenes,    # 100
-    width = 60)
+  # pb <- progress_bar$new(
+  #   format = "num genes complete = :num [:bar] :elapsed | eta: :eta",
+  #   total = ngenes,    # 100
+  #   width = 60)
+  #
+  # #pb <- txtProgressBar(max = iterations, style = 3)
+  # progress <- function(n){
+  #   pb$tick(tokens = list(num = n))
+  # }
+  #
+  # opts <- list(progress = progress)
+  pb <- txtProgressBar(0, ngenes, style = 3)
+  browser()
+  nchunks<-ncores
+  size<-ceiling(length(genes)/nchunks)
+  chunks<-split(genes,ceiling(seq_along(genes)/size))
 
-  #pb <- txtProgressBar(max = iterations, style = 3)
-  progress <- function(n){
-    pb$tick(tokens = list(gene = n))
+  for(i in 1:nchunks){
+    assign(paste0("count_matrix_",i),count_matrix[chunks[[i]],])
   }
-  opts <- list(progress = progress)
-  #pb <- txtProgressBar(0, n, style = 3)
-  #browser()
+  rm(count_matrix)
+  gc()
+
   num_err<-0
-  a<-foreach(i=1:ngenes,.options.snow = opts)%dopar%{
-    l<-genes[i]
-    #setTxtProgressBar(pb, i)
-    counts<-count_matrix[l,,drop=FALSE]
-    if(num_err>0){break}
-    if(statistic=="LR"){
-      fit_twosigmag<-lr.twosigma_custom(counts,silent=TRUE
-        ,mean_form_alt=mean_form,zi_form_alt=zi_form
-        ,mean_form_null=mean_form_null,zi_form_null=zi_form_null
-        ,id=id,return_full_fits = TRUE
-        ,lr.df = lr.df,weights=weights)
-      residuals_all<-residuals(fit_twosigmag$full_fit_alt[[1]])
-      stats_all<-fit_twosigmag$LR_stat[1]
-      p.vals_gene_level<-fit_twosigmag$LR_p.val[1]
-      fit<-fit_twosigmag$summary_fit_alt[[1]]
-      logLik<-as.numeric(fit$logLik)
-      gene_err<-(is.na(logLik) | fit_twosigmag[[1]]$sdr$pdHess==FALSE)
-      sum_fit_alt<-fit_twosigmag$summary_fit_alt[[1]]$coefficients$cond
-      names<-rownames(fit$coefficients$cond)
-      if(sum(grepl("Intercept",names))>1){num_err=1;stop(paste(c("There seems to be two intercept terms present in the mean model. Please remove the intercept from either the argument mean_form or from the model.matrix inputted. Variable names in the mean model are:",names),collapse=" "))}
-      names_zi<-rownames(fit$coefficients$zi)
-      if(is.null(names_zi)){num_err=1;stop("If statistic='Stouffer', the ZI component must exist.")}
-      if(!is.null(names_zi)&sum(grepl("Intercept",names_zi))>1){num_err=1;stop(paste(c("There seems to be two intercept terms present in the ZI model. Please remove the intercept from either the argument mean_form or from the model.matrix inputted. Variable names in the ZI model are:",names_zi),collapse=" "))}
-      if(is.numeric(covar_to_test)){
-        #+1 for intercept
-        estimates_gene_level<-sum_fit_alt[covar_to_test+1,'Estimate']
-        se_gene_level<-sum_fit_alt[covar_to_test+1,'Std. Error']
+  zz<-0
+  a<-foreach(i=1:nchunks,.options.snow = opts)%dopar%{
+    k<-0
+    residuals_all<-matrix(NA,nrow=length(chunks[[i]]),ncol=ncells)
+    stats_all<-matrix(NA,nrow=length(chunks[[i]]),ncol=ncomps)
+    p.vals_gene_level<-matrix(NA,nrow=length(chunks[[i]]),ncol=ncomps)
+    estimates_gene_level<-matrix(NA,nrow=length(chunks[[i]]),ncol=ncomps)
+    se_gene_level<-matrix(NA,nrow=length(chunks[[i]]),ncol=ncomps)
+    logLik<-numeric(length=length(chunks[[i]]))
+    gene_err<-rep(NA,length(chunks[[i]]))
+    for(j in 1:length(chunks[[i]])){
+      k<-k+1
+      l<-j
+      #setTxtProgressBar(pb, i)
+      counts<-get(paste0("count_matrix_",i))[l,,drop=FALSE]
+      if(num_err>0){break}
+      if(statistic=="LR"){
+        fit_twosigmag<-lr.twosigma_custom(counts,silent=TRUE
+          ,mean_form_alt=mean_form,zi_form_alt=zi_form
+          ,mean_form_null=mean_form_null,zi_form_null=zi_form_null
+          ,id=id,return_full_fits = TRUE
+          ,lr.df = lr.df,weights=weights)
+        residuals_all[k,]<-residuals(fit_twosigmag$full_fit_alt[[1]])
+        stats_all[k,]<-fit_twosigmag$LR_stat[1]
+        p.vals_gene_level[k,]<-fit_twosigmag$LR_p.val[1]
+        fit<-fit_twosigmag$summary_fit_alt[[1]]
+        logLik[k]<-as.numeric(fit$logLik)
+        gene_err[k]<-(is.na(logLik[k]) | fit_twosigmag[[1]]$sdr$pdHess==FALSE)
+        sum_fit_alt<-fit_twosigmag$summary_fit_alt[[1]]$coefficients$cond
+        names<-rownames(fit$coefficients$cond)
+        if(sum(grepl("Intercept",names))>1){num_err=1;stop(paste(c("There seems to be two intercept terms present in the mean model. Please remove the intercept from either the argument mean_form or from the model.matrix inputted. Variable names in the mean model are:",names),collapse=" "))}
+        names_zi<-rownames(fit$coefficients$zi)
+        if(is.null(names_zi)){num_err=1;stop("If statistic='Stouffer', the ZI component must exist.")}
+        if(!is.null(names_zi)&sum(grepl("Intercept",names_zi))>1){num_err=1;stop(paste(c("There seems to be two intercept terms present in the ZI model. Please remove the intercept from either the argument mean_form or from the model.matrix inputted. Variable names in the ZI model are:",names_zi),collapse=" "))}
+        if(is.numeric(covar_to_test)){
+          #+1 for intercept
+          estimates_gene_level[k,]<-sum_fit_alt[covar_to_test+1,'Estimate']
+          se_gene_level[k,]<-sum_fit_alt[covar_to_test+1,'Std. Error']
+        }
+        if(is.character(covar_to_test)){
+          if(sum(grepl(covar_to_test,names))>1){num_err=1;stop(paste(c("covar_to_test matches to multiple variables in mean model. Please rename these other variables to not contain the name of covar_to_test. Variable names in the mean model are:",names)),collapse=" ")}
+          if(sum(grepl(covar_to_test,names))==0){num_err=1;stop(paste(c("covar_to_test not found in mean model. Variable names in the mean model are:",names),collapse=" "))}
+          estimates_gene_level[k,]<-sum_fit_alt[grepl(covar_to_test,names),'Estimate']
+          se_gene_level[k,]<-sum_fit_alt[grepl(covar_to_test,names),'Std. Error']
+        }
       }
-      if(is.character(covar_to_test)){
-        if(sum(grepl(covar_to_test,names))>1){num_err=1;stop(paste(c("covar_to_test matches to multiple variables in mean model. Please rename these other variables to not contain the name of covar_to_test. Variable names in the mean model are:",names)),collapse=" ")}
-        if(sum(grepl(covar_to_test,names))==0){num_err=1;stop(paste(c("covar_to_test not found in mean model. Variable names in the mean model are:",names),collapse=" "))}
-        estimates_gene_level<-sum_fit_alt[grepl(covar_to_test,names),'Estimate']
-        se_gene_level<-sum_fit_alt[grepl(covar_to_test,names),'Std. Error']
+      if(statistic=="Z"){
+        fit_twosigmag<-twosigma_custom(counts,silent=TRUE
+          ,mean_form=mean_form,zi_form=zi_form
+          ,id=id,return_summary_fits = FALSE,weights=weights)
+        fit<-summary(fit_twosigmag[[1]])
+        logLik[k]<-as.numeric(fit$logLik)
+        gene_err[k]<-(is.na(logLik[k]) | fit_twosigmag[[1]]$sdr$pdHess==FALSE)
+        residuals_all[k,]<-residuals(fit_twosigmag[[1]])
+        names<-rownames(fit$coefficients$cond)
+        if(sum(grepl("Intercept",names))>1){num_err=1;stop(paste(c("There seems to be two intercept terms present in the mean model. Please remove the intercept from either the argument mean_form or from the model.matrix inputted. Variable names in the mean model are:",names),collapse=" "))}
+        names_zi<-rownames(fit$coefficients$zi)
+        if(!is.null(names_zi)&sum(grepl("Intercept",names_zi))>1){num_err=1;stop(paste(c("There seems to be two intercept terms present in the ZI model. Please remove the intercept from either the argument mean_form or from the model.matrix inputted. Variable names in the ZI model are:",names_zi),collapse=" "))}
+        if(is.numeric(covar_to_test)){
+          #+1 for intercept
+          estimates_gene_level[k,]<-fit$coefficients$cond[covar_to_test+1,'Estimate']
+          se_gene_level[k,]<-fit$coefficients$cond[covar_to_test+1,'Std. Error']
+          stats_all[k,]<-fit$coefficients$cond[covar_to_test,'z value']
+          p.vals_gene_level[k,]<-fit$coefficients$cond[covar_to_test,'Pr(>|z|)']
+        }
+        if(is.character(covar_to_test)){
+          if(sum(grepl(covar_to_test,names))>1){num_err=1;stop(paste(c("covar_to_test matches to multiple variables in mean model. Please rename these other variables to not contain the name of covar_to_test. Variable names in the mean model are:",names),collapse=" "))}
+          if(sum(grepl(covar_to_test,names))==0){num_err=1;stop(paste(c("covar_to_test not found in mean model. Variable names in the mean model are:",names),collapse=" "))}
+          estimates_gene_level[k,]<-fit$coefficients$cond[grepl(covar_to_test,names),'Estimate']
+          se_gene_level[k,]<-fit$coefficients$cond[grepl(covar_to_test,names),'Std. Error']
+          stats_all[k,]<-fit$coefficients$cond[grepl(covar_to_test,names),'z value']
+          p.vals_gene_level[k,]<-fit$coefficients$cond[grepl(covar_to_test,names),'Pr(>|z|)']
+        }
       }
+      if(statistic=="Stouffer"){
+        fit_twosigmag<-twosigma_custom(counts,silent=TRUE
+          ,mean_form=mean_form,zi_form=zi_form
+          ,id=id,return_summary_fits = FALSE,weights=weights)
+        fit<-summary(fit_twosigmag[[1]])
+        logLik[k]<-as.numeric(fit$logLik)
+        gene_err[k]<-(is.na(logLik[k]) | fit_twosigmag[[1]]$sdr$pdHess==FALSE)
+        residuals_all[k,]<-residuals(fit_twosigmag[[1]])
+        names_cond<-rownames(fit$coefficients$cond)
+        if(sum(grepl("Intercept",names_cond))>1){num_err=1;stop(paste(c("There seems to be two intercept terms present in the mean model. Please remove the intercept from either the argument mean_form or from the model.matrix inputted. Variable names in the mean model are:",names_cond),collapse=" "))}
+        names_zi<-rownames(fit$coefficients$zi)
+        if(is.null(names_zi)){num_err=1;stop("If statistic='Stouffer', the ZI component must exist.")}
+        if(!is.null(names_zi)&sum(grepl("Intercept",names_zi))>1){num_err=1;stop(paste(c("There seems to be two intercept terms present in the ZI model. Please remove the intercept from either the argument mean_form or from the model.matrix inputted. Variable names in the ZI model are:",names_zi),collapse=" "))}
+        if(is.numeric(covar_to_test)){
+          #+1 for intercept
+          estimates_gene_level[k,]<-fit$coefficients$cond[covar_to_test+1,'Estimate']
+          se_gene_level[k,]<-fit$coefficients$cond[covar_to_test+1,'Std. Error']
+          stats_all[k,]<-(fit$coefficients$cond[covar_to_test,'z value']+fit$coefficients$zi[covar_to_test,'z value'])/sqrt(2)
+          p.vals_gene_level[k,]<-fit$coefficients$cond[covar_to_test,'Pr(>|z|)']
+        }
+        if(is.character(covar_to_test)){
+          if(sum(grepl(covar_to_test,names_cond))>1){num_err=1;stop(paste(c("covar_to_test matches to multiple variables in mean model. Please rename these other variables to not contain the name of covar_to_test. Variable names in the mean model are: ",names_cond),collapse=" "))}
+          if(sum(grepl(covar_to_test,names_zi))>1){num_err=1;stop(paste(c("covar_to_test matches to multiple variables in ZI model. Please rename these other variables to not contain the name of covar_to_test. Variable names in the ZI model are: ",names_zi),collapse=" "))}
+          if(sum(grepl(covar_to_test,names_cond))==0){num_err=1;stop(paste(c("covar_to_test not found in mean model. Variable names in the mean model are: ",names_cond),collapse=" "))}
+          if(sum(grepl(covar_to_test,names_zi))==0){num_err=1;stop(paste(c("covar_to_test not found in ZI model. Variable names in the ZI model are: ",names_zi),collapse=" "))}
+          estimates_gene_level[k,]<-fit$coefficients$cond[grepl(covar_to_test,names_cond),'Estimate']
+          se_gene_level[k,]<-fit$coefficients$cond[grepl(covar_to_test,names_cond),'Std. Error']
+          stats_all[k,]<-(fit$coefficients$cond[grepl(covar_to_test,names_cond),'z value']+fit$coefficients$zi[grepl(covar_to_test,names_zi),'z value'])/sqrt(2)
+          p.vals_gene_level[k,]<-fit$coefficients$cond[grepl(covar_to_test,names_cond),'Pr(>|z|)']
+        }
+      }
+      if(statistic=="contrast"){
+        fit_twosigmag<-twosigma_custom(counts,silent=TRUE
+          ,mean_form=mean_form,zi_form=zi_form
+          ,id=id,return_summary_fits = FALSE,weights=weights)
+        #if(!fit_twosigmag[[1]]$sdr$pdHess){break}
+        fit<-summary(fit_twosigmag[[1]])
+        logLik[k]<-as.numeric(fit$logLik)
+        gene_err[k]<-(is.na(logLik[k]) | fit_twosigmag[[1]]$sdr$pdHess==FALSE)
+        names<-rownames(fit$coefficients$cond)
+        names_zi<-rownames(fit$coefficients$zi)
+        if(sum(grepl("Intercept",names))>1){num_err=1;stop(paste(c("There seems to be two intercept terms present in the mean model. Please remove the intercept from either the argument mean_form or from the model.matrix inputted. Variable names in the mean model are:",names),collapse=" "))}
+        names_zi<-rownames(fit$coefficients$zi)
+        if(!is.null(names_zi)&sum(grepl("Intercept",names_zi))>1){num_err=1;stop(paste(c("There seems to be two intercept terms present in the ZI model. Please remove the intercept from either the argument mean_form or from the model.matrix inputted. Variable names in the ZI model are:",names_zi),collapse=" "))}
+        if(!is.null(factor_name)){
+          frame<-model.frame(fit_twosigmag[[1]])
+          index<-grepl(factor_name,colnames(frame))
+          if(!is.factor(frame[,index])){num_err=1;stop("Variable factor_name does not appear to be a factor. Please ensure it is of class factor or change other model options if you wish to test a numeric variable (e.g. change to statistic='Z' and set covar_to_test as the numeric variable to test).")}
+          if(sum(grepl(factor_name,names))==0){num_err=1;stop("factor_name not found in mean model.")}
+          if(sum(grepl('Intercept',names))==0){num_err=1;stop("An intercept is needed in the model for the factor contrast to be successfully calculated using the glht and mcp functions")}
+          if((sum(grepl('Intercept',names))==1 & (1+sum(grepl(factor_name,names)))!=ncol(contrast_matrix))){num_err=1;stop(paste(c("Argument contrast_matrix should have number of columns exactly equal to the number of levels of the factor to be tested.  This is true even though the model contains an Intercept, as in this case one level of the factor is automatically dropped by R for model fitting but the contrast of the factor is still tested properly. There should not be columns corresponding to any other covariates or the Intercept in argument 'contrast_matrix'. Leave argument 'factor_name' as NULL if you wish to specify a contrast consisting of more than the factor given by argument 'factor_name'. Variable names in the mean model are: ",names),collapse=" "))}
+          mcp<- mcp(factor_name = contrast_matrix)
+          names(mcp)<-factor_name
+          temp2<-glht_glmmTMB(fit_twosigmag[[1]],
+            linfct = mcp)
+          temp<-summary(temp2,test=adjusted("none"))
+        }else{
+          if(length(names)!=ncol(contrast_matrix)){num_err=1;stop(paste0(c("Argument 'contrast_matrix' has ",ncol(contrast_matrix)," columns but should have ",length(names)," columns for the model specified (it must include a column for all covariates including the Intercept). If you are only testing levels of a factor, consider setting the argument 'factor_name'.Variable names in the mean model are:",names),collapse=" "))}
+          temp2<-glht_glmmTMB(fit_twosigmag[[1]],
+            linfct = contrast_matrix)
+          temp<-summary(temp2,test=adjusted("none"))
+        }
+        stats_all[k,]<-temp$test$tstat
+        p.vals_gene_level[k,]<-2*pnorm(-1*abs(temp$test$tstat))
+        #temp<-summary(temp2)
+        estimates_gene_level[k,]<-temp$test$coefficients
+        se_gene_level[k,]<-temp$test$sigma
+        residuals_all[k,]<-residuals(fit_twosigmag[[1]])
+      }
+      zz<-zz+1
     }
-    if(statistic=="Z"){
-      fit_twosigmag<-twosigma_custom(counts,silent=TRUE
-        ,mean_form=mean_form,zi_form=zi_form
-        ,id=id,return_summary_fits = FALSE,weights=weights)
-      fit<-summary(fit_twosigmag[[1]])
-      logLik<-as.numeric(fit$logLik)
-      gene_err<-(is.na(logLik) | fit_twosigmag[[1]]$sdr$pdHess==FALSE)
-      residuals_all<-residuals(fit_twosigmag[[1]])
-      names<-rownames(fit$coefficients$cond)
-      if(sum(grepl("Intercept",names))>1){num_err=1;stop(paste(c("There seems to be two intercept terms present in the mean model. Please remove the intercept from either the argument mean_form or from the model.matrix inputted. Variable names in the mean model are:",names),collapse=" "))}
-      names_zi<-rownames(fit$coefficients$zi)
-      if(!is.null(names_zi)&sum(grepl("Intercept",names_zi))>1){num_err=1;stop(paste(c("There seems to be two intercept terms present in the ZI model. Please remove the intercept from either the argument mean_form or from the model.matrix inputted. Variable names in the ZI model are:",names_zi),collapse=" "))}
-      if(is.numeric(covar_to_test)){
-        #+1 for intercept
-        estimates_gene_level<-fit$coefficients$cond[covar_to_test+1,'Estimate']
-        se_gene_level<-fit$coefficients$cond[covar_to_test+1,'Std. Error']
-        stats_all<-fit$coefficients$cond[covar_to_test,'z value']
-        p.vals_gene_level<-fit$coefficients$cond[covar_to_test,'Pr(>|z|)']
-      }
-      if(is.character(covar_to_test)){
-        if(sum(grepl(covar_to_test,names))>1){num_err=1;stop(paste(c("covar_to_test matches to multiple variables in mean model. Please rename these other variables to not contain the name of covar_to_test. Variable names in the mean model are:",names),collapse=" "))}
-        if(sum(grepl(covar_to_test,names))==0){num_err=1;stop(paste(c("covar_to_test not found in mean model. Variable names in the mean model are:",names),collapse=" "))}
-        estimates_gene_level<-fit$coefficients$cond[grepl(covar_to_test,names),'Estimate']
-        se_gene_level<-fit$coefficients$cond[grepl(covar_to_test,names),'Std. Error']
-        stats_all<-fit$coefficients$cond[grepl(covar_to_test,names),'z value']
-        p.vals_gene_level<-fit$coefficients$cond[grepl(covar_to_test,names),'Pr(>|z|)']
-      }
-    }
-    if(statistic=="Stouffer"){
-      fit_twosigmag<-twosigma_custom(counts,silent=TRUE
-        ,mean_form=mean_form,zi_form=zi_form
-        ,id=id,return_summary_fits = FALSE,weights=weights)
-      fit<-summary(fit_twosigmag[[1]])
-      logLik<-as.numeric(fit$logLik)
-      gene_err<-(is.na(logLik) | fit_twosigmag[[1]]$sdr$pdHess==FALSE)
-      residuals_all<-residuals(fit_twosigmag[[1]])
-      names_cond<-rownames(fit$coefficients$cond)
-      if(sum(grepl("Intercept",names_cond))>1){num_err=1;stop(paste(c("There seems to be two intercept terms present in the mean model. Please remove the intercept from either the argument mean_form or from the model.matrix inputted. Variable names in the mean model are:",names_cond),collapse=" "))}
-      names_zi<-rownames(fit$coefficients$zi)
-      if(is.null(names_zi)){num_err=1;stop("If statistic='Stouffer', the ZI component must exist.")}
-      if(!is.null(names_zi)&sum(grepl("Intercept",names_zi))>1){num_err=1;stop(paste(c("There seems to be two intercept terms present in the ZI model. Please remove the intercept from either the argument mean_form or from the model.matrix inputted. Variable names in the ZI model are:",names_zi),collapse=" "))}
-      if(is.numeric(covar_to_test)){
-        #+1 for intercept
-        estimates_gene_level<-fit$coefficients$cond[covar_to_test+1,'Estimate']
-        se_gene_level<-fit$coefficients$cond[covar_to_test+1,'Std. Error']
-        stats_all<-(fit$coefficients$cond[covar_to_test,'z value']+fit$coefficients$zi[covar_to_test,'z value'])/sqrt(2)
-        p.vals_gene_level<-fit$coefficients$cond[covar_to_test,'Pr(>|z|)']
-      }
-      if(is.character(covar_to_test)){
-        if(sum(grepl(covar_to_test,names_cond))>1){num_err=1;stop(paste(c("covar_to_test matches to multiple variables in mean model. Please rename these other variables to not contain the name of covar_to_test. Variable names in the mean model are: ",names_cond),collapse=" "))}
-        if(sum(grepl(covar_to_test,names_zi))>1){num_err=1;stop(paste(c("covar_to_test matches to multiple variables in ZI model. Please rename these other variables to not contain the name of covar_to_test. Variable names in the ZI model are: ",names_zi),collapse=" "))}
-        if(sum(grepl(covar_to_test,names_cond))==0){num_err=1;stop(paste(c("covar_to_test not found in mean model. Variable names in the mean model are: ",names_cond),collapse=" "))}
-        if(sum(grepl(covar_to_test,names_zi))==0){num_err=1;stop(paste(c("covar_to_test not found in ZI model. Variable names in the ZI model are: ",names_zi),collapse=" "))}
-        estimates_gene_level<-fit$coefficients$cond[grepl(covar_to_test,names_cond),'Estimate']
-        se_gene_level<-fit$coefficients$cond[grepl(covar_to_test,names_cond),'Std. Error']
-        stats_all<-(fit$coefficients$cond[grepl(covar_to_test,names_cond),'z value']+fit$coefficients$zi[grepl(covar_to_test,names_zi),'z value'])/sqrt(2)
-        p.vals_gene_level<-fit$coefficients$cond[grepl(covar_to_test,names_cond),'Pr(>|z|)']
-      }
-    }
-    if(statistic=="contrast"){
-      fit_twosigmag<-twosigma_custom(counts,silent=TRUE
-        ,mean_form=mean_form,zi_form=zi_form
-        ,id=id,return_summary_fits = FALSE,weights=weights)
-      #if(!fit_twosigmag[[1]]$sdr$pdHess){break}
-      fit<-summary(fit_twosigmag[[1]])
-      logLik<-as.numeric(fit$logLik)
-      gene_err<-(is.na(logLik) | fit_twosigmag[[1]]$sdr$pdHess==FALSE)
-      names<-rownames(fit$coefficients$cond)
-      names_zi<-rownames(fit$coefficients$zi)
-      if(sum(grepl("Intercept",names))>1){num_err=1;stop(paste(c("There seems to be two intercept terms present in the mean model. Please remove the intercept from either the argument mean_form or from the model.matrix inputted. Variable names in the mean model are:",names),collapse=" "))}
-      names_zi<-rownames(fit$coefficients$zi)
-      if(!is.null(names_zi)&sum(grepl("Intercept",names_zi))>1){num_err=1;stop(paste(c("There seems to be two intercept terms present in the ZI model. Please remove the intercept from either the argument mean_form or from the model.matrix inputted. Variable names in the ZI model are:",names_zi),collapse=" "))}
-      if(!is.null(factor_name)){
-        frame<-model.frame(fit_twosigmag[[1]])
-        index<-grepl(factor_name,colnames(frame))
-        if(!is.factor(frame[,index])){num_err=1;stop("Variable factor_name does not appear to be a factor. Please ensure it is of class factor or change other model options if you wish to test a numeric variable (e.g. change to statistic='Z' and set covar_to_test as the numeric variable to test).")}
-        if(sum(grepl(factor_name,names))==0){num_err=1;stop("factor_name not found in mean model.")}
-        if(sum(grepl('Intercept',names))==0){num_err=1;stop("An intercept is needed in the model for the factor contrast to be successfully calculated using the glht and mcp functions")}
-        if((sum(grepl('Intercept',names))==1 & (1+sum(grepl(factor_name,names)))!=ncol(contrast_matrix))){num_err=1;stop(paste(c("Argument contrast_matrix should have number of columns exactly equal to the number of levels of the factor to be tested.  This is true even though the model contains an Intercept, as in this case one level of the factor is automatically dropped by R for model fitting but the contrast of the factor is still tested properly. There should not be columns corresponding to any other covariates or the Intercept in argument 'contrast_matrix'. Leave argument 'factor_name' as NULL if you wish to specify a contrast consisting of more than the factor given by argument 'factor_name'. Variable names in the mean model are: ",names),collapse=" "))}
-        mcp<- mcp(factor_name = contrast_matrix)
-        names(mcp)<-factor_name
-        temp2<-glht_glmmTMB(fit_twosigmag[[1]],
-          linfct = mcp)
-        temp<-summary(temp2,test=adjusted("none"))
-      }else{
-        if(length(names)!=ncol(contrast_matrix)){num_err=1;stop(paste0(c("Argument 'contrast_matrix' has ",ncol(contrast_matrix)," columns but should have ",length(names)," columns for the model specified (it must include a column for all covariates including the Intercept). If you are only testing levels of a factor, consider setting the argument 'factor_name'.Variable names in the mean model are:",names),collapse=" "))}
-        temp2<-glht_glmmTMB(fit_twosigmag[[1]],
-          linfct = contrast_matrix)
-        temp<-summary(temp2,test=adjusted("none"))
-      }
-      stats_all<-temp$test$tstat
-      p.vals_gene_level<-2*pnorm(-1*abs(temp$test$tstat))
-      #temp<-summary(temp2)
-      estimates_gene_level<-temp$test$coefficients
-      se_gene_level<-temp$test$sigma
-      residuals_all<-residuals(fit_twosigmag[[1]])
-    }
-    #if(fit_twosigmag[[1]]$sdr$pdHess==FALSE | is.na(fit$logLik)){
-
-    #}else{
-      return(list(stats_all=stats_all,p.vals_gene_level=p.vals_gene_level,se_gene_level=se_gene_level,
-        estimates_gene_level=estimates_gene_level,fit=fit,residuals_all=residuals_all,fit=fit,logLik=logLik,gene_err=gene_err))
-    #}
+    return(list(stats_all=stats_all,p.vals_gene_level=p.vals_gene_level,se_gene_level=se_gene_level,
+      estimates_gene_level=estimates_gene_level,fit=fit,residuals_all=residuals_all,fit=fit,logLik=logLik,gene_err=gene_err))
 
   }
-  if(ncores>1){parallel::stopCluster(cl)}
+  #browser()
+  if(ncores>1){stopCluster(cl)}
   rm(progress,opts)
   rm(list=ls(pattern="count_matrix"))
   #browser()
@@ -279,17 +301,17 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
   logLik<-numeric(length=ngenes_total)
   gene_err<-rep(NA,ngenes_total)
   re_present<-any(grepl("id",mean_form[[3]])>0)
-  for(i in 1:ngenes){
+  for(i in 1:nchunks){
+    for(l in chunks[[i]]){
       tryCatch({
-        l<-genes[i]
-        gene_err[l]<-a[[i]]$gene_err
-        if(!a[[i]]$gene_err){
-          residuals_all[l,]<-a[[i]]$residuals_all
-          logLik[l]<-a[[i]]$logLik
-          stats_all[l,]<-a[[i]]$stats_all
-          p.vals_gene_level[l,]<-a[[i]]$p.vals_gene_level
-          estimates_gene_level[l,]<-a[[i]]$estimates_gene_level
-          se_gene_level[l,]<-a[[i]]$se_gene_level
+        gene_err[l]<-a[[i]]$gene_err[1]
+        if(!a[[i]]$gene_err[1]){
+          residuals_all[l,]<-a[[i]]$residuals_all[1,]
+          logLik[l]<-a[[i]]$logLik[1]
+          stats_all[l,]<-a[[i]]$stats_all[1,]
+          p.vals_gene_level[l,]<-a[[i]]$p.vals_gene_level[1,]
+          estimates_gene_level[l,]<-a[[i]]$estimates_gene_level[1,]
+          se_gene_level[l,]<-a[[i]]$se_gene_level[1,]
           if(return_summary_fits==TRUE){
             fit[[l]]<-a[[i]]$fit
           }
@@ -298,7 +320,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
           }
         }else{
           residuals_all[l,]<-NA
-          logLik[l]<-a[[i]]$logLik
+          logLik[l]<-a[[i]]$logLik[k]
           stats_all[l,]<-NA
           p.vals_gene_level[l,]<-NA
           estimates_gene_level[l,]<-NA
@@ -310,11 +332,17 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
             re_sigma_est[l]<-NA
           }
         }
-
       },error=function(e){})
-    a[[i]]<-list(NULL)
+      a[[i]]$residuals_all<-a[[i]]$residuals_all[-1,,drop=FALSE]
+      a[[i]]$estimates_gene_level<-a[[i]]$estimates_gene_level[-1,,drop=FALSE]
+      a[[i]]$stats_all<-a[[i]]$stats_all[-1,,drop=FALSE]
+      a[[i]]$p.vals_gene_level<-a[[i]]$p.vals_gene_level[-1,,drop=FALSE]
+      a[[i]]$se_gene_level<-a[[i]]$se_gene_level[-1,,drop=FALSE]
+      a[[i]]$logLik<-a[[i]]$logLik[-1]
+      a[[i]]$gene_err<-a[[i]]$gene_err[-1]
+    }
   }
-rm(a)
+  rm(a)
 
   stats_test<-vector('list',length=nsets)
   stats_ref<-vector('list',length=nsets)
