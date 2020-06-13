@@ -115,15 +115,15 @@ twosigmag2<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mea
   }
 
   print("Running Gene-Level Models")
-  # pb <- progress_bar$new(
-  #   format = "num genes complete = :num [:bar] :elapsed | eta: :eta",
-  #   total = ngenes,    # 100
-  #   width = 60)
-  #
-  # #pb <- txtProgressBar(max = iterations, style = 3)
-  # progress <- function(n){
-  #   pb$tick(tokens = list(num = n))
-  # }
+  pb <- progress_bar$new(
+    format = "num genes complete = :num [:bar] :elapsed | eta: :eta",
+    total = ngenes,    # 100
+    width = 60)
+
+  #pb <- txtProgressBar(max = iterations, style = 3)
+  progress <- function(n){
+    pb$tick(tokens = list(num = n))
+  }
   #
   opts <- list(progress = progress)
   #pb <- txtProgressBar(0, ngenes, style = 3)
