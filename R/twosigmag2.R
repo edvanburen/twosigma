@@ -40,7 +40,7 @@ twosigmag2<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mea
   ,contrast_matrix=NULL,factor_name=NULL,rho=NULL
   ,allow_neg_corr=FALSE
   ,return_summary_fits=TRUE
-  ,weights=rep(1,ncol(count_matrix))
+  ,weights=NULL
   ,control = glmmTMBControl(),ncores=1){
 
   #if(!(adhoc==FALSE)){print("The adhoc method is not recommended for gene set testing due to interpretability.")}
@@ -66,6 +66,7 @@ twosigmag2<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mea
   gene_names<-rownames(count_matrix)
   ncomps<-ifelse(statistic=="contrast",nrow(contrast_matrix),1)
   ncells<-ncol(count_matrix)
+  if(!"weights"%in%passed_args){weights<-rep(1,ncells)}
   nsets<-length(index_test)
   list_lengths<-lapply(index_test,FUN=length)
   if(sum(list_lengths<2)>0){stop("All test sets must have at least two genes. Please remove singleton or empty sets.")}
@@ -135,7 +136,10 @@ twosigmag2<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mea
   for(i in 1:nchunks){
     assign(paste0("count_matrix_",i),count_matrix[chunks[[i]],])
   }
+
   rm(count_matrix)
+  #browser()
+  clusterExport(cl=cl,list=c(paste0("count_matrix_",1:nchunks)),envir = environment())
   gc()
 
   num_err<-0
