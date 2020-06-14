@@ -104,15 +104,15 @@ twosigmag2<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mea
   if(ncores==1){
     registerDoSEQ()
   }else{
-    cl <- snow::makeCluster(ncores)
-    #cl<-parallel::makeForkCluster(ncores,outfile="")
-    #doParallel::registerDoParallel(cl)
+    #cl <- snow::makeCluster(ncores)
+    cl<-parallel::makeForkCluster(ncores,outfile="")
+    doParallel::registerDoParallel(cl)
     #registerDoSNOW(cl,outfile="")
-    registerDoSNOW(cl)
+    #registerDoSNOW(cl)
     vars<-unique(c(all.vars(mean_form)[-1],all.vars(mean_form_null)[-1]
       ,all.vars(zi_form),all.vars(zi_form_null)))
     vars<-vars[!vars=="id"]
-    clusterExport(cl,list=vars)
+    #clusterExport(cl,list=vars)
   }
 
   print("Running Gene-Level Models")
@@ -294,7 +294,7 @@ twosigmag2<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mea
   }
   #browser()
   gc()
-  if(ncores>1){stopCluster(cl)}
+  if(ncores>1){parallel::stopCluster(cl)}
   rm(progress,opts)
   rm(list=ls(pattern="count_matrix"))
   #browser()

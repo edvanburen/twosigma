@@ -102,11 +102,11 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
   if(ncores==1){
     registerDoSEQ()
   }else{
-    cl <- snow::makeCluster(ncores)
-    #cl<-parallel::makeForkCluster(ncores,outfile="")
-    #doParallel::registerDoParallel(cl)
+    #cl <- snow::makeCluster(ncores)
+    cl<-parallel::makeForkCluster(ncores,outfile="")
+    doParallel::registerDoParallel(cl)
     #registerDoSNOW(cl,outfile="")
-    registerDoSNOW(cl)
+    #registerDoSNOW(cl)
     vars<-unique(c(all.vars(mean_form)[-1],all.vars(mean_form_null)[-1]
       ,all.vars(zi_form),all.vars(zi_form_null)))
     vars<-vars[!vars=="id"]
@@ -125,7 +125,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
   }
   opts <- list(progress = progress)
   #pb <- txtProgressBar(0, n, style = 3)
-  browser()
+  #browser()
   num_err<-0
   a<-foreach(i=1:ngenes,.options.snow = opts)%dopar%{
     l<-genes[i]
