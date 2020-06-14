@@ -138,7 +138,7 @@ twosigmag2<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mea
   }
 
   rm(count_matrix)
-  #browser()
+  browser()
   #clusterExport(cl=cl,list=c(paste0("count_matrix_",1:nchunks)),envir = environment())
   gc()
 

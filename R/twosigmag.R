@@ -110,7 +110,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
     vars<-unique(c(all.vars(mean_form)[-1],all.vars(mean_form_null)[-1]
       ,all.vars(zi_form),all.vars(zi_form_null)))
     vars<-vars[!vars=="id"]
-    clusterExport(cl,list=vars)
+    #clusterExport(cl,list=vars)
   }
 
   print("Running Gene-Level Models")
