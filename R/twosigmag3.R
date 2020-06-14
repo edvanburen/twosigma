@@ -100,30 +100,6 @@ twosigmag3<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mea
     fit<-vector('list',length=ngenes_total)
   }
   #browser()
-
-    cl <- snow::makeCluster(ncores)
-    #cl<-parallel::makeForkCluster(ncores,outfile="")
-    #doParallel::registerDoParallel(cl)
-    #registerDoSNOW(cl,outfile="")
-    registerDoSNOW(cl)
-    vars<-unique(c(all.vars(mean_form)[-1],all.vars(mean_form_null)[-1]
-      ,all.vars(zi_form),all.vars(zi_form_null)))
-    #vars<-vars[!vars=="id"]
-    clusterExport(cl,list=vars)
-
-
-  print("Running Gene-Level Models")
-  pb <- progress_bar$new(
-    format = "num genes complete = :num [:bar] :elapsed | eta: :eta",
-    total = ngenes,    # 100
-    width = 60)
-
-  #pb <- txtProgressBar(max = iterations, style = 3)
-  progress <- function(n){
-    pb$tick(tokens = list(gene = n))
-  }
-  opts <- list(progress = progress)
-  #pb <- txtProgressBar(0, n, style = 3)
   fit_tsg<-function(counts,statistic,covar_to_test=NULL
     ,factor_name=NULL,contrast_matrix=NULL,id){
     # if(statistic=="LR"){
@@ -256,7 +232,33 @@ twosigmag3<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mea
     return(list(stats_all=stats_all,p.vals_gene_level=p.vals_gene_level,se_gene_level=se_gene_level,
       estimates_gene_level=estimates_gene_level,fit=fit,residuals_all=residuals_all,fit=fit,logLik=logLik,gene_err=gene_err))
   }
-  #browser()
+browser()
+  a<-alply(.data=count_matrix[genes,],.margins=1,.fun=fit_tsg,statistic=statistic,
+      covar_to_test=covar_to_test,factor_name=factor_name,contrast_matrix=contrast_matrix,id=id,.progress = "text")
+
+    cl <- snow::makeCluster(ncores)
+    #cl<-parallel::makeForkCluster(ncores,outfile="")
+    #doParallel::registerDoParallel(cl)
+    #registerDoSNOW(cl,outfile="")
+    registerDoSNOW(cl)
+    vars<-unique(c(all.vars(mean_form)[-1],all.vars(mean_form_null)[-1]
+      ,all.vars(zi_form),all.vars(zi_form_null)))
+    #vars<-vars[!vars=="id"]
+    clusterExport(cl,list=vars)
+
+
+  print("Running Gene-Level Models")
+  pb <- progress_bar$new(
+    format = "num genes complete = :num [:bar] :elapsed | eta: :eta",
+    total = ngenes,    # 100
+    width = 60)
+
+  #pb <- txtProgressBar(max = iterations, style = 3)
+  progress <- function(n){
+    pb$tick(tokens = list(gene = n))
+  }
+  opts <- list(progress = progress)
+  #pb <- txtProgressBar(0, n, style = 3)
   a<-snow::parRapply(cl=cl,x=count_matrix[genes,],fun=fit_tsg,statistic=statistic,
     covar_to_test=covar_to_test,factor_name=factor_name,contrast_matrix=contrast_matrix,id=id)
 
