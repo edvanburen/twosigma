@@ -286,13 +286,14 @@ twosigmag2<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mea
         se_gene_level[k,]<-temp$test$sigma
         residuals_all[k,]<-residuals(fit_twosigmag[[1]])
       }
-      zz<-zz+1
+      gc()
     }
     return(list(stats_all=stats_all,p.vals_gene_level=p.vals_gene_level,se_gene_level=se_gene_level,
       estimates_gene_level=estimates_gene_level,fit=fit,residuals_all=residuals_all,fit=fit,logLik=logLik,gene_err=gene_err))
 
   }
   #browser()
+  gc()
   if(ncores>1){stopCluster(cl)}
   rm(progress,opts)
   rm(list=ls(pattern="count_matrix"))

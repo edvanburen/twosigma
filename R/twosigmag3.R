@@ -269,6 +269,7 @@ twosigmag3<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mea
 
   #num_err<-0
   if(ncores>1){parallel::stopCluster(cl)}
+  gc()
   rm(progress,opts)
   rm(list=ls(pattern="count_matrix"))
   #browser()
