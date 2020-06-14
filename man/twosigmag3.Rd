@@ -9,8 +9,7 @@ twosigmag3(count_matrix, index_test, index_ref = NULL,
   zi_form_null = NULL, id, statistic = "LR", lr.df = NULL,
   covar_to_test = NULL, contrast_matrix = NULL, factor_name = NULL,
   rho = NULL, allow_neg_corr = FALSE, return_summary_fits = TRUE,
-  weights = rep(1, ncol(count_matrix)), control = glmmTMBControl(),
-  ncores = 1)
+  weights = NULL, control = glmmTMBControl(), ncores = 1)
 }
 \arguments{
 \item{count_matrix}{Matrix of non-negative integer read counts. It is recommended to make the rownames the gene names for better output. No missing values can be present in the data.}
