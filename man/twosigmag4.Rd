@@ -10,7 +10,7 @@ twosigmag4(count_matrix, index_test, index_ref = NULL,
   covar_to_test = NULL, contrast_matrix = NULL, factor_name = NULL,
   rho = NULL, allow_neg_corr = FALSE, return_summary_fits = TRUE,
   weights = NULL, control = glmmTMBControl(), ncores = 1,
-  cluster_type = "Fork")
+  cluster_type = "Fork", chunk_size = 10)
 }
 \arguments{
 \item{count_matrix}{Matrix of non-negative integer read counts. It is recommended to make the rownames the gene names for better output. No missing values can be present in the data.}

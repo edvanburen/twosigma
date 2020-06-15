@@ -41,7 +41,7 @@ twosigmag4<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mea
   ,allow_neg_corr=FALSE
   ,return_summary_fits=TRUE
   ,weights=NULL
-  ,control = glmmTMBControl(),ncores=1,cluster_type="Fork"){
+  ,control = glmmTMBControl(),ncores=1,cluster_type="Fork",chunk_size=10){
 
   #if(!(adhoc==FALSE)){print("The adhoc method is not recommended for gene set testing due to interpretability.")}
   passed_args <- names(as.list(match.call())[-1])
@@ -516,7 +516,7 @@ twosigmag4<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mea
   }
   #bpparam <- SnowParam(workers=2, type="SOCK")
   #size<-ceiling(length(genes)/nchunks)
-  size=10
+  size=chunk_size
   chunks<-split(genes,ceiling(seq_along(genes)/size))
   nchunks<-length(chunks)
   #browser()
