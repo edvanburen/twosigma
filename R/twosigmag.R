@@ -114,7 +114,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
     vars<-vars[!vars=="id"]
     #clusterExport(cl,list=vars)
   }
-  print(gc())
+  #print(gc())
   print("Running Gene-Level Models")
   pb <- progress_bar$new(
     format = "num genes complete = :num [:bar] :elapsed | eta: :eta",
@@ -133,7 +133,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
     l<-genes[i]
     #setTxtProgressBar(pb, i)
     counts<-count_matrix[l,,drop=FALSE]
-    print(gc())
+    if(i%%100==0){print(gc())}
     count_matrix[l,]
     if(num_err>0){break}
     if(statistic=="LR"){
@@ -273,6 +273,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
     #}
 
   }
+  browser()
   print(gc())
   if(ncores>1){parallel::stopCluster(cl)}
   print(gc())

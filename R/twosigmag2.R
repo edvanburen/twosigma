@@ -133,13 +133,14 @@ twosigmag2<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mea
   size<-ceiling(length(genes)/nchunks)
   chunks<-split(genes,ceiling(seq_along(genes)/size))
 
-  for(i in 1:nchunks){
-    assign(paste0("count_matrix_",i),count_matrix[chunks[[i]],])
-  }
+   for(i in 1:nchunks){
+     assign(paste0("count_matrix_",i),count_matrix[chunks[[i]],])
+   }
+  browser()
+  #clusterExport(cl=cl,list=c(paste0("count_matrix_",1:nchunks)),envir = environment())
 
   rm(count_matrix)
-  browser()
-  clusterExport(cl=cl,list=c(paste0("count_matrix_",1:nchunks)),envir = environment())
+
   gc()
 
   num_err<-0
@@ -158,6 +159,7 @@ twosigmag2<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mea
       l<-j
       #setTxtProgressBar(pb, i)
       counts<-get(paste0("count_matrix_",i))[l,,drop=FALSE]
+      #counts<-count_matrix[l,,drop=FALSE]
       if(num_err>0){break}
       if(statistic=="LR"){
         fit_twosigmag<-lr.twosigma_custom(counts,silent=TRUE
@@ -288,6 +290,8 @@ twosigmag2<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mea
       }
       gc()
     }
+    #return(list(stats_all=stats_all,p.vals_gene_level=p.vals_gene_level,se_gene_level=se_gene_level,
+    #  estimates_gene_level=estimates_gene_level,fit=fit,residuals_all=residuals_all,fit=fit,logLik=logLik,gene_err=gene_err))
     return(list(stats_all=stats_all,p.vals_gene_level=p.vals_gene_level,se_gene_level=se_gene_level,
       estimates_gene_level=estimates_gene_level,fit=fit,residuals_all=residuals_all,fit=fit,logLik=logLik,gene_err=gene_err))
 
@@ -317,9 +321,9 @@ twosigmag2<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mea
           p.vals_gene_level[l,]<-a[[i]]$p.vals_gene_level[1,]
           estimates_gene_level[l,]<-a[[i]]$estimates_gene_level[1,]
           se_gene_level[l,]<-a[[i]]$se_gene_level[1,]
-          if(return_summary_fits==TRUE){
-            fit[[l]]<-a[[i]]$fit
-          }
+          # if(return_summary_fits==TRUE){
+          #   fit[[l]]<-a[[i]]$fit
+          # }
           if(re_present){
             re_sigma_est[l]<-exp(a[[i]]$sdr$par.fixed['theta'])
           }
@@ -330,9 +334,9 @@ twosigmag2<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mea
           p.vals_gene_level[l,]<-NA
           estimates_gene_level[l,]<-NA
           se_gene_level[l,]<-NA
-          if(return_summary_fits==TRUE){
-            fit[[l]]<-a[[i]]$fit
-          }
+          # if(return_summary_fits==TRUE){
+          #   fit[[l]]<-a[[i]]$fit
+          # }
           if(re_present){
             re_sigma_est[l]<-NA
           }
