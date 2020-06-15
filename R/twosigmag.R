@@ -318,7 +318,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
   }
 gc()
 rm(a)
-
+gc()
   stats_test<-vector('list',length=nsets)
   stats_ref<-vector('list',length=nsets)
   p.val<-matrix(NA,nrow=nsets,ncol=ncomps)
