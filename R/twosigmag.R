@@ -272,6 +272,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
   gc()
   rm(progress,opts)
   rm(list=ls(pattern="count_matrix"))
+  gc()
   #browser()
   residuals_all<-matrix(nrow=ngenes_total,ncol=ncells)
   stats_all<-matrix(NA,nrow=ngenes_total,ncol=ncomps)
