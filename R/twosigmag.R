@@ -114,7 +114,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
     vars<-vars[!vars=="id"]
     #clusterExport(cl,list=vars)
   }
-  print(gc)
+  print(gc())
   print("Running Gene-Level Models")
   pb <- progress_bar$new(
     format = "num genes complete = :num [:bar] :elapsed | eta: :eta",
@@ -133,7 +133,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
     l<-genes[i]
     #setTxtProgressBar(pb, i)
     counts<-count_matrix[l,,drop=FALSE]
-    print(gc)
+    print(gc())
     count_matrix[l,]
     if(num_err>0){break}
     if(statistic=="LR"){
@@ -269,7 +269,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
       #return(list(stats_all=stats_all,p.vals_gene_level=p.vals_gene_level,se_gene_level=se_gene_level,
     #    estimates_gene_level=estimates_gene_level,fit=fit,residuals_all=residuals_all,fit=fit,logLik=logLik,gene_err=gene_err))
     return(list(stats_all=stats_all,p.vals_gene_level=p.vals_gene_level,se_gene_level=se_gene_level,
-      estimates_gene_level=estimates_gene_level,fit=fit,residuals_all=residuals_all,logLik=logLik,gene_err=gene_err))
+      estimates_gene_level=estimates_gene_level,residuals_all=residuals_all,logLik=logLik,gene_err=gene_err))
     #}
 
   }
@@ -312,9 +312,9 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
           p.vals_gene_level[l,]<-NA
           estimates_gene_level[l,]<-NA
           se_gene_level[l,]<-NA
-          if(return_summary_fits==TRUE){
-            fit[[l]]<-a[[i]]$fit
-          }
+          # if(return_summary_fits==TRUE){
+          #   fit[[l]]<-a[[i]]$fit
+          # }
           if(re_present){
             re_sigma_est[l]<-NA
           }
