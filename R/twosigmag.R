@@ -117,7 +117,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
   pb <- progress_bar$new(
     format = "num genes complete = :num [:bar] :elapsed | eta: :eta",
     total = ngenes,    # 100
-    width = 60)
+    width = 60,force = T)
 
   #pb <- txtProgressBar(max = iterations, style = 3)
   progress <- function(n){
@@ -267,7 +267,9 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
     #}
 
   }
+  gc()
   if(ncores>1){parallel::stopCluster(cl)}
+  gc()
   rm(progress,opts)
   rm(list=ls(pattern="count_matrix"))
   #browser()
@@ -314,6 +316,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
       },error=function(e){})
     a[[i]]<-list(NULL)
   }
+gc()
 rm(a)
 
   stats_test<-vector('list',length=nsets)
