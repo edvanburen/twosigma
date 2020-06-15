@@ -136,13 +136,13 @@ twosigmag2<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mea
    for(i in 1:nchunks){
      assign(paste0("count_matrix_",i),count_matrix[chunks[[i]],])
    }
-  browser()
+  #browser()
   #clusterExport(cl=cl,list=c(paste0("count_matrix_",1:nchunks)),envir = environment())
 
   rm(count_matrix)
 
   gc()
-
+  env<-environment()
   num_err<-0
   zz<-0
   a<-foreach(i=1:nchunks,.options.snow = opts)%dopar%{
@@ -158,7 +158,8 @@ twosigmag2<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mea
       k<-k+1
       l<-j
       #setTxtProgressBar(pb, i)
-      counts<-get(paste0("count_matrix_",i))[l,,drop=FALSE]
+      print(environment())
+      counts<-get(paste0("count_matrix_",i),envir = env)[l,,drop=FALSE]
       #counts<-count_matrix[l,,drop=FALSE]
       if(num_err>0){break}
       if(statistic=="LR"){

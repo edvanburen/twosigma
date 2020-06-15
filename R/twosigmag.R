@@ -134,7 +134,6 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
     #setTxtProgressBar(pb, i)
     counts<-count_matrix[l,,drop=FALSE]
     if(i%%100==0){print(gc())}
-    count_matrix[l,]
     if(num_err>0){break}
     if(statistic=="LR"){
       fit_twosigmag<-lr.twosigma_custom(counts,silent=TRUE

@@ -47,7 +47,7 @@ twosigma_custom<-function(count_matrix,mean_form,zi_form,id,return_summary_fits=
     pb$tick(tokens = list(num = n))
   }
   opts <- list(progress = progress)
-  print("Running Gene-Level Models")
+  #print("Running Gene-Level Models")
 a<-foreach(i=1:ngenes,.options.snow = opts)%dopar%{
     count<-count_matrix[i,,drop=FALSE]
     check_twosigma_custom_input(count,mean_form,zi_form,id,disp_covar)
