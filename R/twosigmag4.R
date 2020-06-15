@@ -367,6 +367,7 @@ twosigmag4<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mea
   }
   fit_tsg3<-function(chunk,statistic,covar_to_test=NULL
     ,factor_name=NULL,contrast_matrix=NULL,id,ncomps){
+    gc()
     k<-0
     num_err=0
     residuals_all<-matrix(NA,nrow=length(chunk),ncol=ncells)
@@ -602,6 +603,7 @@ twosigmag4<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mea
   for(i in 1:nchunks){
     for(l in chunks[[i]]){
       tryCatch({
+        # using first for as current gene, then removing after that
         gene_err[l]<-a[[i]]$gene_err[1]
         if(!a[[i]]$gene_err[1]){
           residuals_all[l,]<-a[[i]]$residuals_all[1,]
@@ -631,6 +633,8 @@ twosigmag4<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mea
           }
         }
       },error=function(e){})
+      # Constantly remove variables to limit memory usage
+      # first row will be info for next gene in loop
       a[[i]]$residuals_all<-a[[i]]$residuals_all[-1,,drop=FALSE]
       a[[i]]$estimates_gene_level<-a[[i]]$estimates_gene_level[-1,,drop=FALSE]
       a[[i]]$stats_all<-a[[i]]$stats_all[-1,,drop=FALSE]
