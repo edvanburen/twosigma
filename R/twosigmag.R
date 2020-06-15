@@ -273,7 +273,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
     #}
 
   }
-  browser()
+  #browser()
   print(gc())
   if(ncores>1){parallel::stopCluster(cl)}
   print(gc())
