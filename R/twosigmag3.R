@@ -233,8 +233,9 @@ twosigmag3<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mea
       estimates_gene_level=estimates_gene_level,fit=fit,residuals_all=residuals_all,fit=fit,logLik=logLik,gene_err=gene_err))
   }
 browser()
+system.time({
   a<-alply(.data=count_matrix[genes,],.margins=1,.fun=fit_tsg,statistic=statistic,
-      covar_to_test=covar_to_test,factor_name=factor_name,contrast_matrix=contrast_matrix,id=id,.progress = "text")
+      covar_to_test=covar_to_test,factor_name=factor_name,contrast_matrix=contrast_matrix,id=id,.progress = "text",.parallel = TRUE)})
 
     cl <- snow::makeCluster(ncores)
     #cl<-parallel::makeForkCluster(ncores,outfile="")
@@ -259,8 +260,6 @@ browser()
   }
   opts <- list(progress = progress)
   #pb <- txtProgressBar(0, n, style = 3)
-  a<-snow::parRapply(cl=cl,x=count_matrix[genes,],fun=fit_tsg,statistic=statistic,
-    covar_to_test=covar_to_test,factor_name=factor_name,contrast_matrix=contrast_matrix,id=id)
 
   #a<-aaply(.data=count_matrix[genes,],.margins=1,.fun=fit_tsg,statistic=statistic,
   #  covar_to_test=covar_to_test,factor_name=factor_name,contrast_matrix=contrast_matrix,id=id,.progress = "text",.drop=F)
