@@ -385,7 +385,9 @@ twosigmag4<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mea
   #a<-pbapply(count_matrix[genes,],MARGIN=1,FUN=fit_tsg,statistic=statistic,
  #     covar_to_test=covar_to_test,factor_name=factor_name,contrast_matrix=contrast_matrix,
   #     id=id,cl=cl)
-  a<-pblapply(X=genes,FUN=fit_tsg2,cl=cl)
+  a<-pblapply(X=genes,FUN=fit_tsg2,statistic=statistic,
+         covar_to_test=covar_to_test,factor_name=factor_name,contrast_matrix=contrast_matrix,
+         id=id,cl=cl)
   if(ncores>1){parallel::stopCluster(cl)}
   rm(count_matrix)
   # a<-bplapply(genes,FUN=fit_tsg2,statistic=statistic,
