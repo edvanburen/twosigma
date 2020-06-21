@@ -127,9 +127,10 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
   }
   opts <- list(progress = progress)
   #pb <- txtProgressBar(0, n, style = 3)
-  #browser()
+  browser()
   num_err<-0
-  a<-foreach(i=1:ngenes,.options.snow = opts)%dopar%{
+  a<-foreach(i=1:ngenes,.options.snow = opts,.verbose = T)%dopar%{
+    #a<-foreach(i=15075:15085,.options.snow = opts,.verbose = T)%dopar%{
     l<-genes[i]
     #setTxtProgressBar(pb, i)
     counts<-count_matrix[l,,drop=FALSE]
@@ -232,6 +233,15 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
       fit<-summary(fit_twosigmag[[1]])
       logLik<-as.numeric(fit$logLik)
       gene_err<-(is.na(logLik) | fit_twosigmag[[1]]$sdr$pdHess==FALSE)
+      if(gene_err==TRUE){
+        stats_all<-rep(NA,ncomps)
+        p.vals_gene_level<-rep(NA,ncomps)
+        se_gene_level<-rep(NA,ncomps)
+        estimates_gene_level<-rep(NA,ncomps)
+        residuals_all<-rep(NA,ncells)
+        return(list(stats_all=stats_all,p.vals_gene_level=p.vals_gene_level,se_gene_level=se_gene_level,
+          estimates_gene_level=estimates_gene_level,residuals_all=residuals_all,logLik=logLik,gene_err=gene_err))
+      }
       names<-rownames(fit$coefficients$cond)
       names_zi<-rownames(fit$coefficients$zi)
       if(sum(grepl("Intercept",names))>1){num_err=1;stop(paste(c("There seems to be two intercept terms present in the mean model. Please remove the intercept from either the argument mean_form or from the model.matrix inputted. Variable names in the mean model are:",names),collapse=" "))}
@@ -392,7 +402,7 @@ print(gc())
   # names(estimates_gene_level)<-rownames(count_matrix)
   # names(rho_est)<-names(index_test)
   # names(direction)<-names(index_test)
-
+  #browser()
   colnames(p.val)<-rownames(contrast_matrix)
   rownames(p.val)<-names(index_test)
   rownames(p.val_ttest)<-names(index_test)

@@ -601,7 +601,7 @@ twosigmag4<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mea
   se_gene_level<-matrix(NA,nrow=ngenes_total,ncol=ncomps)
   logLik<-numeric(length=ngenes_total)
   gene_err<-rep(NA,ngenes_total)
-  re_present<-any(grepl("id",mean_form[[3]])>0)
+  #re_present<-any(grepl("id",mean_form[[3]])>0)
   for(i in 1:nchunks){
     for(l in chunks[[i]]){
       tryCatch({
@@ -617,9 +617,9 @@ twosigmag4<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mea
           # if(return_summary_fits==TRUE){
           #   fit[[l]]<-a[[i]]$fit
           # }
-          if(re_present){
-            re_sigma_est[l]<-exp(a[[i]]$sdr$par.fixed['theta'])
-          }
+          # if(re_present){
+          #   re_sigma_est[l]<-exp(a[[i]]$sdr$par.fixed['theta'])
+          # }
         }else{
           residuals_all[l,]<-NA
           logLik[l]<-a[[i]]$logLik[k]
@@ -630,9 +630,9 @@ twosigmag4<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mea
           # if(return_summary_fits==TRUE){
           #   fit[[l]]<-a[[i]]$fit
           # }
-          if(re_present){
-            re_sigma_est[l]<-NA
-          }
+          # if(re_present){
+          #   re_sigma_est[l]<-NA
+          # }
         }
       },error=function(e){})
       # Constantly remove variables to limit memory usage
