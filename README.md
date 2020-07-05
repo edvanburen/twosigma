@@ -57,7 +57,7 @@ For example, each of the following function calls reproduces the default TWO-SIG
 
 ```r
 fits<-twosigma(count_matrix, mean_covar=mean_covar_matrix, zi_covar=zi_covar_matrix, mean_re = TRUE, zi_re = TRUE, id=id,adhoc=F)
-twosigma_custom(count, mean_form=count~mean_covar_matrix+(1|id),zi_form=~zi_covar_matrix+(1|id),id=id)
+fits2<-twosigma_custom(count, mean_form=count~mean_covar_matrix+(1|id),zi_form=~zi_covar_matrix+(1|id),id=id)
 ```
 ## Fixed Effect Testing  
 
@@ -79,11 +79,11 @@ calc_logFC<-function(x){if(class(x)=="glmmTMB"){x<-summary(x)};x$coefficients$co
 calc_Z<-function(x){if(class(x)=="glmmTMB"){x<-summary(x)};x$coefficients$cond['t2d_sim','Estimate']}
 calc_p.vals<-function(x){if(class(x)=="glmmTMB"){x<-summary(x)};x$coefficients$cond['t2d_sim',4]}
 
-logFC<-unlist(lapply(fits,calc_logFC))
-Zstats<-unlist(lapply(fits,calc_Z))
-p.val_Zstat<-unlist(lapply(fits,calc_p.vals)
+logFC<-unlist(lapply(fits$fit,calc_logFC))
+Zstats<-unlist(lapply(fits$fit,calc_Z))
+p.val_Zstat<-unlist(lapply(fits$fit,calc_p.vals)
 
-calc_Stouffer<-function(x){(x$coefficients$cond['t2d_sim','Estimate'] + x$coefficients$zi['t2d_sim','Estimate'])/sqrt(2)}
+calc_Stouffer<-function(x){if(class(x)=="glmmTMB"){x<-summary(x)};(x$coefficients$cond['t2d_sim','Estimate'] + x$coefficients$zi['t2d_sim','Estimate'])/sqrt(2)}
 ```
 
 # Testing of a contrast matrix
