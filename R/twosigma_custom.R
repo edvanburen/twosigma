@@ -9,47 +9,47 @@
 ##' @param weights weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.
 ##' @param control Control parameters for optimization in \code{glmmTMB}.  See \code{?glmmTMBControl}.
 ##' @param ncores Number of cores used for parallelization. Defaults to 1.
+##' @param cluster_type Whether to use a "cluster of type "Fork" or "Sock". On Unix systems, "Fork" will likely improve performance. On Windows, only "Sock" will actually result in parallelized computing.
+##' @param chunk_size Number of genes to be sent to each parallel environment. Parallelization is more efficient, particuarly with a large count matrix, when the count matrix is 'chunked' into some common size (e.g. 10, 50, 200). Defaults to 10.
+##' @param lb Should load balancing be used for parallelization? Users will likely want to set to FALSE for improved performance.
+##' @param internal_call Not needed by users called \code{twosigma_custom} directly.
 ##' @section Details:
 ##' This function is likely only needed if users wish to include random effect terms beyond random intercepts. Users should be confident in their abilities to specify random effects using the syntax of lme4.
-##' @return If \code{return_summary_fits=TRUE}, returns a list of objects of class \code{summary.glmmTMB}. If \code{return_summary_fits=FALSE}, returns a list of model fit objects of class \code{glmmTMB}. In either case, the order matches the row order of \code{count_matrix}, and the names of the list elements are taken as the rownames of \code{count_matrix}.
+##' @return A list with the following elements:
+##' \itemize{
+##' \item{\code{fit: }} If \code{return_summary_fits=TRUE}, returns a list of model fit objects of class \code{summary.glmmTMB}. If \code{return_summary_fits=FALSE}, returns a list of model fit objects of class \code{glmmTMB}. In either case, the order matches the row order of \code{count_matrix}, and the names of the list elements are taken as the rownames of \code{count_matrix}.
+##' }
 ##' @export twosigma_custom
 twosigma_custom<-function(count_matrix,mean_form,zi_form,id,return_summary_fits=TRUE,
-  silent=FALSE,ncores=1,disp_covar=NULL
+  silent=FALSE,disp_covar=NULL
   ,weights=rep(1,ncol(count_matrix))
-  ,control = glmmTMBControl()){
+  ,control = glmmTMBControl(),ncores=1,cluster_type="Fork"
+  ,chunk_size=1,lb=FALSE,internal_call=FALSE){
 
   passed_args <- names(as.list(match.call())[-1])
   required_args<-c("count_matrix","mean_form","zi_form","id")
   if (any(!required_args %in% passed_args)) {
     stop(paste("Argument(s)",paste(setdiff(required_args, passed_args), collapse=", "),"missing and must be specified."))
   }
+  ngenes<-nrow(count_matrix)
+  genes<-rownames(count_matrix)
+  if(is.null(genes)){genes<-1:ngenes}
   #if(!is.matrix(count_matrix)){stop("Please ensure the input count_matrix is of class matrix.")}
   if(length(id)!=ncol(count_matrix)){stop("Argument id should be a numeric vector with length equal to the number of columns of count_matrix (i.e. the number of cells).")}
 
-  ngenes<-nrow(count_matrix)
-  fit<-vector('list',length=ngenes)
-  #browser()
-  if(ncores==1){
-    registerDoSEQ()
-  }else{
-    cl <- makeCluster(ncores)
-    registerDoSNOW(cl)
-    vars<-unique(c(all.vars(mean_form)[-1],all.vars(zi_form)))
-    vars<-vars[!vars=="id"]
-    clusterExport(cl,list=vars)
-  }
-  pb <- progress_bar$new(
-    format = "num genes complete = :num [:bar] :elapsed | eta: :eta",
-    total = ngenes,    # 100
-    width = 60)
 
-  progress <- function(n){
-    pb$tick(tokens = list(num = n))
-  }
-  opts <- list(progress = progress)
-  #print("Running Gene-Level Models")
-a<-foreach(i=1:ngenes,.options.snow = opts)%dopar%{
-    count<-count_matrix[i,,drop=FALSE]
+
+
+  fit_ts<-function(chunk,id){
+    k<-0
+    num_err=0
+    fit<-vector('list',length=length(chunk))
+    gene_err<-rep(NA,length(chunk))
+    logLik<-rep(NA,length(chunk))
+    for(l in unlist(chunk)){
+      if(num_err>0){break}
+      k<-k+1
+    count<-count_matrix[l,,drop=FALSE]
     check_twosigma_custom_input(count,mean_form,zi_form,id,disp_covar)
     count<-as.numeric(count)
     if(is.null(disp_covar)){
@@ -72,25 +72,69 @@ a<-foreach(i=1:ngenes,.options.snow = opts)%dopar%{
     formulas<-list(mean_form=mean_form,zi_form=zi_form,disp_form=disp_form)
 
     f<-glmmTMB(formula=formulas$mean_form
-      ,ziformula=formulas$zi_form
-      ,weights=weights
-      ,dispformula = formulas$disp_form
-      ,family=nbinom2,verbose = F
-      ,control = control)
+               ,ziformula=formulas$zi_form
+               ,weights=weights
+               ,dispformula = formulas$disp_form
+               ,family=nbinom2,verbose = F
+               ,control = control)
     if(return_summary_fits==TRUE){
-      f<-summary(f)
+      fit[[k]]<-summary(f)
+      logLik[k]<-as.numeric(fit[[k]]$logLik)
+      gene_err[k]<-(is.na(logLik[k]) | f$sdr$pdHess==FALSE)
+    }else{
+      fit[[k]]<-f
+      logLik[k]<-as.numeric(summary(fit[[k]])$logLik)
+      gene_err[k]<-(is.na(logLik[k]) | f$sdr$pdHess==FALSE)
     }
-    return(f)
-}
-if(ncores>1){stopCluster(cl)}
+    return(list(fit=fit,gene_err=gene_err))
+    }
+  }
+  #print("Running Gene-Level Models")
+  size=chunk_size
+  chunks<-split(1:ngenes,ceiling(seq_along(genes)/size))
+  nchunks<-length(chunks)
+  cl=NULL
+  if(cluster_type=="Sock" & ncores>1){
+    cl<-parallel::makeCluster(ncores)
+    registerDoParallel(cl)
+    vars<-unique(c(all.vars(mean_form)[-1],all.vars(zi_form)[-1]))
+    #vars<-vars[!vars=="id"]
+    clusterExport(cl,varlist=vars,envir=environment())
+  }
+  if(cluster_type=="Fork"&ncores>1){
+    cl<-parallel::makeForkCluster(ncores,outfile="")
+    registerDoParallel(cl)
+  }
+  if(internal_call==FALSE){
+    print("Running Gene-Level Models")
+    pboptions(type="timer")
+    if(lb==TRUE){pboptions(use_lb=TRUE)}
+    if(silent==TRUE){pboptions(type="none")}
+    #browser()
+    a<-pblapply(chunks,FUN=fit_ts,id=id,cl=cl)
+    if(ncores>1){parallel::stopCluster(cl)}
+  }else{
+    a<-lapply(chunks,FUN=fit_ts,id=id)
+  }
 
-    for(i in 1:ngenes){
-      tryCatch({
-        fit[[i]]<-a[[i]]
-      }
-        ,error=function(e){})
+  rm(count_matrix)
+  gc()
+  #browser()
+  fit<-vector('list',length=ngenes)
+  adhoc_include_RE<-rep(NA,length=ngenes)
+  for(i in 1:nchunks){
+    for(l in chunks[[i]]){
+      #if(!a[[i]]$gene_err[1]){
+        fit[[l]]<-a[[i]]$fit[[1]]
+      #}else{
+      #  fit[[l]]<-"Model Fit Error"
+     # }
+      # Remove fits we have used to prevent needing to store more than necessary in memory
+      a[[i]]$gene_err<-a[[i]]$gene_err[-1]
+      a[[i]]$fit<-a[[i]]$fit[-1]
     }
-    names(fit)<-rownames(count_matrix)
-    return(fit)
-    }
+  }
+  names(fit)<-genes
+  return(fit)
+}
 

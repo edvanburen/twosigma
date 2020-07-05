@@ -8,13 +8,12 @@ Maintainer: Eric Van Buren <edvanburen@gmail.com>
 Description: Implements the TWO-component SInGle cell Model-based Association method . By default, the method fits a zero-inflated negative binomial model with random intercept terms to accommodate within-individual correlation.  Implementation is built off of the glmmTMB package.
 License: GPL-2
 Imports: multcomp,
-	 snow,
 	 glmmTMB, 
 	 methods,
 	 pscl,
-	 doSNOW,
-	 progress,
-	 foreach	
+	 pbapply,
+	 parallel,
+	 doParallel	
 Encoding: UTF-8
 LazyData: true
 URL: http://github.com/edvanburen/twosigma

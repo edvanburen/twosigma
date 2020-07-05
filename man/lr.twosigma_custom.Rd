@@ -4,10 +4,24 @@
 \alias{lr.twosigma_custom}
 \title{Conveinent wrapper function for performing joint likelihood ratio tests with the TWO-SIGMA model using custom user-specified formulas.}
 \usage{
-lr.twosigma_custom(count_matrix, mean_form_alt, zi_form_alt,
-  mean_form_null, zi_form_null, id, lr.df, return_full_fits = TRUE,
-  ncores = 1, disp_covar = NULL, weights = rep(1,
-  ncol(count_matrix)), control = glmmTMBControl(), silent = FALSE)
+lr.twosigma_custom(
+  count_matrix,
+  mean_form_alt,
+  zi_form_alt,
+  mean_form_null,
+  zi_form_null,
+  id,
+  lr.df,
+  return_full_fits = TRUE,
+  disp_covar = NULL,
+  weights = rep(1, ncol(count_matrix)),
+  control = glmmTMBControl(),
+  ncores = 1,
+  cluster_type = "Fork",
+  chunk_size = 1,
+  lb = FALSE,
+  internal_call = FALSE
+)
 }
 \arguments{
 \item{count_matrix}{Matrix of non-negative integer read counts, with rows corresponding to genes and columns correspoding to cells. It is recommended to make the rownames the gene names for better output.}
@@ -26,18 +40,30 @@ lr.twosigma_custom(count_matrix, mean_form_alt, zi_form_alt,
 
 \item{return_full_fits}{If TRUE, full fit objects of class glmmTMB are returned.  If FALSE, only fit objects of class summary.glmmTMB are returned.  The latter requires far less memory to store.}
 
-\item{ncores}{Number of cores used for parallelization. Defaults to 1.}
-
 \item{disp_covar}{Covariates for a log-linear model for the dispersion. Either a matrix or = 1 to indicate an intercept only model.}
 
 \item{weights}{weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.}
 
 \item{control}{Control parameters for optimization in glmmTMB.  See \code{?glmmTMBControl}.}
 
-\item{silent}{If TRUE, progress is not printed.}
+\item{ncores}{Number of cores used for parallelization. Defaults to 1.}
+
+\item{cluster_type}{Whether to use a "cluster of type "Fork" or "Sock". On Unix systems, "Fork" will likely improve performance. On Windows, only "Sock" will actually result in parallelized computing.}
+
+\item{chunk_size}{Number of genes to be sent to each parallel environment. Parallelization is more efficient, particuarly with a large count matrix, when the count matrix is 'chunked' into some common size (e.g. 10, 50, 200). Defaults to 10.}
+
+\item{lb}{Should load balancing be used for parallelization? Users will likely want to set to FALSE for improved performance.}
+
+\item{internal_call}{Not needed by users called \code{lr.twosigma_custom} directly.}
 }
 \value{
-A list containing model fit objects of class \code{glmmTMB} (only if \code{return_full_fits}=TRUE), model fit summary objects of class \code{summary.glmmTMB}, the 2 d.f. Likelihood Ratio statistic, and the p-value, and all model formulas used.
+A list with the following elements:
+\itemize{
+\item{\code{fit_null: }} Model fits under the null hypothesis. If \code{return_summary_fits=TRUE}, returns a list of objects of class \code{summary.glmmTMB}. If \code{return_summary_fits=FALSE}, returns a list of model fit objects of class \code{glmmTMB}. In either case, the order matches the row order of \code{count_matrix}, and the names of the list elements are taken as the rownames of \code{count_matrix}.
+\item{\code{fit_alt: }} Model fits under the alt hypothesis of the same format as \code{fit_null}.
+\item{\code{LR_stat: }} Vector of Likelihood Ratio statistics. A value of 'NA' implies a convergence issue or other model fit problem.
+\item{\code{LR_p.val: }} Vector of Likelihood Ratio p-values. A value of 'NA' implies a convergence issue or other model fit problem.
+}
 }
 \description{
 Conveinent wrapper function for performing joint likelihood ratio tests with the TWO-SIGMA model using custom user-specified formulas.

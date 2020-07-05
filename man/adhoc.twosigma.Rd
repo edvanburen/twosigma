@@ -4,8 +4,13 @@
 \alias{adhoc.twosigma}
 \title{adhoc.twosigma: Perform the ad hoc method described in TWO-SIGMA paper}
 \usage{
-adhoc.twosigma(count, mean_covar, zi_covar, id, weights = rep(1,
-  length(count)))
+adhoc.twosigma(
+  count,
+  mean_covar,
+  zi_covar,
+  id,
+  weights = rep(1, length(count))
+)
 }
 \arguments{
 \item{count}{Vector of non-negative integer read counts.}

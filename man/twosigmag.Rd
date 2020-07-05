@@ -4,13 +4,31 @@
 \alias{twosigmag}
 \title{Gene set testing for single-cell RNA-sequencing data adjusting for inter-gene correlation.}
 \usage{
-twosigmag(count_matrix, index_test, index_ref = NULL,
-  all_as_ref = FALSE, mean_form, zi_form, mean_form_null = NULL,
-  zi_form_null = NULL, id, statistic = "LR", lr.df = NULL,
-  covar_to_test = NULL, contrast_matrix = NULL, factor_name = NULL,
-  rho = NULL, allow_neg_corr = FALSE, return_summary_fits = TRUE,
-  weights = rep(1, ncol(count_matrix)), control = glmmTMBControl(),
-  ncores = 1)
+twosigmag(
+  count_matrix,
+  index_test,
+  index_ref = NULL,
+  all_as_ref = FALSE,
+  mean_form,
+  zi_form,
+  mean_form_null = NULL,
+  zi_form_null = NULL,
+  id,
+  statistic = "LR",
+  lr.df = NULL,
+  covar_to_test = NULL,
+  contrast_matrix = NULL,
+  factor_name = NULL,
+  rho = NULL,
+  allow_neg_corr = FALSE,
+  return_summary_fits = TRUE,
+  weights = NULL,
+  control = glmmTMBControl(),
+  ncores = 1,
+  cluster_type = "Fork",
+  chunk_size = 10,
+  lb = FALSE
+)
 }
 \arguments{
 \item{count_matrix}{Matrix of non-negative integer read counts. It is recommended to make the rownames the gene names for better output. No missing values can be present in the data.}
@@ -52,6 +70,12 @@ twosigmag(count_matrix, index_test, index_ref = NULL,
 \item{control}{Control parameters for optimization in \code{glmmTMB}.  See \code{?glmmTMBControl}.}
 
 \item{ncores}{Number of cores used for parallelization. Defaults to 1.}
+
+\item{cluster_type}{Whether to use a "cluster of type "Fork" or "Sock". On Unix systems, "Fork" will likely improve performance. On Windows, only "Sock" will actually result in parallelized computing.}
+
+\item{chunk_size}{Number of genes to be sent to each parallel environment. Parallelization is more efficient, particuarly with a large count matrix, when the count matrix is 'chunked' into some common size (e.g. 10, 50, 200). Defaults to 10.}
+
+\item{lb}{Should load balancing be used for parallelization? Users will likely want to set to FALSE for improved performance.}
 }
 \value{
 A list with the following elements:

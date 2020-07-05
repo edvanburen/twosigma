@@ -4,10 +4,22 @@
 \alias{twosigma_custom}
 \title{Fit the TWO-SIGMA model with custom user-specified model formulas.}
 \usage{
-twosigma_custom(count_matrix, mean_form, zi_form, id,
-  return_summary_fits = TRUE, silent = FALSE, ncores = 1,
-  disp_covar = NULL, weights = rep(1, ncol(count_matrix)),
-  control = glmmTMBControl())
+twosigma_custom(
+  count_matrix,
+  mean_form,
+  zi_form,
+  id,
+  return_summary_fits = TRUE,
+  silent = FALSE,
+  disp_covar = NULL,
+  weights = rep(1, ncol(count_matrix)),
+  control = glmmTMBControl(),
+  ncores = 1,
+  cluster_type = "Fork",
+  chunk_size = 1,
+  lb = FALSE,
+  internal_call = FALSE
+)
 }
 \arguments{
 \item{count_matrix}{Matrix of non-negative integer read counts, with rows corresponding to genes and columns correspoding to cells. It is recommended to make the rownames the gene names for better output.}
@@ -22,16 +34,27 @@ twosigma_custom(count_matrix, mean_form, zi_form, id,
 
 \item{silent}{If TRUE, progress is not printed.}
 
-\item{ncores}{Number of cores used for parallelization. Defaults to 1.}
-
 \item{disp_covar}{Covariates for a log-linear model for the dispersion. Either a matrix of covariates or = 1 to indicate an intercept only model. Random effect terms are not permitted in the dispersion model.}
 
 \item{weights}{weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.}
 
 \item{control}{Control parameters for optimization in \code{glmmTMB}.  See \code{?glmmTMBControl}.}
+
+\item{ncores}{Number of cores used for parallelization. Defaults to 1.}
+
+\item{cluster_type}{Whether to use a "cluster of type "Fork" or "Sock". On Unix systems, "Fork" will likely improve performance. On Windows, only "Sock" will actually result in parallelized computing.}
+
+\item{chunk_size}{Number of genes to be sent to each parallel environment. Parallelization is more efficient, particuarly with a large count matrix, when the count matrix is 'chunked' into some common size (e.g. 10, 50, 200). Defaults to 10.}
+
+\item{lb}{Should load balancing be used for parallelization? Users will likely want to set to FALSE for improved performance.}
+
+\item{internal_call}{Not needed by users called \code{twosigma_custom} directly.}
 }
 \value{
-If \code{return_summary_fits=TRUE}, returns a list of objects of class \code{summary.glmmTMB}. If \code{return_summary_fits=FALSE}, returns a list of model fit objects of class \code{glmmTMB}. In either case, the order matches the row order of \code{count_matrix}, and the names of the list elements are taken as the rownames of \code{count_matrix}.
+A list with the following elements:
+\itemize{
+\item{\code{fit: }} If \code{return_summary_fits=TRUE}, returns a list of model fit objects of class \code{summary.glmmTMB}. If \code{return_summary_fits=FALSE}, returns a list of model fit objects of class \code{glmmTMB}. In either case, the order matches the row order of \code{count_matrix}, and the names of the list elements are taken as the rownames of \code{count_matrix}.
+}
 }
 \description{
 Fit the TWO-SIGMA model with custom user-specified model formulas.
