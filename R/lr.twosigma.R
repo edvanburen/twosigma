@@ -13,7 +13,7 @@
 ##' @param disp_covar Covariates for a log-linear model for the dispersion. Either a matrix or = 1 to indicate an intercept only model.
 ##' @param weights weights, as in glm. Defaults to 1 for all observations and no scaling or centering of weights is performed.  See \code{?glmmTMBControl}.
 ##' @param control Control parameters for optimization in glmmTMB.
-##' @param ncores Number of cores used for parallelization. Defaults to 1.
+##' @param ncores Number of cores used for parallelization. Defaults to 1, meaning no parallelization of any kind is done.
 ##' @param cluster_type Whether to use a "cluster of type "Fork" or "Sock". On Unix systems, "Fork" will likely improve performance. On Windows, only "Sock" will actually result in parallelized computing.
 ##' @param chunk_size Number of genes to be sent to each parallel environment. Parallelization is more efficient, particuarly with a large count matrix, when the count matrix is 'chunked' into some common size (e.g. 10, 50, 200). Defaults to 10.
 ##' @param lb Should load balancing be used for parallelization? Users will likely want to set to FALSE for improved performance.

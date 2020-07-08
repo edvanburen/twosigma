@@ -18,7 +18,7 @@
 ##' @param return_summary_fits If \code{TRUE}, returns a list containing objects of class \code{summary.glmmTMB} for each gene.
 ##' @param weights weights, as in \code{glm}. Defaults to 1 for all observations and no scaling or centering of weights is performed.
 ##' @param control Control parameters for optimization in \code{glmmTMB}.  See \code{?glmmTMBControl}.
-##' @param ncores Number of cores used for parallelization. Defaults to 1.
+##' @param ncores Number of cores used for parallelization. Defaults to 1, meaning no parallelization of any kind is done.
 ##' @param cluster_type Whether to use a "cluster of type "Fork" or "Sock". On Unix systems, "Fork" will likely improve performance. On Windows, only "Sock" will actually result in parallelized computing.
 ##' @param chunk_size Number of genes to be sent to each parallel environment. Parallelization is more efficient, particuarly with a large count matrix, when the count matrix is 'chunked' into some common size (e.g. 10, 50, 200). Defaults to 10.
 ##' @param lb Should load balancing be used for parallelization? Users will likely want to set to FALSE for improved performance.
