@@ -116,6 +116,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
     logLik<-numeric(length=length(chunk))
     gene_err<-rep(NA,length(chunk))
     for(l in unlist(chunk)){
+      print(l)
       k<-k+1
       #setTxtProgressBar(pb, i)
       counts<-count_matrix[l,,drop=FALSE]
@@ -248,7 +249,8 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
         residuals_all[k,]<-residuals(fit_twosigmag[[1]])
       }
       gc()
-    }
+
+      }
     return(list(stats_all=stats_all,p.vals_gene_level=p.vals_gene_level,se_gene_level=se_gene_level,
       estimates_gene_level=estimates_gene_level,residuals_all=residuals_all,logLik=logLik,gene_err=gene_err))
   }
@@ -268,6 +270,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
    cl<-parallel::makeForkCluster(ncores,outfile="")
    registerDoParallel(cl)
  }
+  #browser()
   pboptions(type="timer")
   if(lb==TRUE){pboptions(use_lb=TRUE)}
   #Note: Nearly identical performance to pbmclapply
@@ -275,9 +278,9 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
           covar_to_test=covar_to_test,factor_name=factor_name,contrast_matrix=contrast_matrix,
           id=id,ncomps=ncomps,cl=cl)
   if(ncores>1){parallel::stopCluster(cl)}
+   #browser()
   rm(count_matrix)
   gc()
-
   residuals_all<-matrix(nrow=ngenes_total,ncol=ncells)
   stats_all<-matrix(NA,nrow=ngenes_total,ncol=ncomps)
   p.vals_gene_level<-matrix(NA,nrow=ngenes_total,ncol=ncomps)
