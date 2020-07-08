@@ -116,7 +116,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
     logLik<-numeric(length=length(chunk))
     gene_err<-rep(NA,length(chunk))
     for(l in unlist(chunk)){
-      print(l)
+      #print(l)
       k<-k+1
       #setTxtProgressBar(pb, i)
       counts<-count_matrix[l,,drop=FALSE]
