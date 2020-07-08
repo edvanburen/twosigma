@@ -42,7 +42,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
   ,id,statistic="LR",lr.df=NULL,covar_to_test=NULL
   ,contrast_matrix=NULL,factor_name=NULL,rho=NULL
   ,allow_neg_corr=FALSE
-  ,return_summary_fits=TRUE
+  ,return_summary_fits=FALSE
   ,weights=NULL
   ,control = glmmTMBControl(),ncores=1,cluster_type="Fork",chunk_size=10,lb=FALSE){
 
@@ -98,10 +98,6 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
 
   if(max(unlist(index_test))>ngenes_total | min(unlist(index_test))<1){stop("index_test seems to be invalid, indices must be numeric within the row dimensions of the input count_matrix")}
 
-  # Fit all gene level statistics that are needed
-  # if(return_summary_fits==TRUE){
-  #   fit<-vector('list',length=ngenes_total)
-  # }
   #browser()
   fit_tsg<-function(chunk,statistic,covar_to_test=NULL
     ,factor_name=NULL,contrast_matrix=NULL,id,ncomps){
@@ -115,6 +111,9 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
     se_gene_level<-matrix(NA,nrow=length(chunk),ncol=ncomps)
     logLik<-numeric(length=length(chunk))
     gene_err<-rep(NA,length(chunk))
+    if(return_summary_fits==TRUE){
+      fits<-vector('list',length(chunk))
+    }
     for(l in unlist(chunk)){
       #print(l)
       k<-k+1
@@ -132,6 +131,9 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
         stats_all[k,]<-fit_twosigmag$LR_stat[1]
         p.vals_gene_level[k,]<-fit_twosigmag$LR_p.val[1]
         fit<-summary(fit_twosigmag$fit_alt[[1]])
+        if(return_summary_fits==TRUE){
+          fits[[k]]<-fit
+        }
         logLik[k]<-as.numeric(fit$logLik)
         gene_err[k]<-(is.na(logLik[k]) | fit_twosigmag$fit_alt[[1]]$sdr$pdHess==FALSE)
         sum_fit_alt<-summary(fit_twosigmag$fit_alt[[1]])$coefficients$cond
@@ -156,6 +158,9 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
           ,mean_form=mean_form,zi_form=zi_form
           ,id=id,return_summary_fits = FALSE,weights=weights,internal_call=TRUE)
         fit<-summary(fit_twosigmag[[1]])
+        if(return_summary_fits==TRUE){
+          fits[[k]]<-fit
+        }
         logLik[k]<-as.numeric(fit$logLik)
         gene_err[k]<-(is.na(logLik[k]) | fit_twosigmag[[1]]$sdr$pdHess==FALSE)
         residuals_all[k,]<-residuals(fit_twosigmag[[1]])
@@ -184,6 +189,9 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
           ,mean_form=mean_form,zi_form=zi_form
           ,id=id,return_summary_fits = FALSE,weights=weights,internal_call=TRUE)
         fit<-summary(fit_twosigmag[[1]])
+        if(return_summary_fits==TRUE){
+          fits[[k]]<-fit
+        }
         logLik[k]<-as.numeric(fit$logLik)
         gene_err[k]<-(is.na(logLik[k]) | fit_twosigmag[[1]]$sdr$pdHess==FALSE)
         residuals_all[k,]<-residuals(fit_twosigmag[[1]])
@@ -216,6 +224,9 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
           ,id=id,return_summary_fits = FALSE,weights=weights,internal_call=TRUE)
         #if(!fit_twosigmag[[1]]$sdr$pdHess){break}
         fit<-summary(fit_twosigmag[[1]])
+        if(return_summary_fits==TRUE){
+          fits[[k]]<-fit
+        }
         logLik[k]<-as.numeric(fit$logLik)
         gene_err[k]<-(is.na(logLik[k]) | fit_twosigmag[[1]]$sdr$pdHess==FALSE)
         names<-rownames(fit$coefficients$cond)
@@ -250,19 +261,31 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
       }
       gc()
 
-      }
-    return(list(stats_all=stats_all,p.vals_gene_level=p.vals_gene_level,se_gene_level=se_gene_level,
-      estimates_gene_level=estimates_gene_level,residuals_all=residuals_all,logLik=logLik,gene_err=gene_err))
+    }
+    if(return_summary_fits==TRUE){
+      return(list(fits=fits,stats_all=stats_all,p.vals_gene_level=p.vals_gene_level,se_gene_level=se_gene_level,
+            estimates_gene_level=estimates_gene_level,residuals_all=residuals_all,logLik=logLik,gene_err=gene_err))
+    }else{
+      return(list(stats_all=stats_all,p.vals_gene_level=p.vals_gene_level,se_gene_level=se_gene_level,
+                  estimates_gene_level=estimates_gene_level,residuals_all=residuals_all,logLik=logLik,gene_err=gene_err))
+    }
+
   }
   size=chunk_size
   chunks<-split(genes,ceiling(seq_along(genes)/size))
   nchunks<-length(chunks)
   cl=NULL
+
+  vars<-unique(c(all.vars(mean_form)[-1],all.vars(mean_form_null)[-1]
+                 ,all.vars(zi_form),all.vars(zi_form_null)),count_matrix)
+  check_forNA<-function(x){ifelse(any(is.na(get(x))),TRUE,FALSE)}
+  #browser()
+  if(any(unlist(lapply(vars,FUN=check_forNA)))){stop("NA values are not allowed in covariate vectors or count_matrix for gene set testing. Please remove observations (in both count_matrix and covariates) associated with NA values.")}
   if(cluster_type=="Sock" & ncores>1){
     cl<-parallel::makeCluster(ncores)
     registerDoParallel(cl)
     vars<-unique(c(all.vars(mean_form)[-1],all.vars(mean_form_null)[-1]
-      ,all.vars(zi_form),all.vars(zi_form_null)))
+                   ,all.vars(zi_form),all.vars(zi_form_null)))
     #vars<-vars[!vars=="id"]
     clusterExport(cl,varlist=vars,envir=environment())
   }
@@ -288,6 +311,10 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
   se_gene_level<-matrix(NA,nrow=ngenes_total,ncol=ncomps)
   logLik<-numeric(length=ngenes_total)
   gene_err<-rep(NA,ngenes_total)
+  # Fit all gene level statistics that are needed
+  if(return_summary_fits==TRUE){
+    fit<-vector('list',length=ngenes_total)
+  }
   #re_present<-any(grepl("id",mean_form[[3]])>0)
   for(i in 1:nchunks){
     for(l in chunks[[i]]){
@@ -301,9 +328,9 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
           p.vals_gene_level[l,]<-a[[i]]$p.vals_gene_level[1,]
           estimates_gene_level[l,]<-a[[i]]$estimates_gene_level[1,]
           se_gene_level[l,]<-a[[i]]$se_gene_level[1,]
-          # if(return_summary_fits==TRUE){
-          #   fit[[l]]<-a[[i]]$fit
-          # }
+          if(return_summary_fits==TRUE){
+            fit[[l]]<-a[[i]]$fits[[1]]
+          }
           # if(re_present){
           #   re_sigma_est[l]<-exp(a[[i]]$sdr$par.fixed['theta'])
           # }
@@ -314,9 +341,9 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
           p.vals_gene_level[l,]<-NA
           estimates_gene_level[l,]<-NA
           se_gene_level[l,]<-NA
-          # if(return_summary_fits==TRUE){
-          #   fit[[l]]<-a[[i]]$fit
-          # }
+          if(return_summary_fits==TRUE){
+            fit[[l]]<-NA
+          }
           # if(re_present){
           #   re_sigma_est[l]<-NA
           # }
@@ -331,6 +358,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
       a[[i]]$se_gene_level<-a[[i]]$se_gene_level[-1,,drop=FALSE]
       a[[i]]$logLik<-a[[i]]$logLik[-1]
       a[[i]]$gene_err<-a[[i]]$gene_err[-1]
+      a[[i]]$fits<-a[[i]]$fits[-1]
     }
   }
 rm(a)
