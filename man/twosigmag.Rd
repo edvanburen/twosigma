@@ -21,7 +21,7 @@ twosigmag(
   factor_name = NULL,
   rho = NULL,
   allow_neg_corr = FALSE,
-  return_summary_fits = TRUE,
+  return_summary_fits = FALSE,
   weights = NULL,
   control = glmmTMBControl(),
   ncores = 1,
@@ -69,7 +69,7 @@ twosigmag(
 
 \item{control}{Control parameters for optimization in \code{glmmTMB}.  See \code{?glmmTMBControl}.}
 
-\item{ncores}{Number of cores used for parallelization. Defaults to 1.}
+\item{ncores}{Number of cores used for parallelization. Defaults to 1, meaning no parallelization of any kind is done.}
 
 \item{cluster_type}{Whether to use a "cluster of type "Fork" or "Sock". On Unix systems, "Fork" will likely improve performance. On Windows, only "Sock" will actually result in parallelized computing.}
 
@@ -84,7 +84,6 @@ A list with the following elements:
 \item{\code{stats_gene_level_all: }}{Gives all gene-level statistics.  Order matches the order of the inputted count matrix.}
 \item{\code{p.vals_gene_level: }}{Gives raw (unadjusted) p-values associated with \code{LR_stats_gene_level_all}.}
 \item{\code{set_p.val: }}{Vector of unadjusted set-level p-values. Order matches the order of inputted test sets.}
-\item{\code{set_p.val_ttest: }}{Vector of unadjusted set-level p-values using the t-test. Order matches the order of inputted test sets.}
 \item{\code{estimates_gene_level: }}{Gives the average logFC or contrast estimate for each gene.}
 \item{\code{estimates_set_level: }}{Gives the set-level average of the gene-level logFC or contrast estimates.}
 \item{\code{direction: }}{Reports whether the test set tends to be Up or Down Regulated based on the sign of \code{estimates_set_level}.}

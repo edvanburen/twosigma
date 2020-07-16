@@ -40,7 +40,7 @@ twosigma_custom(
 
 \item{control}{Control parameters for optimization in \code{glmmTMB}.  See \code{?glmmTMBControl}.}
 
-\item{ncores}{Number of cores used for parallelization. Defaults to 1.}
+\item{ncores}{Number of cores used for parallelization. Defaults to 1, meaning no parallelization of any kind is done.}
 
 \item{cluster_type}{Whether to use a "cluster of type "Fork" or "Sock". On Unix systems, "Fork" will likely improve performance. On Windows, only "Sock" will actually result in parallelized computing.}
 

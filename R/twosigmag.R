@@ -28,7 +28,6 @@
 ##' \item{\code{stats_gene_level_all: }}{Gives all gene-level statistics.  Order matches the order of the inputted count matrix.}
 ##' \item{\code{p.vals_gene_level: }}{Gives raw (unadjusted) p-values associated with \code{LR_stats_gene_level_all}.}
 ##' \item{\code{set_p.val: }}{Vector of unadjusted set-level p-values. Order matches the order of inputted test sets.}
-##' \item{\code{set_p.val_ttest: }}{Vector of unadjusted set-level p-values using the t-test. Order matches the order of inputted test sets.}
 ##' \item{\code{estimates_gene_level: }}{Gives the average logFC or contrast estimate for each gene.}
 ##' \item{\code{estimates_set_level: }}{Gives the set-level average of the gene-level logFC or contrast estimates.}
 ##' \item{\code{direction: }}{Reports whether the test set tends to be Up or Down Regulated based on the sign of \code{estimates_set_level}.}
@@ -364,7 +363,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
 rm(a)
 gc()
   p.val<-matrix(NA,nrow=nsets,ncol=ncomps)
-  p.val_ttest<-matrix(NA,nrow=nsets,ncol=ncomps)
+  #p.val_ttest<-matrix(NA,nrow=nsets,ncol=ncomps)
   rho_est<-rep(NA,length=nsets)
   direction<-matrix(NA,nrow=nsets,ncol=ncomps)
   estimates_set_level<-matrix(NA,nrow=nsets,ncol=ncomps)
@@ -407,15 +406,17 @@ gc()
 
       # T-test output below
 
-      n_genes_tested<-test_size+ref_size
-      delta<-(n_genes_tested)/ref_size*(mean(stats_test[,b],na.rm=T)-mean(c(stats_test[,b],stats_ref[,b]),na.rm=T))
-      vif<-1+(test_size-1)*rho_est[i]
-      varStatPooled<-((n_genes_tested-1)*var(c(stats_test[,b],stats_ref[,b]),na.rm=T)-delta^2*test_size*ref_size/n_genes_tested)/(n_genes_tested-2)
-      two.sample.t <- delta / sqrt( varStatPooled * (vif/test_size + 1/ref_size) )
-      p.val_ttest[i,b]<-2*pt(-1*abs(two.sample.t),df=n_genes_tested-2)
+      #n_genes_tested<-test_size+ref_size
+      #delta<-(n_genes_tested)/ref_size*(mean(stats_test[,b],na.rm=T)-mean(c(stats_test[,b],stats_ref[,b]),na.rm=T))
+      #vif<-1+(test_size-1)*rho_est[i]
+      #varStatPooled<-((n_genes_tested-1)*var(c(stats_test[,b],stats_ref[,b]),na.rm=T)-delta^2*test_size*ref_size/n_genes_tested)/(n_genes_tested-2)
+      #two.sample.t <- delta / sqrt( varStatPooled * (vif/test_size + 1/ref_size) )
+      #p.val_ttest[i,b]<-2*pt(-1*abs(two.sample.t),df=n_genes_tested-2)
       # This only happens if all genes in the test set are NA
       # In this case p-value will report as zero when it's really NA
-      if(test_size==0 | ref_size==0){p.val[i,b]<-NA;p.val_ttest[i,b]<-NA}
+      if(test_size==0 | ref_size==0){p.val[i,b]<-NA
+      #p.val_ttest[i,b]<-NA
+      }
     }
     if(i%%100==0){print(paste0("Set ",i," of ",nsets," Finished"))}
   }
@@ -437,13 +438,19 @@ gc()
     colnames(estimates_set_level)<-rownames(contrast_matrix)
     colnames(direction)<-rownames(contrast_matrix)
     colnames(p.vals_gene_level)<-rownames(contrast_matrix)
-    colnames(p.val_ttest)<-rownames(contrast_matrix)
+    #colnames(p.val_ttest)<-rownames(contrast_matrix)
     colnames(stats_all)<-rownames(contrast_matrix)
   }
+  # if(return_summary_fits==TRUE){
+  #   names(fit)<-gene_names
+  #   return(list(gene_summary_fits=fit,stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,set_p.val_ttest=p.val_ttest,estimates_gene_level=estimates_gene_level,se_gene_level=se_gene_level,estimates_set_level=estimates_set_level,direction=direction,corr=rho_est,gene_level_logLik=logLik,gene_error=gene_err,test_sets=index_test,ref_sets=index_ref))
+  # }else{
+  #   return(list(stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,set_p.val_ttest=p.val_ttest,estimates_gene_level=estimates_gene_level,se_gene_level=se_gene_level,estimates_set_level=estimates_set_level,direction=direction,corr=rho_est,gene_level_logLik=logLik,gene_error=gene_err,test_sets=index_test,ref_sets=index_ref))
+  # }
   if(return_summary_fits==TRUE){
     names(fit)<-gene_names
-    return(list(gene_summary_fits=fit,stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,set_p.val_ttest=p.val_ttest,estimates_gene_level=estimates_gene_level,se_gene_level=se_gene_level,estimates_set_level=estimates_set_level,direction=direction,corr=rho_est,gene_level_logLik=logLik,gene_error=gene_err,test_sets=index_test,ref_sets=index_ref))
+    return(list(gene_summary_fits=fit,stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,estimates_gene_level=estimates_gene_level,se_gene_level=se_gene_level,estimates_set_level=estimates_set_level,direction=direction,corr=rho_est,gene_level_logLik=logLik,gene_error=gene_err,test_sets=index_test,ref_sets=index_ref))
   }else{
-    return(list(stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,set_p.val_ttest=p.val_ttest,estimates_gene_level=estimates_gene_level,se_gene_level=se_gene_level,estimates_set_level=estimates_set_level,direction=direction,corr=rho_est,gene_level_logLik=logLik,gene_error=gene_err,test_sets=index_test,ref_sets=index_ref))
+    return(list(stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,estimates_gene_level=estimates_gene_level,se_gene_level=se_gene_level,estimates_set_level=estimates_set_level,direction=direction,corr=rho_est,gene_level_logLik=logLik,gene_error=gene_err,test_sets=index_test,ref_sets=index_ref))
   }
 }
