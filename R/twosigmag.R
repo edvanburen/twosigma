@@ -422,7 +422,7 @@ gc()
   }
   colnames(p.val)<-rownames(contrast_matrix)
   rownames(p.val)<-names(index_test)
-  rownames(p.val_ttest)<-names(index_test)
+  #rownames(p.val_ttest)<-names(index_test)
   rownames(stats_all)<-gene_names
   rownames(direction)<-names(index_test)
   names(rho_est)<-names(index_test)

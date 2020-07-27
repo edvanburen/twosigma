@@ -261,7 +261,7 @@ gst4<-twosigmag(sim_dat2,index_test = list("Set 1" = c(6:10))
 ,mean_form = count~t2d_sim+age_sim+cdr_sim+fact
 ,zi_form = ~t2d_sim+age_sim+cdr_sim,id=rep(id.levels,times=ncellsper)
 ,statistic = "contrast",contrast_matrix = cont_matrix
-  ,factor_name="fact",ncores = 1,return_summary_fits = T,ncores=1)
+  ,factor_name="fact",ncores = 1,return_summary_fits = T)
 
 # Finally, test the factor "manually to show results are the same
 cont_matrix2<-matrix(c(0,0,0,0,1,0,0,0,0,0,0,1),nrow=2,byrow = T)
@@ -269,12 +269,50 @@ rownames(cont_matrix2)<-c("Test 1","Test 2")
 
 gst5<-twosigmag(sim_dat2,index_test = list("Set 1" = c(6:10)),mean_form = count~t2d_sim+age_sim+cdr_sim+fact
 ,zi_form = ~t2d_sim+age_sim+cdr_sim,id=id,statistic = "contrast",contrast_matrix = cont_matrix2
-,ncores = 1,return_summary_fits = T,ncores=1)
+,ncores = 1,return_summary_fits = T)
   
 #Two give the same results
 
 gst4$set_p.val
 gst5$set_p.val
+
+gst6<-twosigmag(sim_dat2,index_test = list("Set 1" = c(6:10),"Set 2"=c(1:5)),mean_form = count~t2d_sim+age_sim+cdr_sim+fact
+,zi_form = ~t2d_sim+age_sim+cdr_sim,id=id,statistic = "contrast",contrast_matrix = cont_matrix2
+,ncores = 1,return_summary_fits = T)
+
+
+#Plot Results in Heatmaps
+
+plot_tsg<-function(obj,top_set_size_ct=10,font_size=10,set_cex=.7,plot_title){
+    j<-0
+    for(i in colnames(obj$set_p.val)){
+      j<-j+1
+      #browser()
+      assign(paste0(i,"_topsets"),rownames(obj$estimates_set_level)[order(obj$estimates_set_level[,i],decreasing = F)][1:top_set_size_ct])
+    }
+    all_sets<-sort(unique(c(sapply(ls(pattern="topsets"),FUN = get,envir=sys.frame(sys.parent(0))))))
+    #browser()
+    # Put Sets in Order of significance in top cell type
+    mat_plot<-obj$estimates_set_level[all_sets,]
+    colors<-colorRampPalette(c('blue',"white", 'red'))(13)
+    plot_colors<-c(colors[1:5],"#FFFFFF","#FFFFFF",colors[8:13])
+
+    b<-pheatmap(as.matrix(t(mat_plot)),fontsize=font_size,fontsize_col = set_cex*font_size,main = plot_title,breaks=c(-.5,-.4,-.3,-.2,-.1,-.001,0,.001,.1,.2,.3,.4,.5),border_color = NA,na_col='grey',cellwidth = 10,cellheight=30,color=plot_colors)
+    #left to right
+    set_order2<-b$tree_col$order
+    # bottom to top
+    ct_order2<-b$tree_row$order
+    #browser()
+    mat_plot<-obj$set_p.val[all_sets,]
+    mat_plot<-log10(mat_plot)
+    mat_plot<-mat_plot[set_order2,ct_order2]
+    pheatmap(mat=as.matrix(t(mat_plot)),cluster_rows=FALSE,main = "Heatmap of Set-Level log10 p-values (Unadjusted) by Cell Type",cellwidth = 10,cellheight=30,show_colnames = T,
+             cluster_cols=FALSE,fontsize=font_size,fontsize_col = set_cex*font_size,border_color = NA
+             ,na_col='grey',color=colorRampPalette(c('darkgreen',"white"))(12))
+    dev.off()
+
+  }
+
 
 ```
 
