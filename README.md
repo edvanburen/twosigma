@@ -313,6 +313,6 @@ plot_tsg<-function(obj,top_set_size_ct=10,font_size=10,set_cex=.7,plot_title){
 
   }
 
-
+plot_tsg(gst6)
 ```
 
