@@ -96,7 +96,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
   }
 
   if(max(unlist(index_test))>ngenes_total | min(unlist(index_test))<1){stop("index_test seems to be invalid, indices must be numeric within the row dimensions of the input count_matrix")}
-
+  options(warning.length = 2000L)
   #browser()
   fit_tsg<-function(chunk,statistic,covar_to_test=NULL
     ,factor_name=NULL,contrast_matrix=NULL,id,ncomps){
