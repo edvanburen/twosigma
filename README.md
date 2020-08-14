@@ -120,8 +120,8 @@ Competitive gene set testing can be performed using the function `twosigmag`. Ge
 #--- Simulate Data
 #--------------------------------------------------
 
-
 #Set parameters for the simulation
+# This is as was done in the TWO-SIGMA paper
 set.seed(1)
 nind<-10
 ncellsper<-rep(1000,nind)
@@ -133,7 +133,7 @@ phi<-.1
 id.levels<-1:nind
 
 
-# Simulate some individual level covariates as well as cell-level Cellular Detection Rate (CDR)
+# Simulate some covariates
 t2d_ind<-rbinom(nind,1,p=.4)
 t2d_sim<-rep(t2d_ind,times=ncellsper)
 nind<-length(id.levels)
@@ -152,10 +152,13 @@ sim_dat<-simulate_zero_inflated_nb_random_effect_data(ncellsper,X,Z,alpha,beta,p
                                                       id.levels=NULL)
 sim_dat2<-simulate_zero_inflated_nb_random_effect_data(ncellsper,X,Z,alpha,beta,phi,sigma.a,sigma.b,
                                                       id.levels=NULL)
+                                                      
 #--------------------------------------------------
 #--- Fit TWO-SIGMA to simulated data
 #--------------------------------------------------
 id<-sim_dat$id
+
+#matrix input required
 counts<-matrix(rbind(sim_dat$Y,sim_dat2$Y),nrow=2,byrow=FALSE)
 rownames(counts)<-paste0("Gene ",1:2)
 

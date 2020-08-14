@@ -39,6 +39,7 @@ simulate_zero_inflated_nb_random_effect_data<-function(ncellsper,X,Z,alpha,beta,
   if(!is.null(sim.seed)){
     set.seed(sim.seed)
   }
+  # Define for use with rnbinom statement below
   phiinv<-1/phi
   id.levels<-1:length(ncellsper)
   nind<-length(id.levels)
@@ -52,30 +53,32 @@ simulate_zero_inflated_nb_random_effect_data<-function(ncellsper,X,Z,alpha,beta,
   X<-cbind(1,X)
   colnames(X)<-c("Intercept",names)
 
-  #simulate random effects
+  #simulate random effects at sample level
+  # ".rep" vectors ensure the dimensions match
+  # the number of cells for each individual
   a <- as.matrix(rnorm(nind,mean=0,sd=sigma.a))
   a.rep <- rep(a,times=ncellsper)
   b <- as.matrix(rnorm(nind,mean=0,sd=sigma.b))
   b.rep <- rep(b,times=ncellsper)
+
+  # drop-out probability and mean
   logit.p<-Z%*%as.matrix(alpha,ncol=1) +a.rep
   log.mu<-X%*%as.matrix(beta,ncol=1)+b.rep
-
   p  <- exp(logit.p)/(1+exp(logit.p)) # inverse logit function
   mu <- exp(log.mu)
 
+  #Y gives the simulated counts
   Y<-rep(NA,sum(ncellsper))
   ind.dropout <- rbinom(length(Y), 1, p)
   for (i in 1:length(Y)){
     if(ind.dropout[i] == 1){Y[i]=0}
     if(ind.dropout[i] == 0)
     {
-      if(phi>0)
-      {
         Y[i]<-rnbinom(1,size=(1/phiinv),prob=(1/(1+phiinv*mu[i])))
-      }
       #Watch out for negative binomial parameterizations
     }
   }
+  # return X and Z without the intercept for convenience
   return(list(Y=Y,X=X[,-1],Z=Z[,-1],a=a,b=b,alpha=alpha,beta=beta,sigma.a=sigma.a,sigma.b=sigma.b,
     nind=nind,ncellsper=ncellsper,id=id))
 }
