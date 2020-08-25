@@ -107,7 +107,7 @@ lr.twosigma<-function(count_matrix,mean_covar,zi_covar,covar_to_test
     }
     if(is.vector(mean_covar)&is.vector(zi_covar)){
       if(!identical(mean_covar,zi_covar)){
-        stop("Mean covariate is not idential to zi covariate. This function is only designed for cases in which the same covariate is being designed in both components.")
+        stop("Mean covariate is not identical to zi covariate. This function is only designed for cases in which the same covariate is being designed in both components.")
       }
     }
     if(is.character(covar_to_test)){

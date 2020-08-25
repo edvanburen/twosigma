@@ -70,10 +70,10 @@ lr.twosigma_custom(count_matrix, mean_form_alt, zi_form_alt, mean_form_null, zi_
 - **covar_to_test**: Either a string indicating the column name of the covariate to test or an integer referring to its column position in BOTH the mean_covar and zi_covar matrices. If an integer is specified there is no check that it corresponds to the same covariate in both the mean_covar and zi_covar matrices. 
 - **lr.df** If custom formulas are input users must provide the degrees of freedom from which the likelihood ratio p-value can be calculated. Must be a non-negative integer. 
 
-The <code> lr.twosigma </code> function assumes that the variable being tested is in both components of the model (and thus that the zero-inflation component exists and contains more than an Intercept). Users wishing to do fixed effect testing in other cases can use the <code> lr.twosigma_custom </code> function with custom formulas or construct the test themselves using two calls to <code>twosigma</code> or <code> twosigma_custom</code>. The formula inputs <code> mean_form_alt </code>, <code> mean_form_null</code>, <code> zi_form_alt</code>, and `zi_form_null` should be specified as in the <code> lr.twosigma_custom</code> function and once again **users must ensure custom formulas represent a valid likelihood ratio test**.  One part of this responsibility is specifying the argument \code{lr.df} giving the degrees of freedom of the likelihood ratio test.
+The `lr.twosigma` function assumes that the variable being tested is in both components of the model (and thus that the zero-inflation component exists and contains more than an Intercept). Users wishing to do fixed effect testing in other cases can use the `lr.twosigma_custom` function with custom formulas or construct the test themselves using two calls to `twosigma` <code> twosigma_custom</code>. The formula inputs <code> mean_form_alt </code>, <code> mean_form_null</code>, <code> zi_form_alt</code>, and `zi_form_null` should be specified as in the <code> lr.twosigma_custom</code> function and once again **users must ensure custom formulas represent a valid likelihood ratio test**.  One part of this responsibility is specifying the argument `lr.df` giving the degrees of freedom of the likelihood ratio test.
 
 # Z-statistic or Stouffer statistic
-Assume \code{fits} is an object returned from \code{twosigma} or \code{twosigma_custom}.  Then, we can get some gene-level staistics using:
+Assume `fits` is an object returned from `twosigma` or `twosigma_custom`.  Then, we can get some gene-level staistics using:
 ```r
 calc_logFC<-function(x){if(class(x)=="glmmTMB"){x<-summary(x)};x$coefficients$cond['t2d_sim','Estimate']}
 calc_Z<-function(x){if(class(x)=="glmmTMB"){x<-summary(x)};x$coefficients$cond['t2d_sim','Estimate']}
@@ -87,7 +87,7 @@ calc_Stouffer<-function(x){if(class(x)=="glmmTMB"){x<-summary(x)};(x$coefficient
 ```
 
 # Testing of a contrast matrix
-Functionality to do this is ongoing.  For now, individuals can use the \code{twosigmag} to test custom contrast matrices (even if not interested in gene set testing, simply set \code{index_test=list(c(1,2))} and \code{all_as_ref=TRUE} and look at gene-level output).
+Functionality to do this is ongoing.  For now, individuals can use the `twosigmag` to test custom contrast matrices (even if not interested in gene set testing, simply set `index_test=list(c(1,2))` and `all_as_ref=TRUE` and look at gene-level output).
 
 ## Ad hoc method
 As mentioned in the paper, we mention a method that can be useful in selecting genes that may benefit from the inclusion of random effect terms. This method fits a zero-inflated negative binomial model without random effects and uses a one-way ANOVA regressing the Pearson residuals on the individual ID to look for differences between individuals.
@@ -96,6 +96,9 @@ As mentioned in the paper, we mention a method that can be useful in selecting g
 adhoc.twosigma(count, mean_covar, zi_covar, id)
 ```
 The p-value from the ANOVA F test is returned, and can be used as a screening for genes that are most in need of random effects. This functionality is built into the <code> twosigma </code> function so users likely do not need to call directly themselves.
+
+## Testing Variance Components Using Likelihood Ratio test
+As discussed in the main text, one can use the likelihood ratio test to test either one or both components for random effect terms via the function `test.vc.twosigma` Which components contain random effects under the alternative. are controlled by `mean_re` and `zi_re`  
 
 ## Gene-set Testing
 Competitive gene set testing can be performed using the function `twosigmag`. Gene-level statistics currently implemented include likelihood ratio, Z-statistic from the mean model, Stouffer's combination of the Z-statistics from the mean and ZI model, or a test of a custom contrast matrix.  If a contrast matrix is input, set-level results are returned for each row of the contrast. **Multiple cores are once again recommended if possible, particularly if using the likelihood ratio test.**
@@ -290,11 +293,9 @@ plot_tsg<-function(obj,top_set_size_ct=10,font_size=10,set_cex=.7,plot_title){
     j<-0
     for(i in colnames(obj$set_p.val)){
       j<-j+1
-      #browser()
       assign(paste0(i,"_topsets"),rownames(obj$estimates_set_level)[order(obj$estimates_set_level[,i],decreasing = F)][1:top_set_size_ct])
     }
     all_sets<-sort(unique(c(sapply(ls(pattern="topsets"),FUN = get,envir=sys.frame(sys.parent(0))))))
-    #browser()
     # Put Sets in Order of significance in top cell type
     mat_plot<-obj$estimates_set_level[all_sets,]
     colors<-colorRampPalette(c('blue',"white", 'red'))(13)
@@ -305,7 +306,6 @@ plot_tsg<-function(obj,top_set_size_ct=10,font_size=10,set_cex=.7,plot_title){
     set_order2<-b$tree_col$order
     # bottom to top
     ct_order2<-b$tree_row$order
-    #browser()
     mat_plot<-obj$set_p.val[all_sets,]
     mat_plot<-log10(mat_plot)
     mat_plot<-mat_plot[set_order2,ct_order2]
