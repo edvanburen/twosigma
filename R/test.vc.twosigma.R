@@ -1,4 +1,4 @@
-##' Conveinent wrapper function for performing joint likelihood ratio tests using the TWO-SIGMA model.
+##' Conveinent wrapper function for performing (joint) likelihood ratio tests of variance components using the TWO-SIGMA model.
 ##' @param count_matrix Matrix of non-negative integer read counts, with rows corresponding to genes and columns correspoding to cells. It is recommended to make the rownames the gene names for better output.
 ##' @param mean_covar Covariates for the (conditional) mean model. Must be a matrix (without an intercept column) or a vector if a single covariate is being tested.
 ##' @param zi_covar Covariates for the zero-inflation model. Must be a matrix (without an intercept column) or a vector if a single covariate is being tested.

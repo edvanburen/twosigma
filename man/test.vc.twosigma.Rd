@@ -2,7 +2,7 @@
 % Please edit documentation in R/test.vc.twosigma.R
 \name{test.vc.twosigma}
 \alias{test.vc.twosigma}
-\title{Conveinent wrapper function for performing joint likelihood ratio tests using the TWO-SIGMA model.}
+\title{Conveinent wrapper function for performing (joint) likelihood ratio tests of variance components using the TWO-SIGMA model.}
 \usage{
 test.vc.twosigma(
   count_matrix,
@@ -65,7 +65,7 @@ A list with the following elements:
 }
 }
 \description{
-Conveinent wrapper function for performing joint likelihood ratio tests using the TWO-SIGMA model.
+Conveinent wrapper function for performing (joint) likelihood ratio tests of variance components using the TWO-SIGMA model.
 }
 \section{Details}{
 
