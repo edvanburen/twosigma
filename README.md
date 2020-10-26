@@ -1,4 +1,4 @@
-# TWOSIGMA (TWO-component SInGle cell Model-based Association method)
+# TWOSIGMA (TWO-component SInGle cell Model-based Association method) and TWO-SIGMA-G (TWO-SIGMA for Geneset Testing)
 
 ## Introduction
 
