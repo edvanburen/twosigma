@@ -386,7 +386,9 @@ gc()
       }
       rho_est[i]<-mean(cor_temp,na.rm=T)
     }
-    tryCatch({if(!allow_neg_corr & rho_est[i]<0){rho_est[i]<-0}},error=function(e){})
+    #tryCatch({if(!allow_neg_corr & rho_est[i]<0){rho_est[i]<-0}},error=function(e){})
+    est_corr<-rho_est[i]
+    tryCatch({if(!allow_neg_corr & est_corr<0){est_corr<-0}},error=function(e){})
     # Missing values will get dropped in rank statement
     # so make sure sizes of test and reference sets don't include them
     # Don't want to drop missing values because want them documented in output
@@ -400,7 +402,7 @@ gc()
       test_size<-length(stats_test[,b][!is.na(stats_test[,b])])
       ref_size<-length(stats_ref[,b][!is.na(stats_ref[,b])])
 
-      var<-(1/(2*pi))*test_size*ref_size*(asin(1)+(ref_size-1)*asin(.5)+(test_size-1)*(ref_size-1)*asin(.5*rho_est[i])+(test_size-1)*asin((rho_est[i]+1)/2))
+      var<-(1/(2*pi))*test_size*ref_size*(asin(1)+(ref_size-1)*asin(.5)+(test_size-1)*(ref_size-1)*asin(.5*est_corr)+(test_size-1)*asin((est_corr+1)/2))
       wilcox_stat<-sum(rank(c(stats_test[,b],stats_ref[,b]),na.last = NA)[1:test_size]) - .5*test_size*(test_size+1)
       p.val[i,b]<-2*pnorm(-1*abs((wilcox_stat-.5*test_size*ref_size)/sqrt(var)))
 
