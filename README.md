@@ -98,7 +98,7 @@ adhoc.twosigma(count, mean_covar, zi_covar, id)
 The p-value from the ANOVA F test is returned, and can be used as a screening for genes that are most in need of random effects. This functionality is built into the <code> twosigma </code> function so users likely do not need to call directly themselves.
 
 ## Testing Variance Components Using Likelihood Ratio test
-As discussed in the main text, one can use the likelihood ratio test to test either one or both components for random effect terms via the function `test.vc.twosigma` Which components contain random effects under the alternative. are controlled by `mean_re` and `zi_re`  
+As discussed in the main text, one can use the likelihood ratio test to test either one or both components for random effect terms via the function `test.vc.twosigma` Which components contain random effects under the alternative are controlled by `mean_re` and `zi_re`.  
 
 ## Gene-set Testing using TWO-SIGMA-G
 Competitive gene set testing can be performed using the function `twosigmag`. Gene-level statistics currently implemented include likelihood ratio, Z-statistic from the mean model, Stouffer's combination of the Z-statistics from the mean and ZI model, or a test of a custom contrast matrix.  If a contrast matrix is input, set-level results are returned for each row of the contrast. **Multiple cores are once again recommended if possible, particularly if using the likelihood ratio test.**
