@@ -1,4 +1,4 @@
-# TWOSIGMA (TWO-component SInGle cell Model-based Association method) and TWO-SIGMA-G (TWO-SIGMA for Geneset Testing)
+# TWOSIGMA (TWO-component SInGle cell Model-based Association method) and TWO-SIGMA-G (TWO-SIGMA based Geneset Testing)
 
 ## Introduction
 
@@ -87,7 +87,7 @@ calc_Stouffer<-function(x){if(class(x)=="glmmTMB"){x<-summary(x)};(x$coefficient
 ```
 
 # Testing of a contrast matrix
-Functionality to do this is ongoing.  For now, individuals can use the `twosigmag` to test custom contrast matrices (even if not interested in gene set testing, simply set `index_test=list(c(1,2))` and `all_as_ref=TRUE` and look at gene-level output).
+Functionality to do this is ongoing.  For now, individuals can use the `twosigmag` function for TWO-SIGMA based Gene-Set Testing to test custom contrast matrices (even if not interested in gene set testing, simply set `index_test=list(c(1,2))` and `all_as_ref=TRUE` and look at gene-level output).
 
 ## Ad hoc method
 As mentioned in the paper, we mention a method that can be useful in selecting genes that may benefit from the inclusion of random effect terms. This method fits a zero-inflated negative binomial model without random effects and uses a one-way ANOVA regressing the Pearson residuals on the individual ID to look for differences between individuals.
@@ -100,7 +100,7 @@ The p-value from the ANOVA F test is returned, and can be used as a screening fo
 ## Testing Variance Components Using Likelihood Ratio test
 As discussed in the main text, one can use the likelihood ratio test to test either one or both components for random effect terms via the function `test.vc.twosigma` Which components contain random effects under the alternative. are controlled by `mean_re` and `zi_re`  
 
-## Gene-set Testing
+## Gene-set Testing using TWO-SIGMA-G
 Competitive gene set testing can be performed using the function `twosigmag`. Gene-level statistics currently implemented include likelihood ratio, Z-statistic from the mean model, Stouffer's combination of the Z-statistics from the mean and ZI model, or a test of a custom contrast matrix.  If a contrast matrix is input, set-level results are returned for each row of the contrast. **Multiple cores are once again recommended if possible, particularly if using the likelihood ratio test.**
  
  **The adhoc procedure is not recommended for use in gene set testing**.  This is because geneset testing relies on a common gene-level null hypothesis being tested.  When some genes have random effects and others do not, it is not clear that this requirement is met. Arguments which require more explanation over above are given as follows:
