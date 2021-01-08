@@ -1,8 +1,22 @@
 # TWO-SIGMA (TWO-component SInGle cell Model-based Association method) and TWO-SIGMA-G (TWO-SIGMA based Geneset Testing)
 
+## Citations
+**TWO-SIGMA**: 
+
+Van Buren, E, Hu, M, Weng, C, et al. TWO‐SIGMA: A novel two‐component single cell model‐based association method for single‐cell RNA‐seq data. Genetic Epidemiology. 2020; 1– 12. https://doi.org/10.1002/gepi.22361
+
+**TWO-SIGMA-G bioRxiv preprint**:
+
+Coming soon.
+
+## Contact Emails
+
+Eric Van Buren: evb@hsph.harvard.edu, Di Wu: did@email.unc.edu, Yun Li: yun_li@med.unc.edu
+
 ## Introduction
 
 <code>twosigma</code> is an R package for differential expression (DE) analysis and gene set testing (GST) in single-cell RNA-seq (scRNA-seq) data.  At the gene-level, DE can be assessed by fitting our proposed TWO-component SInGle cell Model-based Association method (TWO-SIGMA). The first component models the drop-out probability with a mixed effects logistic regression, and the second component models the (conditional) mean read count with a mixed-effects log-linear negative binomial regression. Our approach thus allows for both excess zero counts and overdispersed counts while also accommodating dependency in both drop-out probability and mean mRNA abundance.  TWO-SIGMA is especially useful in its flexibility to analyze DE beyond a two-group comparison while simultaneously controlling for additional subject-level or cell-level covariates including batch effects.  At the set-level, the package can perform competitive gene set testing using our proposed TWO-SIGMA-G method. Users can specify the number of cores to be used for parallelization in all functions using the ncores argument.
+
 ## Installation
 We recommend installing from Github for the latest version of the code:
 ```r
