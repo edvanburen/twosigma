@@ -49,6 +49,7 @@ twosigma<-function(count_matrix,mean_covar,zi_covar
   if(length(id)!=ncol(count_matrix)){stop("Argument id should be a numeric vector with length equal to the number of columns of count_matrix (i.e. the number of cells).")}
   ngenes<-nrow(count_matrix)
   genes<-rownames(count_matrix)
+  #browser()
   if(is.null(genes)){genes<-1:ngenes}
   fit<-vector('list',length=ngenes)
   print("Running Gene-Level Models")
@@ -100,12 +101,15 @@ twosigma<-function(count_matrix,mean_covar,zi_covar
       names_zi<-rownames(fit$coefficients$zi)
       if(!is.null(names_zi)&sum(grepl("Intercept",names_zi))>1){num_err=1;stop(paste(c("There seems to be two intercept terms present in the ZI model. Please remove the intercept from either the argument mean_form or from the model.matrix inputted. Variable names in the ZI model are:",names_zi),collapse=" "))}
       if(return_summary_fits==TRUE){
-        fit[[k]]<-summary(fit)
+        pdHess<-fit[[k]]$sdr$pdHess
+        fit[[k]]<-summary(fit[[k]])
         logLik[k]<-as.numeric(fit[[k]]$logLik)
+        gene_err[k]<-(is.na(logLik[k]) | pdHess==FALSE)
       }else{
         logLik[k]<-as.numeric(summary(fit[[k]])$logLik)
+        gene_err[k]<-(is.na(logLik[k]) | fit[[k]]$sdr$pdHess==FALSE)
       }
-      gene_err[k]<-(is.na(logLik[k]) | fit[[k]]$sdr$pdHess==FALSE)
+
     }
     return(list(fit=fit,gene_err=gene_err,adhoc_include_RE=adhoc_include_RE))
   }
