@@ -37,7 +37,7 @@
 ##' }
 ##' @export twosigmag_ttest
 
-twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean_form,zi_form,mean_form_null=NULL,zi_form_null=NULL
+twosigmag_ttest<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean_form,zi_form,mean_form_null=NULL,zi_form_null=NULL
   ,id,statistic="LR",lr.df=NULL,covar_to_test=NULL
   ,contrast_matrix=NULL,factor_name=NULL,rho=NULL
   ,allow_neg_corr=FALSE
