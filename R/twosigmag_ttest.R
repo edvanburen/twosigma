@@ -363,7 +363,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
 rm(a)
 gc()
   p.val<-matrix(NA,nrow=nsets,ncol=ncomps)
-  #p.val_ttest<-matrix(NA,nrow=nsets,ncol=ncomps)
+  p.val_ttest<-matrix(NA,nrow=nsets,ncol=ncomps)
   rho_est<-rep(NA,length=nsets)
   direction<-matrix(NA,nrow=nsets,ncol=ncomps)
   estimates_set_level<-matrix(NA,nrow=nsets,ncol=ncomps)
