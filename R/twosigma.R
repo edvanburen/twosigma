@@ -58,7 +58,7 @@ twosigma<-function(count_matrix,mean_covar,zi_covar
     k<-0
     num_err=0
     fit<-vector('list',length=length(chunk))
-    gene_err<-rep(NA,length(chunk))
+    gene_err<-rep(TRUE,length(chunk))
     logLik<-rep(NA,length(chunk))
     adhoc_include_RE<-rep(NA,length(chunk))
     for(l in unlist(chunk)){
@@ -90,6 +90,8 @@ twosigma<-function(count_matrix,mean_covar,zi_covar
                                       ,mean_form=NULL,zi_form=NULL
                                       ,mean_re,zi_re
                                       ,disp_covar)
+      # need to catch glmmTMB errors here
+      tryCatch({
       fit[[k]]<-glmmTMB(formula=formulas$mean_form
                  ,ziformula=formulas$zi_form
                  ,weights=weights
@@ -108,7 +110,7 @@ twosigma<-function(count_matrix,mean_covar,zi_covar
       }else{
         logLik[k]<-as.numeric(summary(fit[[k]])$logLik)
         gene_err[k]<-(is.na(logLik[k]) | fit[[k]]$sdr$pdHess==FALSE)
-      }
+      }},error=function(e){}) # end try-catch
 
     }
     return(list(fit=fit,gene_err=gene_err,adhoc_include_RE=adhoc_include_RE))
@@ -138,22 +140,32 @@ twosigma<-function(count_matrix,mean_covar,zi_covar
   #browser()
   fit<-vector('list',length=ngenes)
   adhoc_include_RE<-rep(NA,length=ngenes)
-  for(i in 1:nchunks){
-    for(l in chunks[[i]]){
-      if(!a[[i]]$gene_err[1]){
-        fit[[l]]<-a[[i]]$fit[[1]]
-        adhoc_include_RE[l]<-a[[i]]$adhoc_include_RE[[1]]
-      }else{
-        fit[[l]]<-"Model Fit Error"
-      }
-      # Remove fits we have used to prevent needing to store more than necessary in memory
-      a[[i]]$gene_err<-a[[i]]$gene_err[-1]
-      a[[i]]$adhoc_include_RE<-a[[i]]$adhoc_include_RE[-1]
-      a[[i]]$fit<-a[[i]]$fit[-1]
-    }
-  }
+
+  #browser()
+
+  fit<-sapply(sapply(a,'[',1),'[',1)
+  gene_err<-unlist(sapply(a,'[',2))
+  adhoc_include_RE<-unlist(sapply(a,'[',3))
+  rm(a)
+  fit[gene_err]<-"Model Fit Error"
+  # for(i in 1:nchunks){
+  #   for(l in chunks[[i]]){
+  #     if(!a[[i]]$gene_err[1]){
+  #       fit[[l]]<-a[[i]]$fit[[1]]
+  #       adhoc_include_RE[l]<-a[[i]]$adhoc_include_RE[[1]]
+  #     }else{
+  #       fit[[l]]<-"Model Fit Error"
+  #     }
+  #     # Remove fits we have used to prevent needing to store more than necessary in memory
+  #     a[[i]]$gene_err<-a[[i]]$gene_err[-1]
+  #     a[[i]]$adhoc_include_RE<-a[[i]]$adhoc_include_RE[-1]
+  #     a[[i]]$fit<-a[[i]]$fit[-1]
+  #   }
+  # }
 
   names(fit)<-genes
+  names(gene_err)<-genes
+  names(adhoc_include_RE)<-genes
   return(list(fit=fit,adhoc_include_RE=adhoc_include_RE))
 }
 

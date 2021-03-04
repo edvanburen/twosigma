@@ -87,11 +87,26 @@ lr.twosigma_custom(count_matrix, mean_form_alt, zi_form_alt, mean_form_null, zi_
 The `lr.twosigma` function assumes that the variable being tested is in both components of the model (and thus that the zero-inflation component exists and contains more than an Intercept). Users wishing to do fixed effect testing in other cases can use the `lr.twosigma_custom` function with custom formulas or construct the test themselves using two calls to `twosigma` <code> twosigma_custom</code>. The formula inputs <code> mean_form_alt </code>, <code> mean_form_null</code>, <code> zi_form_alt</code>, and `zi_form_null` should be specified as in the <code> lr.twosigma_custom</code> function and once again **users must ensure custom formulas represent a valid likelihood ratio test**.  One part of this responsibility is specifying the argument `lr.df` giving the degrees of freedom of the likelihood ratio test.
 
 # Z-statistic or Stouffer statistic
-Assume `fits` is an object returned from `twosigma` or `twosigma_custom`.  Then, we can get some gene-level staistics using:
+Assume `fits` is an object returned from `twosigma` or `twosigma_custom`.  Then, we can get some gene-level statistics using:
 ```r
-calc_logFC<-function(x){if(class(x)=="glmmTMB"){x<-summary(x)};x$coefficients$cond['t2d_sim','Estimate']}
-calc_Z<-function(x){if(class(x)=="glmmTMB"){x<-summary(x)};x$coefficients$cond['t2d_sim','Estimate']}
-calc_p.vals<-function(x){if(class(x)=="glmmTMB"){x<-summary(x)};x$coefficients$cond['t2d_sim',4]}
+calc_logFC<-function(x){
+    if(class(x)=="glmmTMB"){x<-summary(x)}
+    if(is.character(x)){return(NA)}else{
+      x$coefficients$cond['t2d_sim','Estimate']
+    }
+}
+calc_Z<-function(x){
+    if(class(x)=="glmmTMB"){x<-summary(x)}
+    if(is.character(x)){return(NA)}else{
+      x$coefficients$cond['t2d_sim','z value']
+    }
+}
+calc_p.vals<-function(x){
+    if(class(x)=="glmmTMB"){x<-summary(x)}
+    if(is.character(x)){return(NA)}else{
+      x$coefficients$cond['t2d_sim',4]
+    }
+}
 
 logFC<-unlist(lapply(fits$fit,calc_logFC))
 Zstats<-unlist(lapply(fits$fit,calc_Z))
