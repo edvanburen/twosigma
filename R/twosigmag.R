@@ -312,7 +312,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
   if(return_summary_fits==TRUE){
     fit<-do.call(c,sapply(a,'[',8))
   }
-#rm(a)
+rm(a)
 gc()
 #browser()
   p.val<-matrix(NA,nrow=nsets,ncol=ncomps)
