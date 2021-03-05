@@ -107,10 +107,17 @@ calc_p.vals<-function(x){
       x$coefficients$cond['t2d_sim',4]
     }
 }
+calc_Stouffer<-function(x){
+    if(class(x)=="glmmTMB"){x<-summary(x)}
+    if(is.character(x)){return(NA)}else{
+      (x$coefficients$cond['t2d_sim','z value']+x$coefficients$cond['t2d_sim','z value'])/sqrt(2)
+    }
+}
 
 logFC<-unlist(lapply(fits$fit,calc_logFC))
 Zstats<-unlist(lapply(fits$fit,calc_Z))
 p.val_Zstat<-unlist(lapply(fits$fit,calc_p.vals)
+Stouffer<-unlist(lapply(fits$fit,calc_Stouffer))
 ```
 
 # Testing of a contrast matrix
@@ -199,18 +206,18 @@ fit2<-twosigma_custom(counts, mean_form=count~t2d_sim+age_sim+cdr_sim
 #fit and fit2 are the same for the both genes
 
 fit[[1]];fit2[[1]]
-fit$`Gene 2`;fit2$`Gene 2`
+fit$fit['Gene 2'];fit2$fit['Gene 2']
 
 #--- Fit TWO-SIGMA without a zero-inflation component
-fit_noZI<-twosigma(counts,zi_covar=0,mean_covar = X,id=id,mean_re=F,zi_re=F,adhoc=F),ncores=1
+fit_noZI<-twosigma(counts,zi_covar=0,mean_covar = X,id=id,mean_re=F,zi_re=F,adhoc=F,ncores=1)
 fit_noZ2I<-twosigma_custom(counts,zi_form=~0,mean_form=count~X,id=id,ncores=1)
 
 #--- Fit TWO-SIGMA with an intercept only zero-inflation component and no random effects
 fit_meanZI<-twosigma(counts,zi_covar=1,mean_covar = X,id=id,mean_re=F,zi_re=F,adhoc=F,ncores=1)
 fit_meanZI2<-twosigma_custom(counts, mean_form=count~t2d_sim+age_sim+cdr_sim,zi_form=~1,id=id,ncores=1)
 
-fit_noZI[[1]]
-fit_meanZI[[1]]
+fit_noZI$fit[['Gene 1']]
+fit_meanZI$fit[['Gene 1']]
 
 # Perform Likelihood Ratio Test on variable "t2d_sim"
           
@@ -225,23 +232,12 @@ lr.fit_custom<-lr.twosigma_custom(counts,mean_form_alt=count~t2d_sim+age_sim+cdr
 lr.fit_custom$LR_stat
 lr.fit_custom$LR_p.val
 
-# Collect gene-level Z-statistics for variable 't2d_sim':
-
-
-calc_logFC<-function(x){if(class(x)=="glmmTMB"){x<-summary(x)};x$coefficients$cond[2,'Estimate']}
-calc_Z<-function(x){if(class(x)=="glmmTMB"){x<-summary(x)};x$coefficients$cond[2,'z value']}
-calc_p.vals<-function(x){if(class(x)=="glmmTMB"){x<-summary(x)};x$coefficients$cond[2,4]}
-
-logFC<-unlist(lapply(fit,calc_logFC))
-Zstats<-unlist(lapply(fit,calc_Z))
-p.val_Zstat<-unlist(lapply(fit,calc_p.vals))
-
 #--------------------------------------------------
 # Perform Gene-Set Testing
 #--------------------------------------------------
 
 # First, simulate some DE genes and some non-DE genes
-
+set.seed(123)
 sim_dat2<-matrix(nrow=10,ncol=sum(ncellsper))
 beta<-c(2,0,-.1,.6)
 beta2<-c(2,.5,-.1,.6)
@@ -256,7 +252,7 @@ for(i in 1:nrow(sim_dat2)){
 }
 
 # Use LR statistic
-gst<-twosigmag(sim_dat2,index_test = list(c(6:10)),index_ref = list(c(1:5)),
+gst<-twosigmag(sim_dat2,index_test = list(c(6:10)),index_ref = list(c(1:4)),
 mean_form=count~t2d_sim+age_sim+cdr_sim,zi_form=~t2d_sim+age_sim+cdr_sim
 ,mean_form_null=count~age_sim+cdr_sim,
 zi_form_null=~age_sim+cdr_sim,statistic="LR",

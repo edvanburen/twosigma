@@ -61,7 +61,8 @@ A list with the following elements:
 ##' \itemize{
 \item{\code{fit: }} If \code{return_summary_fits=TRUE}, returns a list of model fit objects of class \code{summary.glmmTMB}. If \code{return_summary_fits=FALSE}, returns a list of model fit objects of class \code{glmmTMB}. In either case, the order matches the row order of \code{count_matrix}, and the names of the list elements are taken as the rownames of \code{count_matrix}.
 \item{\code{adhoc_include_RE: }} Logical vector indicator whether the adhoc method determined random effects needed.  If \code{adhoc=F}, then a vector of NA's.
-##' }
+\item{\code{gene_error:}} Vector indicating whether the particular gene produced an error during model fitting (TRUE) or not (FALSE).
+}
 }
 \description{
 Fit the TWO-SIGMA Model.

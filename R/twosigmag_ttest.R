@@ -24,16 +24,20 @@
 ##' @param lb Should load balancing be used for parallelization? Users will likely want to set to FALSE for improved performance.
 ##' @return A list with the following elements:
 ##' ##' \itemize{
-##' \item{\code{gene_summary_fits: }}{Summary.glmmTMB objects for each gene from the alternative model (if return_summary_fits=TRUE)}
 ##' \item{\code{stats_gene_level_all: }}{Gives all gene-level statistics.  Order matches the order of the inputted count matrix.}
 ##' \item{\code{p.vals_gene_level: }}{Gives raw (unadjusted) p-values associated with \code{LR_stats_gene_level_all}.}
-##' \item{\code{set_p.val: }}{Vector of unadjusted set-level p-values. Order matches the order of inputted test sets.}
+##' \item{\code{set_p.val: }}{Vector of unadjusted set-level p-values using the Wilcoxon Rank Sum test. Order matches the order of inputted test sets.}
+##' \item{\code{set_p.val: }}{Vector of unadjusted set-level p-values using the t-test. Order matches the order of inputted test sets.}
 ##' \item{\code{estimates_gene_level: }}{Gives the average logFC or contrast estimate for each gene.}
-##' \item{\code{estimates_set_level: }}{Gives the set-level average of the gene-level logFC or contrast estimates.}
+##' \item{\code{se_gene_level: }}{Standard error of the gene-level logFC values. Useful to construct gene-level summary statistics.}
+##'\item{\code{estimates_set_level: }}{Gives the set-level average of the gene-level logFC or contrast estimates.}
 ##' \item{\code{direction: }}{Reports whether the test set tends to be Up or Down Regulated based on the sign of \code{estimates_set_level}.}
 ##' \item{\code{corr: }}{Vector of estimated inter-gene correlations for each test set. Order matches the order of inputted test sets.}
+##' \item{\code{gene_level_loglik: }}{Vector of log-likelihood values for each gene. Values of NA indicates a model fitting or convergence problem for that gene.}
+##' \item{\code{gene_error:}} Vector indicating whether the particular gene produced an error during model fitting (TRUE) or not (FALSE).
 ##' \item{\code{test_sets: }}{Vector of numeric indices corresponding to genes in each test set.}
 ##' \item{\code{ref_sets: }}{Vector of numeric indices corresponding to the genes in each reference set.}
+##' \item{\code{gene_summary_fits: }}{Summary.glmmTMB objects for each gene from the alternative model (if return_summary_fits=TRUE)}
 ##' }
 ##' @export twosigmag_ttest
 
