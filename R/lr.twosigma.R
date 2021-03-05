@@ -50,8 +50,6 @@ lr.twosigma<-function(count_matrix,mean_covar,zi_covar,covar_to_test
   ngenes<-nrow(count_matrix)
   genes<-rownames(count_matrix)
   if(is.null(genes)){genes<-1:ngenes}
-  LR_stat<-rep(NA,length=ngenes)
-  p.val<-rep(NA,length=ngenes)
   # Need to duplicate originals because we construct
   # LR test manually and in doing so drop
   # tested covariates each time
@@ -63,9 +61,11 @@ lr.twosigma<-function(count_matrix,mean_covar,zi_covar,covar_to_test
     num_err=0
     f_n<-vector('list',length=length(chunk))
     f_a<-vector('list',length=length(chunk))
-    gene_err<-rep(NA,length(chunk))
+    gene_err<-rep(TRUE,length(chunk))
     logLik<-rep(NA,length(chunk))
     adhoc_include_RE<-rep(NA,length(chunk))
+    LR_stat<-rep(NA,length(chunk))
+    p.val<-rep(NA,length(chunk))
     for(l in unlist(chunk)){
     k<-k+1
     mean_covar<-mc
@@ -78,8 +78,8 @@ lr.twosigma<-function(count_matrix,mean_covar,zi_covar,covar_to_test
     if(adhoc==TRUE){
       if(is.atomic(zi_covar)&length(zi_covar)==1){
         if(zi_covar==0){stop("adhoc method only implemented when ZI model contains at minimum an intercept. Please either set adhoc=FALSE or specify at minimum an intercept in the ZI model.")}}
-      p.val<-adhoc.twosigma(count=count,mean_covar=mean_covar,zi_covar = zi_covar,id=id,weights=weights)
-      if(p.val<adhoc_thresh){
+      adhoc_p.val<-adhoc.twosigma(count=count,mean_covar=mean_covar,zi_covar = zi_covar,id=id,weights=weights)
+      if(adhoc_p.val<adhoc_thresh){
         mean_re=TRUE
         zi_re=TRUE
         #message("adhoc method used to set both mean_re and zi_re to TRUE. Set adhoc=FALSE to customize mean_re and zi_re.")
@@ -119,6 +119,7 @@ lr.twosigma<-function(count_matrix,mean_covar,zi_covar,covar_to_test
         }
       }
     }
+    tryCatch({
     fit_alt<-glmmTMB(formula=formulas$mean_form
                      ,ziformula=formulas$zi_form
                      ,weights=weights
@@ -218,9 +219,11 @@ lr.twosigma<-function(count_matrix,mean_covar,zi_covar,covar_to_test
                       ,control = control)
     tryCatch({
       LR_stat[k]<- as.numeric(-2*(summary(fit_null)$logLik-summary(fit_alt)$logLik))
-      if(LR_stat[k]<0 | (!fit_alt$sdr$pdHess) | (!fit_null$sdr$pdHess)){
+      if(!is.na(LR_stat[k])& (LR_stat[k]<0 | (!fit_alt$sdr$pdHess) | (!fit_null$sdr$pdHess)
+         |is.na(fit_alt$logLik)|is.na(fit_null$logLik))){
         LR_stat[k]<-NA}
-      p.val[k]<-1-pchisq(LR_stat[k],df=2)},error=function(e){})
+      },error=function(e){})
+    p.val[k]<-1-pchisq(LR_stat[k],df=2)
 
     if(return_full_fits==TRUE){
       f_n[[k]]<-fit_null
@@ -230,7 +233,7 @@ lr.twosigma<-function(count_matrix,mean_covar,zi_covar,covar_to_test
       f_n[[k]]<-summary(fit_null)
       f_a[[k]]<-summary(fit_alt)
       })
-    }
+    }},error=function(e){}) # end try-catch
     }
     return(list(fit_null=f_n,fit_alt=f_a,p.val=p.val,LR_stat=LR_stat,adhoc_include_RE=adhoc_include_RE))
   }
@@ -255,29 +258,25 @@ lr.twosigma<-function(count_matrix,mean_covar,zi_covar,covar_to_test
   print("Running Gene-Level Models")
   a<-pblapply(chunks,FUN=fit_lr,id=id,adhoc=adhoc,cl=cl)
   if(ncores>1){parallel::stopCluster(cl)}
-  fit_null<-vector('list',length=ngenes)
-  fit_alt<-vector('list',length=ngenes)
-  p.val<-rep(NA,length=ngenes)
-  LR_stat<-rep(NA,length=ngenes)
-  adhoc_include_RE<-rep(NA,length=ngenes)
-  for(i in 1:nchunks){
-    for(l in chunks[[i]]){
-        fit_null[[l]]<-a[[i]]$fit_null[[1]]
-        fit_alt[[l]]<-a[[i]]$fit_alt[[1]]
-        adhoc_include_RE[l]<-a[[i]]$adhoc_include_RE[[1]]
-        p.val[l]<-a[[i]]$p.val[1]
-        LR_stat[l]<-a[[i]]$LR_stat[1]
-      # Remove fits we have used to prevent needing to store more than necessary in memory
-      a[[i]]$fit_null<-a[[i]]$fit_null[-1]
-      a[[i]]$fit_alt<-a[[i]]$fit_alt[-1]
-      a[[i]]$p.val<-a[[i]]$p.val[-1]
-      a[[i]]$LR_stat<-a[[i]]$LR_stat[-1]
-      a[[i]]$adhoc_include_RE<-a[[i]]$adhoc_include_RE[-1]
-    }
-  }
+
+  #fit_null<-vector('list',length=ngenes)
+  #fit_alt<-vector('list',length=ngenes)
+  #p.val<-rep(NA,length=ngenes)
+  #LR_stat<-rep(NA,length=ngenes)
+  #adhoc_include_RE<-rep(NA,length=ngenes)
+
+  #browser()
+  fit_null<-do.call(c,sapply(a,'[',1))
+  fit_alt<-do.call(c,sapply(a,'[',2))
+  p.val<-unlist(sapply(a,'[',3))
+  LR_stat<-unlist(sapply(a,'[',4))
+  adhoc_include_RE<-unlist(sapply(a,'[',5))
+
   names(p.val)<-genes
   names(LR_stat)<-genes
   names(fit_null)<-genes
   names(fit_alt)<-genes
+  names(adhoc_include_RE)<-genes
+
   return(list(fit_null=fit_null,fit_alt=fit_alt,LR_stat=LR_stat,LR_p.val=p.val,adhoc_include_RE=adhoc_include_RE))
 }

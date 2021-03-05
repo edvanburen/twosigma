@@ -132,41 +132,22 @@ twosigma<-function(count_matrix,mean_covar,zi_covar
   }
   pboptions(type="timer")
   if(lb==TRUE){pboptions(use_lb=TRUE)}
-  #browser()
   a<-pblapply(chunks,FUN=fit_ts,id=id,adhoc=adhoc,cl=cl)
   if(ncores>1){parallel::stopCluster(cl)}
   rm(count_matrix)
   gc()
   #browser()
-  fit<-vector('list',length=ngenes)
-  adhoc_include_RE<-rep(NA,length=ngenes)
 
-  #browser()
-
-  fit<-sapply(sapply(a,'[',1),'[',1)
+  fit<-do.call(c,sapply(a,'[',1))
   gene_err<-unlist(sapply(a,'[',2))
   adhoc_include_RE<-unlist(sapply(a,'[',3))
   rm(a)
   fit[gene_err]<-"Model Fit Error"
-  # for(i in 1:nchunks){
-  #   for(l in chunks[[i]]){
-  #     if(!a[[i]]$gene_err[1]){
-  #       fit[[l]]<-a[[i]]$fit[[1]]
-  #       adhoc_include_RE[l]<-a[[i]]$adhoc_include_RE[[1]]
-  #     }else{
-  #       fit[[l]]<-"Model Fit Error"
-  #     }
-  #     # Remove fits we have used to prevent needing to store more than necessary in memory
-  #     a[[i]]$gene_err<-a[[i]]$gene_err[-1]
-  #     a[[i]]$adhoc_include_RE<-a[[i]]$adhoc_include_RE[-1]
-  #     a[[i]]$fit<-a[[i]]$fit[-1]
-  #   }
-  # }
 
   names(fit)<-genes
   names(gene_err)<-genes
   names(adhoc_include_RE)<-genes
-  return(list(fit=fit,adhoc_include_RE=adhoc_include_RE))
+  return(list(fit=fit,gene_err=gene_err,adhoc_include_RE=adhoc_include_RE))
 }
 
 

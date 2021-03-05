@@ -42,8 +42,6 @@ lr.twosigma_custom<-function(count_matrix,mean_form_alt,zi_form_alt,mean_form_nu
   ngenes<-nrow(count_matrix)
   genes<-rownames(count_matrix)
   if(is.null(genes)){genes<-1:ngenes}
-  LR_stat<-rep(NA,length=ngenes)
-  p.val<-rep(NA,length=ngenes)
   sum_fit_alt<-vector('list',length=ngenes)
   sum_fit_null<-vector('list',length=ngenes)
 
@@ -58,10 +56,11 @@ lr.twosigma_custom<-function(count_matrix,mean_form_alt,zi_form_alt,mean_form_nu
     f_a<-vector('list',length=length(chunk))
     gene_err<-rep(NA,length(chunk))
     logLik<-rep(NA,length(chunk))
+    LR_stat<-rep(NA,length=length(chunk))
+    p.val<-rep(NA,length=length(chunk))
     for(l in unlist(chunk)){
       k<-k+1
       count<-count_matrix[l,,drop=FALSE]
-
       check_twosigma_custom_input(count,mean_form_alt,zi_form_alt,id,disp_covar)
       check_twosigma_custom_input(count,mean_form_null,zi_form_null,id,disp_covar)
       count<-as.numeric(count)
@@ -85,7 +84,7 @@ lr.twosigma_custom<-function(count_matrix,mean_form_alt,zi_form_alt,mean_form_nu
 
       formulas_alt<-list(mean_form=mean_form_alt,zi_form=zi_form_alt,disp_form=disp_form)
       formulas_null<-list(mean_form=mean_form_null,zi_form=zi_form_null,disp_form=disp_form)
-
+      tryCatch({
       fit_alt<-glmmTMB(formula=formulas_alt$mean_form
                        ,ziformula=formulas_alt$zi_form
                        ,weights=weights
@@ -102,10 +101,10 @@ lr.twosigma_custom<-function(count_matrix,mean_form_alt,zi_form_alt,mean_form_nu
 
       tryCatch({
         LR_stat[k]<- as.numeric(-2*(summary(fit_null)$logLik-summary(fit_alt)$logLik))
-        if(LR_stat[k]<0 | (!fit_alt$sdr$pdHess) | (!fit_null$sdr$pdHess)){
-          LR_stat[k]<-NA}
-        p.val[k]<-1-pchisq(LR_stat[k],df=2)},error=function(e){})
-
+        if(!is.na(LR_stat[k])& (LR_stat[k]<0 | (!fit_alt$sdr$pdHess) | (!fit_null$sdr$pdHess)
+                                |is.na(fit_alt$logLik)|is.na(fit_null$logLik))){
+          LR_stat[k]<-NA}},error=function(e){}) # end try-catch
+      p.val[k]<-1-pchisq(LR_stat[k],df=2)
       if(return_full_fits==TRUE){
         f_n[[k]]<-fit_null
         f_a[[k]]<-fit_alt
@@ -114,11 +113,11 @@ lr.twosigma_custom<-function(count_matrix,mean_form_alt,zi_form_alt,mean_form_nu
           f_n[[k]]<-summary(fit_null)
           f_a[[k]]<-summary(fit_alt)
         })
-      }
-      return(list(fit_null=f_n,fit_alt=f_a,p.val=p.val,LR_stat=LR_stat))
+      }},error=function(e){})
     }
+    return(list(fit_null=f_n,fit_alt=f_a,p.val=p.val,LR_stat=LR_stat))
   }
-
+#browser()
 size=chunk_size
 chunks<-split(1:ngenes,ceiling(seq_along(genes)/size))
 nchunks<-length(chunks)
@@ -144,23 +143,12 @@ if(internal_call==FALSE){
 }else{
 a<-lapply(chunks,FUN=fit_lr,id=id)
 }
-fit_null<-vector('list',length=ngenes)
-fit_alt<-vector('list',length=ngenes)
-p.val<-rep(NA,length=ngenes)
-LR_stat<-rep(NA,length=ngenes)
-for(i in 1:nchunks){
-  for(l in chunks[[i]]){
-    fit_null[[l]]<-a[[i]]$fit_null[[1]]
-    fit_alt[[l]]<-a[[i]]$fit_alt[[1]]
-    p.val[l]<-a[[i]]$p.val[1]
-    LR_stat[l]<-a[[i]]$LR_stat[1]
-    # Remove fits we have used to prevent needing to store more than necessary in memory
-    a[[i]]$fit_null<-a[[i]]$fit_null[-1]
-    a[[i]]$fit_alt<-a[[i]]$fit_alt[-1]
-    a[[i]]$p.val<-a[[i]]$p.val[-1]
-    a[[i]]$LR_stat<-a[[i]]$LR_stat[-1]
-  }
-}
+#browser()
+fit_null<-do.call(c,sapply(a,'[',1))
+fit_alt<-do.call(c,sapply(a,'[',2))
+p.val<-unlist(sapply(a,'[',3))
+LR_stat<-unlist(sapply(a,'[',4))
+
 names(p.val)<-genes
 names(LR_stat)<-genes
 names(fit_null)<-genes

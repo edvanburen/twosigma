@@ -44,7 +44,7 @@ twosigma_custom<-function(count_matrix,mean_form,zi_form,id,return_summary_fits=
     k<-0
     num_err=0
     fit<-vector('list',length=length(chunk))
-    gene_err<-rep(NA,length(chunk))
+    gene_err<-rep(TRUE,length(chunk))
     logLik<-rep(NA,length(chunk))
     for(l in unlist(chunk)){
       if(num_err>0){break}
@@ -70,7 +70,7 @@ twosigma_custom<-function(count_matrix,mean_form,zi_form,id,return_summary_fits=
       disp_form<- ~ disp_covar}
 
     formulas<-list(mean_form=mean_form,zi_form=zi_form,disp_form=disp_form)
-
+    tryCatch({
     f<-glmmTMB(formula=formulas$mean_form
                ,ziformula=formulas$zi_form
                ,weights=weights
@@ -85,11 +85,11 @@ twosigma_custom<-function(count_matrix,mean_form,zi_form,id,return_summary_fits=
       fit[[k]]<-f
       logLik[k]<-as.numeric(summary(fit[[k]])$logLik)
       gene_err[k]<-(is.na(logLik[k]) | f$sdr$pdHess==FALSE)
-    }
+    }},error=function(e){}) # end try-catch
     return(list(fit=fit,gene_err=gene_err))
     }
   }
-  #print("Running Gene-Level Models")
+
   size=chunk_size
   chunks<-split(1:ngenes,ceiling(seq_along(genes)/size))
   nchunks<-length(chunks)
@@ -120,21 +120,10 @@ twosigma_custom<-function(count_matrix,mean_form,zi_form,id,return_summary_fits=
   rm(count_matrix)
   gc()
   #browser()
-  fit<-vector('list',length=ngenes)
-  adhoc_include_RE<-rep(NA,length=ngenes)
-  for(i in 1:nchunks){
-    for(l in chunks[[i]]){
-      #if(!a[[i]]$gene_err[1]){
-        fit[[l]]<-a[[i]]$fit[[1]]
-      #}else{
-      #  fit[[l]]<-"Model Fit Error"
-     # }
-      # Remove fits we have used to prevent needing to store more than necessary in memory
-      a[[i]]$gene_err<-a[[i]]$gene_err[-1]
-      a[[i]]$fit<-a[[i]]$fit[-1]
-    }
-  }
+  fit<-do.call(c,sapply(a,'[',1))
+  gene_err<-unlist(sapply(a,'[',2))
   names(fit)<-genes
-  return(fit)
+  names(gene_err)<-genes
+  return(list(fit=fit,gene_err=gene_err))
 }
 
