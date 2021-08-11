@@ -81,7 +81,7 @@ twosigmag(
 A list with the following elements:
 ##' \itemize{
 \item{\code{stats_gene_level_all: }}{Gives all gene-level statistics.  Order matches the order of the inputted count matrix.}
-\item{\code{p.vals_gene_level: }}{Gives raw (unadjusted) p-values associated with \code{LR_stats_gene_level_all}.}
+\item{\code{p.vals_gene_level: }}{Gives raw (unadjusted) p-values associated with \code{stats_gene_level_all}.}
 \item{\code{set_p.val: }}{Vector of unadjusted set-level p-values. Order matches the order of inputted test sets.}
 \item{\code{estimates_gene_level: }}{Gives the average logFC or contrast estimate for each gene.}
 \item{\code{se_gene_level: }}{Standard error of the gene-level logFC values. Useful to construct gene-level summary statistics.}
