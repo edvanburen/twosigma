@@ -40,7 +40,7 @@ twosigma<-function(count_matrix,mean_covar,zi_covar
   ,return_summary_fits=TRUE
   ,disp_covar=NULL #need to be able to use data option?
   ,weights=rep(1,ncol(count_matrix))
-  ,control = glmmTMBControl(),ncores=1,cluster_type="Fork",chunk_size=1,lb=FALSE){
+  ,control = glmmTMBControl(),ncores=1,cluster_type="Fork",chunk_size=10,lb=FALSE){
   passed_args <- names(as.list(match.call())[-1])
   required_args<-c("count_matrix","mean_covar","zi_covar","id")
   if (any(!required_args %in% passed_args)) {

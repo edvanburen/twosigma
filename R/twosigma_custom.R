@@ -25,7 +25,7 @@ twosigma_custom<-function(count_matrix,mean_form,zi_form,id,return_summary_fits=
   silent=FALSE,disp_covar=NULL
   ,weights=rep(1,ncol(count_matrix))
   ,control = glmmTMBControl(),ncores=1,cluster_type="Fork"
-  ,chunk_size=1,lb=FALSE,internal_call=FALSE){
+  ,chunk_size=10,lb=FALSE,internal_call=FALSE){
 
   passed_args <- names(as.list(match.call())[-1])
   required_args<-c("count_matrix","mean_form","zi_form","id")

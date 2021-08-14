@@ -35,7 +35,7 @@ lr.twosigma<-function(count_matrix,mean_covar,zi_covar,covar_to_test
                       ,silent=FALSE
                       ,disp_covar=NULL
                       ,weights=rep(1,ncol(count_matrix))
-                      ,control = glmmTMBControl(),ncores=1,cluster_type="Fork",chunk_size=1,lb=FALSE)
+                      ,control = glmmTMBControl(),ncores=1,cluster_type="Fork",chunk_size=10,lb=FALSE)
                       #,control = glmmTMBControl(optCtrl=list(iter.max=1e5,eval.max=1e5
                        # ,step.max=.00001,step.min=.00001
                       #  ,rel.tol=1e-5,x.tol=1e-5)))

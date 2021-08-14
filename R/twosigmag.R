@@ -124,7 +124,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
           ,mean_form_alt=mean_form,zi_form_alt=zi_form
           ,mean_form_null=mean_form_null,zi_form_null=zi_form_null
           ,id=id,return_full_fits = TRUE
-          ,lr.df = lr.df,weights=weights,internal_call=TRUE)
+          ,lr.df = lr.df,weights=weights,internal_call=TRUE,chunk_size = 1)
         residuals_all[k,]<-residuals(fit_twosigmag$fit_alt[[1]])
         stats_all[k,]<-fit_twosigmag$LR_stat[1]
         p.vals_gene_level[k,]<-fit_twosigmag$LR_p.val[1]
@@ -154,7 +154,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
       if(statistic=="Z"){
         fit_twosigmag<-twosigma_custom(counts,silent=TRUE
           ,mean_form=mean_form,zi_form=zi_form
-          ,id=id,return_summary_fits = FALSE,weights=weights,internal_call=TRUE)
+          ,id=id,return_summary_fits = FALSE,weights=weights,internal_call=TRUE,chunk_size=1)
         fit<-summary(fit_twosigmag$fit[[1]])
         if(return_summary_fits==TRUE){
           fits[[k]]<-fit
@@ -185,7 +185,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
       if(statistic=="Stouffer"){
         fit_twosigmag<-twosigma_custom(counts,silent=TRUE
           ,mean_form=mean_form,zi_form=zi_form
-          ,id=id,return_summary_fits = FALSE,weights=weights,internal_call=TRUE)
+          ,id=id,return_summary_fits = FALSE,weights=weights,internal_call=TRUE,chunk_size=1)
         fit<-summary(fit_twosigmag$fit[[1]])
         if(return_summary_fits==TRUE){
           fits[[k]]<-fit
@@ -219,7 +219,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
       if(statistic=="contrast"){
         fit_twosigmag<-twosigma_custom(counts,silent=TRUE
           ,mean_form=mean_form,zi_form=zi_form
-          ,id=id,return_summary_fits = FALSE,weights=weights,internal_call=TRUE)
+          ,id=id,return_summary_fits = FALSE,weights=weights,internal_call=TRUE,chunk_size=1)
         #if(!fit_twosigmag[[1]]$sdr$pdHess){break}
         fit<-summary(fit_twosigmag$fit[[1]])
         if(return_summary_fits==TRUE){
