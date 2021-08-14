@@ -104,7 +104,7 @@ lr.twosigma_custom<-function(count_matrix,mean_form_alt,zi_form_alt,mean_form_nu
         if(!is.na(LR_stat[k])& (LR_stat[k]<0 | (!fit_alt$sdr$pdHess) | (!fit_null$sdr$pdHess)
                                 |is.na(fit_alt$logLik)|is.na(fit_null$logLik))){
           LR_stat[k]<-NA}},error=function(e){}) # end try-catch
-      p.val[k]<-1-pchisq(LR_stat[k],df=2)
+      p.val[k]<-1-pchisq(LR_stat[k],df=lr.df)
       if(return_full_fits==TRUE){
         f_n[[k]]<-fit_null
         f_a[[k]]<-fit_alt
