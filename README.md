@@ -27,7 +27,7 @@ devtools::install_github("edvanburen/twosigma")
 
 library(twosigma)
 ```
-Note the following minimum package versions for imported packages: multcomp (>= 1.4-13), glmmTMB (>= 1.0.1.9001), methods, pscl (>= 1.5.5), pbapply (>= 1.4.0), parallel (>= 3.6.3), doParallel (>= 1.0.15).	
+Note the following minimum package versions for imported packages: multcomp (>= 1.4-13), methods, pscl (>= 1.5.5), pbapply (>= 1.4.0), parallel (>= 3.6.3), doParallel (>= 1.0.15).	
 ## Gene-Level Model
 TWO-SIGMA is based on the following parameterization of the negative binomial distribution: 
 <img src="inst/image/nb3.jpg" width="600" align="center">
