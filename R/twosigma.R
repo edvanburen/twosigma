@@ -28,7 +28,7 @@
 ##' @import parallel
 ##' @import pbapply
 ##' @import doParallel
-##' @importFrom stats anova as.formula lm pchisq rbinom residuals rnbinom rnorm model.frame cor pnorm pt vcov
+##' @importFrom stats anova as.formula lm pchisq rbinom residuals rnbinom rnorm model.frame cor pnorm pt vcov p.adjust
 ##' @importFrom multcomp glht mcp adjusted
 ##' @export twosigma
 

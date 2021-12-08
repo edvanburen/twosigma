@@ -285,10 +285,22 @@ glht_glmmTMB <- function (model, ..., component="cond") {
     vcov. = function(x) vcov(x)[[component]],
     df = NULL)
 }
+
+# This is a useful, CRAN-friendly way to access an unexported function
+# which is required in the twosigmag function
+modelparm.default<-utils::getFromNamespace("modelparm.default","multcomp")
+
 modelparm.glmmTMB <- function (model, coef. = function(x) fixef(x)[[component]],
-  vcov. = function(x) vcov(x)[[component]],
-  df = NULL, component="cond", ...) {
-  multcomp:::modelparm.default(model, coef. = coef., vcov. = vcov.,
-    df = df, ...)
+                               vcov. = function(x) vcov(x)[[component]],
+                               df = NULL, component="cond", ...) {
+  modelparm.default(model, coef. = coef., vcov. = vcov.,
+                    df = df, ...)
 }
+
+# modelparm.glmmTMB <- function (model, coef. = function(x) fixef(x)[[component]],
+#   vcov. = function(x) vcov(x)[[component]],
+#   df = NULL, component="cond", ...) {
+#   multcomp:::modelparm.default(model, coef. = coef., vcov. = vcov.,
+#     df = df, ...)
+# }
 

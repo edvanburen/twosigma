@@ -39,6 +39,10 @@ test.vc.twosigma(
 
 \item{return_full_fits}{If TRUE, fit objects of class glmmTMB are returned. If FALSE, only objects of class summary.glmmTMB are returned. The latter require a much larger amount of memory to store.}
 
+\item{adhoc}{Should the adhoc method be used by default to judge if random effects are needed?}
+
+\item{adhoc_thresh}{Value below which the adhoc p-value is deemed significant (and thus RE are deemed necessary). Only used if adhoc==TRUE.}
+
 \item{silent}{If TRUE, progress is not printed.}
 
 \item{disp_covar}{Covariates for a log-linear model for the dispersion. Either a matrix or = 1 to indicate an intercept only model.}

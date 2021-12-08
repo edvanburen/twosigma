@@ -7,7 +7,7 @@ Van Buren, E, Hu, M, Weng, C, et al. TWO‐SIGMA: A novel two‐component single
 
 **TWO-SIGMA-G bioRxiv preprint**:
 
-Coming soon.
+TWO-SIGMA-G: A New Competitive Gene Set Testing Framework for scRNA-seq Data Accounting for Inter-Gene and Cell-Cell Correlation: doi: https://doi.org/10.1101/2021.01.24.427979
 
 ## Contact Emails
 
@@ -18,13 +18,16 @@ Eric Van Buren: evb@hsph.harvard.edu, Di Wu: did@email.unc.edu, Yun Li: yun_li@m
 <code>twosigma</code> is an R package for differential expression (DE) analysis and gene set testing (GST) in single-cell RNA-seq (scRNA-seq) data.  At the gene-level, DE can be assessed by fitting our proposed TWO-component SInGle cell Model-based Association method (TWO-SIGMA). The first component models the drop-out probability with a mixed effects logistic regression, and the second component models the (conditional) mean read count with a mixed-effects log-linear negative binomial regression. Our approach thus allows for both excess zero counts and overdispersed counts while also accommodating dependency in both drop-out probability and mean mRNA abundance.  TWO-SIGMA is especially useful in its flexibility to analyze DE beyond a two-group comparison while simultaneously controlling for additional subject-level or cell-level covariates including batch effects.  At the set-level, the package can perform competitive gene set testing using our proposed TWO-SIGMA-G method. Users can specify the number of cores to be used for parallelization in all functions using the ncores argument.
 
 ## Installation
-We recommend installing from Github for the latest version of the code:
+We recommend installing from GitHub or CRAN for the latest version (1.0.2) of the package, which is built for any version of R >= 3.6.3 (including R >= 4.0):
 ```r
+install.packages("twosigma")
+# OR
 install.packages("devtools")
 devtools::install_github("edvanburen/twosigma")
+
 library(twosigma)
 ```
-
+Note the following minium package versions for imported packages: multcomp (>=1.4-13),glmmTMB (>=1.0.1.9001), methods, pscl (>=1.5.5), pbapply (>=1.4.0), parallel (>=3.6.3),doParallel (>=1.0.15).	
 ## Gene-Level Model
 TWO-SIGMA is based on the following parameterization of the negative binomial distribution: 
 <img src="inst/image/nb3.jpg" width="600" align="center">

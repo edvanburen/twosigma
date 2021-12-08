@@ -26,7 +26,8 @@
 ##' ##' \itemize{
 ##' \item{\code{stats_gene_level_all: }}{Gives all gene-level statistics.  Order matches the order of the inputted count matrix.}
 ##' \item{\code{p.vals_gene_level: }}{Gives raw (unadjusted) p-values associated with \code{stats_gene_level_all}.}
-##' \item{\code{set_p.val: }}{Vector of unadjusted set-level p-values. Order matches the order of inputted test sets.}
+##' \item{\code{set_p.val: }}{Unadjusted set-level p-values. Order matches the order of inputted test sets.}
+##' \item{\code{set_p.val_FDR: }}{FDR-corrected (using the Benjamini-Hochberg procedure) set-level p-values. Order matches the order of inputted test sets.}
 ##' \item{\code{estimates_gene_level: }}{Gives the average logFC or contrast estimate for each gene.}
 ##' \item{\code{se_gene_level: }}{Standard error of the gene-level logFC values. Useful to construct gene-level summary statistics.}
 ##'\item{\code{estimates_set_level: }}{Gives the set-level average of the gene-level logFC or contrast estimates.}
@@ -378,10 +379,13 @@ gc()
     }
     if(i%%100==0){print(paste0("Set ",i," of ",nsets," Finished"))}
   }
+  p.val_FDR<-apply(p.val,MARGIN=2,FUN=p.adjust,method="fdr")
   #browser()
   rownames(stats_all)<-genes
   colnames(p.val)<-rownames(contrast_matrix)
   rownames(p.val)<-names(index_test)
+  colnames(p.val_FDR)<-rownames(contrast_matrix)
+  rownames(p.val_FDR)<-names(index_test)
   #rownames(p.val_ttest)<-names(index_test)
   rownames(direction)<-names(index_test)
   names(rho_est)<-names(index_test)
@@ -409,8 +413,8 @@ gc()
   # }
   if(return_summary_fits==TRUE){
     names(fit)<-gene_names
-    return(list(gene_summary_fits=fit,stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,estimates_gene_level=estimates_gene_level,se_gene_level=se_gene_level,estimates_set_level=estimates_set_level,direction=direction,corr=rho_est,gene_level_logLik=logLik,gene_error=gene_err,test_sets=index_test,ref_sets=index_ref))
+    return(list(gene_summary_fits=fit,stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,set_p.val_FDR=p.val_FDR,estimates_gene_level=estimates_gene_level,se_gene_level=se_gene_level,estimates_set_level=estimates_set_level,direction=direction,corr=rho_est,gene_level_logLik=logLik,gene_error=gene_err,test_sets=index_test,ref_sets=index_ref))
   }else{
-    return(list(stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,estimates_gene_level=estimates_gene_level,se_gene_level=se_gene_level,estimates_set_level=estimates_set_level,direction=direction,corr=rho_est,gene_level_logLik=logLik,gene_error=gene_err,test_sets=index_test,ref_sets=index_ref))
+    return(list(stats_gene_level_all=stats_all,p.vals_gene_level=p.vals_gene_level,set_p.val=p.val,set_p.val_FDR=p.val_FDR,estimates_gene_level=estimates_gene_level,se_gene_level=se_gene_level,estimates_set_level=estimates_set_level,direction=direction,corr=rho_est,gene_level_logLik=logLik,gene_error=gene_err,test_sets=index_test,ref_sets=index_ref))
   }
 }

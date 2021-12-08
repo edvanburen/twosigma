@@ -19,7 +19,7 @@ twosigma(
   control = glmmTMBControl(),
   ncores = 1,
   cluster_type = "Fork",
-  chunk_size = 1,
+  chunk_size = 10,
   lb = FALSE
 )
 }
