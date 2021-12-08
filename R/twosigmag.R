@@ -9,7 +9,7 @@
 ##' @param zi_form_null One-sided model formula for the zero-inflation model under the null. Needed if and only if \code{statistic='LR'}. Syntax is as in \code{zi_form}.
 ##' @param id Vector of individual-level (sample-level) ID's. Used to estimate inter-gene correlation and random effect prediction (if present) and is currently required.
 ##' @param statistic Which gene-level statistic should be used. Options are Likelihood Ratio ("LR", default), Z-statistic from the mean model ("Z"),the  Stouffer's method combined Z-statistic ("Stouffer"), or a contrast of regression parameters ("contrast"). If "Stouffer", covar_to_test must be in both components. If "contrast", covar_to_test is not used and must be \code{NULL}.
-##' @param lr.df degrees of freedom for the asymptotic chi-square approximation to the liklihood ratio statistic. Needed if and only if \code{statistic='LR'}.
+##' @param lr.df degrees of freedom for the asymptotic chi-square approximation to the likelihood ratio statistic. Needed if and only if \code{statistic='LR'}.
 ##' @param covar_to_test Covariate used for reporting direction (as Up or Down) of the test set and for collecting gene-level statistics. Either a string indicating the name of the covariate to use or an integer giving its associated position in the RHS of the mean_form argument. If a string, the name is matched to the predictors of the mean model, so users should ensure such a match would be unique. Not required and should be \code{NULL} if \code{statistic='contrast'.}
 ##' @param contrast_matrix Matrix of contrasts of regression parameters from the mean model to be tested. Each row will have separate gene-level and set-level statistics.  Rownames of \code{contrast_matrix} should correspond to a meaningful name of the hypothesis for nicely formatted output. If testing a factor, must have a number of columns exactly equal to the number of levels of the factor.  Otherwise, must have one column per parameter in the mean model (including a column for the intercept.)
 ##' @param factor_name Name of the factor being tested by \code{contrast_matrix}. Needed if and only if \code{statistic='contrast'} and \code{contrast_matrix} is testing a factor variable in the mean model.
@@ -20,7 +20,7 @@
 ##' @param control Control parameters for optimization in \code{glmmTMB}.  See \code{?glmmTMBControl}.
 ##' @param ncores Number of cores used for parallelization. Defaults to 1, meaning no parallelization of any kind is done.
 ##' @param cluster_type Whether to use a "cluster of type "Fork" or "Sock". On Unix systems, "Fork" will likely improve performance. On Windows, only "Sock" will actually result in parallelized computing.
-##' @param chunk_size Number of genes to be sent to each parallel environment. Parallelization is more efficient, particuarly with a large count matrix, when the count matrix is 'chunked' into some common size (e.g. 10, 50, 200). Defaults to 10.
+##' @param chunk_size Number of genes to be sent to each parallel environment. Parallelization is more efficient, particularly with a large count matrix, when the count matrix is 'chunked' into some common size (e.g. 10, 50, 200). Defaults to 10.
 ##' @param lb Should load balancing be used for parallelization? Users will likely want to set to FALSE for improved performance.
 ##' @return A list with the following elements:
 ##' ##' \itemize{

@@ -1,5 +1,5 @@
-##' Conveinent wrapper function for performing joint likelihood ratio tests using the TWO-SIGMA model.
-##' @param count_matrix Matrix of non-negative integer read counts, with rows corresponding to genes and columns correspoding to cells. It is recommended to make the rownames the gene names for better output.
+##' Convenient wrapper function for performing joint likelihood ratio tests using the TWO-SIGMA model.
+##' @param count_matrix Matrix of non-negative integer read counts, with rows corresponding to genes and columns corresponding to cells. It is recommended to make the rownames the gene names for better output.
 ##' @param mean_covar Covariates for the (conditional) mean model. Must be a matrix (without an intercept column) or a vector if a single covariate is being tested.
 ##' @param zi_covar Covariates for the zero-inflation model. Must be a matrix (without an intercept column) or a vector if a single covariate is being tested.
 ##' @param covar_to_test Either a string indicating the column name of the covariate to test or an integer referring to its column position in BOTH the mean_covar and zi_covar matrices (if the two matrices differ using a string name is preferred). Argument is ignored if mean_covar and zi_covar are both a single covariate (that covariate is assumed of interest).
@@ -15,10 +15,10 @@
 ##' @param control Control parameters for optimization in glmmTMB.
 ##' @param ncores Number of cores used for parallelization. Defaults to 1, meaning no parallelization of any kind is done.
 ##' @param cluster_type Whether to use a "cluster of type "Fork" or "Sock". On Unix systems, "Fork" will likely improve performance. On Windows, only "Sock" will actually result in parallelized computing.
-##' @param chunk_size Number of genes to be sent to each parallel environment. Parallelization is more efficient, particuarly with a large count matrix, when the count matrix is 'chunked' into some common size (e.g. 10, 50, 200). Defaults to 10.
+##' @param chunk_size Number of genes to be sent to each parallel environment. Parallelization is more efficient, particularly with a large count matrix, when the count matrix is 'chunked' into some common size (e.g. 10, 50, 200). Defaults to 10.
 ##' @param lb Should load balancing be used for parallelization? Users will likely want to set to FALSE for improved performance.
 ##' @section Details:
-##' This function assumes that the variable being tested is in both components of the model (and thus that the zero-inflation component exists and contains more than an Intercept). Users wishing to do fixed effect testing in other cases or specify custom model formulas they will need to construct the statistics themselves using either two separate calls to \code{twosigma} or the \code{lr.twosigma_custom} fumction. If \code{adhoc=TRUE}, any input in mean_re and zi_re will be ignored. If either model fails to converge, or the LR statistic is negative, both the statistic and p-value are assigned as NA.
+##' This function assumes that the variable being tested is in both components of the model (and thus that the zero-inflation component exists and contains more than an Intercept). Users wishing to do fixed effect testing in other cases or specify custom model formulas they will need to construct the statistics themselves using either two separate calls to \code{twosigma} or the \code{lr.twosigma_custom} function. If \code{adhoc=TRUE}, any input in mean_re and zi_re will be ignored. If either model fails to converge, or the LR statistic is negative, both the statistic and p-value are assigned as NA.
 ##' @return A list with the following elements:
 ##' \itemize{
 ##' \item{\code{fit_null: }} Model fits under the null hypothesis. If \code{return_summary_fits=TRUE}, returns a list of objects of class \code{summary.glmmTMB}. If \code{return_summary_fits=FALSE}, returns a list of model fit objects of class \code{glmmTMB}. In either case, the order matches the row order of \code{count_matrix}, and the names of the list elements are taken as the rownames of \code{count_matrix}.

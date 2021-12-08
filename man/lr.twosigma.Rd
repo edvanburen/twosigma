@@ -2,7 +2,7 @@
 % Please edit documentation in R/lr.twosigma.R
 \name{lr.twosigma}
 \alias{lr.twosigma}
-\title{Conveinent wrapper function for performing joint likelihood ratio tests using the TWO-SIGMA model.}
+\title{Convenient wrapper function for performing joint likelihood ratio tests using the TWO-SIGMA model.}
 \usage{
 lr.twosigma(
   count_matrix,
@@ -26,7 +26,7 @@ lr.twosigma(
 )
 }
 \arguments{
-\item{count_matrix}{Matrix of non-negative integer read counts, with rows corresponding to genes and columns correspoding to cells. It is recommended to make the rownames the gene names for better output.}
+\item{count_matrix}{Matrix of non-negative integer read counts, with rows corresponding to genes and columns corresponding to cells. It is recommended to make the rownames the gene names for better output.}
 
 \item{mean_covar}{Covariates for the (conditional) mean model. Must be a matrix (without an intercept column) or a vector if a single covariate is being tested.}
 
@@ -58,7 +58,7 @@ lr.twosigma(
 
 \item{cluster_type}{Whether to use a "cluster of type "Fork" or "Sock". On Unix systems, "Fork" will likely improve performance. On Windows, only "Sock" will actually result in parallelized computing.}
 
-\item{chunk_size}{Number of genes to be sent to each parallel environment. Parallelization is more efficient, particuarly with a large count matrix, when the count matrix is 'chunked' into some common size (e.g. 10, 50, 200). Defaults to 10.}
+\item{chunk_size}{Number of genes to be sent to each parallel environment. Parallelization is more efficient, particularly with a large count matrix, when the count matrix is 'chunked' into some common size (e.g. 10, 50, 200). Defaults to 10.}
 
 \item{lb}{Should load balancing be used for parallelization? Users will likely want to set to FALSE for improved performance.}
 }
@@ -73,10 +73,10 @@ A list with the following elements:
 }
 }
 \description{
-Conveinent wrapper function for performing joint likelihood ratio tests using the TWO-SIGMA model.
+Convenient wrapper function for performing joint likelihood ratio tests using the TWO-SIGMA model.
 }
 \section{Details}{
 
-This function assumes that the variable being tested is in both components of the model (and thus that the zero-inflation component exists and contains more than an Intercept). Users wishing to do fixed effect testing in other cases or specify custom model formulas they will need to construct the statistics themselves using either two separate calls to \code{twosigma} or the \code{lr.twosigma_custom} fumction. If \code{adhoc=TRUE}, any input in mean_re and zi_re will be ignored. If either model fails to converge, or the LR statistic is negative, both the statistic and p-value are assigned as NA.
+This function assumes that the variable being tested is in both components of the model (and thus that the zero-inflation component exists and contains more than an Intercept). Users wishing to do fixed effect testing in other cases or specify custom model formulas they will need to construct the statistics themselves using either two separate calls to \code{twosigma} or the \code{lr.twosigma_custom} function. If \code{adhoc=TRUE}, any input in mean_re and zi_re will be ignored. If either model fails to converge, or the LR statistic is negative, both the statistic and p-value are assigned as NA.
 }
 

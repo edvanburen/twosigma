@@ -51,7 +51,7 @@ twosigmag_ttest(
 
 \item{statistic}{Which gene-level statistic should be used. Options are Likelihood Ratio ("LR", default), Z-statistic from the mean model ("Z"),the  Stouffer's method combined Z-statistic ("Stouffer"), or a contrast of regression parameters ("contrast"). If "Stouffer", covar_to_test must be in both components. If "contrast", covar_to_test is not used and must be \code{NULL}.}
 
-\item{lr.df}{degrees of freedom for the asymptotic chi-square approximation to the liklihood ratio statistic. Needed if and only if \code{statistic='LR'}.}
+\item{lr.df}{degrees of freedom for the asymptotic chi-square approximation to the likelihood ratio statistic. Needed if and only if \code{statistic='LR'}.}
 
 \item{covar_to_test}{Covariate used for reporting direction (as Up or Down) of the test set and for collecting gene-level statistics. Either a string indicating the name of the covariate to use or an integer giving its associated position in the RHS of the mean_form argument. If a string, the name is matched to the predictors of the mean model, so users should ensure such a match would be unique. Not required and should be \code{NULL} if \code{statistic='contrast'.}}
 
@@ -73,7 +73,7 @@ twosigmag_ttest(
 
 \item{cluster_type}{Whether to use a "cluster of type "Fork" or "Sock". On Unix systems, "Fork" will likely improve performance. On Windows, only "Sock" will actually result in parallelized computing.}
 
-\item{chunk_size}{Number of genes to be sent to each parallel environment. Parallelization is more efficient, particuarly with a large count matrix, when the count matrix is 'chunked' into some common size (e.g. 10, 50, 200). Defaults to 10.}
+\item{chunk_size}{Number of genes to be sent to each parallel environment. Parallelization is more efficient, particularly with a large count matrix, when the count matrix is 'chunked' into some common size (e.g. 10, 50, 200). Defaults to 10.}
 
 \item{lb}{Should load balancing be used for parallelization? Users will likely want to set to FALSE for improved performance.}
 }

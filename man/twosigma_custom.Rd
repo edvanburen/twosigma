@@ -22,7 +22,7 @@ twosigma_custom(
 )
 }
 \arguments{
-\item{count_matrix}{Matrix of non-negative integer read counts, with rows corresponding to genes and columns correspoding to cells. It is recommended to make the rownames the gene names for better output.}
+\item{count_matrix}{Matrix of non-negative integer read counts, with rows corresponding to genes and columns corresponding to cells. It is recommended to make the rownames the gene names for better output.}
 
 \item{mean_form}{Custom two-sided model formula for the (conditional) mean model. Formula is passed directly into glmmTMB with random effects specified as in the lme4 package. Users should ensure that the LHS of the formula begins with "count."}
 
@@ -44,7 +44,7 @@ twosigma_custom(
 
 \item{cluster_type}{Whether to use a "cluster of type "Fork" or "Sock". On Unix systems, "Fork" will likely improve performance. On Windows, only "Sock" will actually result in parallelized computing.}
 
-\item{chunk_size}{Number of genes to be sent to each parallel environment. Parallelization is more efficient, particuarly with a large count matrix, when the count matrix is 'chunked' into some common size (e.g. 10, 50, 200). Defaults to 10.}
+\item{chunk_size}{Number of genes to be sent to each parallel environment. Parallelization is more efficient, particularly with a large count matrix, when the count matrix is 'chunked' into some common size (e.g. 10, 50, 200). Defaults to 10.}
 
 \item{lb}{Should load balancing be used for parallelization? Users will likely want to set to FALSE for improved performance.}
 

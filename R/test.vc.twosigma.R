@@ -1,5 +1,5 @@
-##' Conveinent wrapper function for performing (joint) likelihood ratio tests of variance components using the TWO-SIGMA model.
-##' @param count_matrix Matrix of non-negative integer read counts, with rows corresponding to genes and columns correspoding to cells. It is recommended to make the rownames the gene names for better output.
+##' Convenient wrapper function for performing (joint) likelihood ratio tests of variance components using the TWO-SIGMA model.
+##' @param count_matrix Matrix of non-negative integer read counts, with rows corresponding to genes and columns corresponding to cells. It is recommended to make the rownames the gene names for better output.
 ##' @param mean_covar Covariates for the (conditional) mean model. Must be a matrix (without an intercept column) or a vector if a single covariate is being tested.
 ##' @param zi_covar Covariates for the zero-inflation model. Must be a matrix (without an intercept column) or a vector if a single covariate is being tested.
 ##' @param mean_re Should random intercepts be tested in the (conditional) mean model?
@@ -14,7 +14,7 @@
 ##' @param control Control parameters for optimization in glmmTMB.
 ##' @param ncores Number of cores used for parallelization. Defaults to 1, meaning no parallelization of any kind is done.
 ##' @param cluster_type Whether to use a "cluster of type "Fork" or "Sock". On Unix systems, "Fork" will likely improve performance. On Windows, only "Sock" will actually result in parallelized computing.
-##' @param chunk_size Number of genes to be sent to each parallel environment. Parallelization is more efficient, particuarly with a large count matrix, when the count matrix is 'chunked' into some common size (e.g. 10, 50, 200). Defaults to 10.
+##' @param chunk_size Number of genes to be sent to each parallel environment. Parallelization is more efficient, particularly with a large count matrix, when the count matrix is 'chunked' into some common size (e.g. 10, 50, 200). Defaults to 10.
 ##' @param lb Should load balancing be used for parallelization? Users will likely want to set to FALSE for improved performance.
 ##' @section Details:
 ##' If either model fails to converge, or the LR statistic is negative, both the statistic and p-value are assigned as NA.

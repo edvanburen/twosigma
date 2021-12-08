@@ -1,5 +1,5 @@
 ##' Fit the TWO-SIGMA model with custom user-specified model formulas.
-##' @param count_matrix Matrix of non-negative integer read counts, with rows corresponding to genes and columns correspoding to cells. It is recommended to make the rownames the gene names for better output.
+##' @param count_matrix Matrix of non-negative integer read counts, with rows corresponding to genes and columns corresponding to cells. It is recommended to make the rownames the gene names for better output.
 ##' @param mean_form Custom two-sided model formula for the (conditional) mean model. Formula is passed directly into glmmTMB with random effects specified as in the lme4 package. Users should ensure that the LHS of the formula begins with "count."
 ##' @param zi_form Custom one-sided model formula for the zero-inflation model. Formula is passed directly into glmmTMB with random effects specified as in lme4.
 ##' @param id Vector of individual-level (sample-level) ID's. Used for random effect prediction but required regardless of their presence in the model.
@@ -10,7 +10,7 @@
 ##' @param control Control parameters for optimization in \code{glmmTMB}.  See \code{?glmmTMBControl}.
 ##' @param ncores Number of cores used for parallelization. Defaults to 1, meaning no parallelization of any kind is done.
 ##' @param cluster_type Whether to use a "cluster of type "Fork" or "Sock". On Unix systems, "Fork" will likely improve performance. On Windows, only "Sock" will actually result in parallelized computing.
-##' @param chunk_size Number of genes to be sent to each parallel environment. Parallelization is more efficient, particuarly with a large count matrix, when the count matrix is 'chunked' into some common size (e.g. 10, 50, 200). Defaults to 10.
+##' @param chunk_size Number of genes to be sent to each parallel environment. Parallelization is more efficient, particularly with a large count matrix, when the count matrix is 'chunked' into some common size (e.g. 10, 50, 200). Defaults to 10.
 ##' @param lb Should load balancing be used for parallelization? Users will likely want to set to FALSE for improved performance.
 ##' @param internal_call Not needed by users called \code{twosigma_custom} directly.
 ##' @section Details:

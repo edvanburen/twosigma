@@ -24,7 +24,7 @@ twosigma(
 )
 }
 \arguments{
-\item{count_matrix}{Matrix of non-negative integer read counts, with rows corresponding to genes and columns correspoding to cells. It is recommended to make the rownames the gene names for better output.}
+\item{count_matrix}{Matrix of non-negative integer read counts, with rows corresponding to genes and columns corresponding to cells. It is recommended to make the rownames the gene names for better output.}
 
 \item{mean_covar}{Covariates for the (conditional) mean model. Must be a matrix (without an intercept column) or = 1 to indicate an intercept only model.}
 
@@ -52,7 +52,7 @@ twosigma(
 
 \item{cluster_type}{Whether to use a "cluster of type "Fork" or "Sock". On Unix systems, "Fork" will likely improve performance. On Windows, only "Sock" will actually result in parallelized computing.}
 
-\item{chunk_size}{Number of genes to be sent to each parallel environment. Parallelization is more efficient, particuarly with a large count matrix, when the count matrix is 'chunked' into some common size (e.g. 10, 50, 200). Defaults to 10.}
+\item{chunk_size}{Number of genes to be sent to each parallel environment. Parallelization is more efficient, particularly with a large count matrix, when the count matrix is 'chunked' into some common size (e.g. 10, 50, 200). Defaults to 10.}
 
 \item{lb}{Should load balancing be used for parallelization? Users will likely want to set to FALSE for improved performance.}
 }
