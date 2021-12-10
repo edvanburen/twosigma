@@ -22,6 +22,38 @@
 ##' @return nind Number of individuals.
 ##' @return ncellsper Vector giving the number of cells per individual.
 ##' @return id.levels Individual-level IDs.
+##' @examples
+##' # Set Parameters to Simulate Some Data
+##'
+##'nind<-10;ncellsper<-rep(50,nind)
+##'sigma.a<-.5;sigma.b<-.5;phi<-.1
+##'alpha<-c(1,0,-.5,-2);beta<-c(2,0,-.1,.6)
+##'beta2<-c(2,1,-.1,.6)
+##'id.levels<-1:nind;nind<-length(id.levels)
+##'id<-rep(id.levels,times=ncellsper)
+##'sim.seed<-1234
+##'
+##' # Simulate individual level covariates
+##'
+##'t2d_sim<-rep(rbinom(nind,1,p=.4),times=ncellsper)
+##'cdr_sim<-rbeta(sum(ncellsper),3,6)
+##'age_sim<-rep(sample(c(20:60),size=nind,replace = TRUE),times=ncellsper)
+##'
+##'# Construct design matrices
+##'
+##'Z<-cbind(scale(t2d_sim),scale(age_sim),scale(cdr_sim))
+##'colnames(Z)<-c("t2d_sim","age_sim","cdr_sim")
+##'X<-cbind(scale(t2d_sim),scale(age_sim),scale(cdr_sim))
+##'colnames(X)<-c("t2d_sim","age_sim","cdr_sim")
+##'
+##' # Simulate Data
+##'
+##'sim_dat<-matrix(nrow=2,ncol=sum(ncellsper))
+##'for(i in 1:nrow(sim_dat)){
+##'    sim_dat[i,]<-simulate_zero_inflated_nb_random_effect_data(ncellsper,X,Z,alpha,beta2
+##'    ,phi,sigma.a,sigma.b,id.levels=NULL)$Y
+##'}
+##'rownames(sim_dat)<-paste("Gene",1:2)
 ##' @export simulate_zero_inflated_nb_random_effect_data
 
 

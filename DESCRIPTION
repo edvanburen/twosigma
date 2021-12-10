@@ -1,12 +1,13 @@
 Package: twosigma
 Type: Package
-Title: Fit the TWO-Component Single Cell Model-Based Association Method for Single-Cell RNA-Sequencing Data Analysis
+Title: DE Analysis for Single-Cell RNA-Sequencing Data
 Version: 1.0.2
+Date: 2021-12-10
 Authors@R: c(person("Eric", "Van Buren", email = "edvanburen@gmail.com",
-  role = c("aut", "cre")),person("Yun", "Li",role="aut"))
+  role = c("aut", "cre")),person("Yun", "Li",role="aut"),person("Di", "Wu",role="aut"),person("Ming", "Hu",role="aut"))
 Maintainer: Eric Van Buren <edvanburen@gmail.com>
-Description: Implements the TWO-Component Single Cell Model-Based Association Method (TWO-SIGMA) for gene-level differential expression (DE) analysis and DE-based gene set testing of single-cell RNA-sequencing datasets.   
-License: GPL-2
+Description: Implements the TWO-Component Single Cell Model-Based Association Method (TWO-SIGMA) for gene-level differential expression (DE) analysis and DE-based gene set testing of single-cell RNA-sequencing datasets. See Van Buren et al. (2020) <doi:10.1002/gepi.22361> and Van Buren et al. (2021) <doi:10.1101/2021.01.24.427979>.   
+License: AGPL-3
 Imports: multcomp (>= 1.4-13),
 	 glmmTMB, 
 	 methods,

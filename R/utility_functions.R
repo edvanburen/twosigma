@@ -23,24 +23,24 @@ check_twosigma_input<-function(count,mean_covar,zi_covar
   }
 
   #Check for intercept being input
-  if(class(mean_covar)=="matrix"){
-    check_no_intercept<-function(x){mean(x==1)}
-    if(any(apply(mean_covar,2,check_no_intercept)==1)){
-      stop("Please remove intercept from mean model covariate matrix")
-    }
-  }
-  if(class(zi_covar)=="matrix"){
-      check_no_intercept<-function(x){mean(x==1)}
-      if(any(apply(zi_covar,2,check_no_intercept)==1)){
-      stop("Please remove intercept from ZI model covariate matrix")
-      }
-  }
-      if(class(disp_covar)=="matrix"){
-        check_no_intercept<-function(x){mean(x==1)}
-        if(any(apply(disp_covar,2,check_no_intercept)==1)){
-          stop("Please remove intercept from dispersion covariate matrix")
-        }
-      }
+  # if(class(mean_covar)=="matrix"){
+  #   check_no_intercept<-function(x){mean(x==1)}
+  #   if(any(apply(mean_covar,2,check_no_intercept)==1)){
+  #     stop("Please remove intercept from mean model covariate matrix")
+  #   }
+  # }
+  # if(class(zi_covar)=="matrix"){
+  #     check_no_intercept<-function(x){mean(x==1)}
+  #     if(any(apply(zi_covar,2,check_no_intercept)==1)){
+  #     stop("Please remove intercept from ZI model covariate matrix")
+  #     }
+  # }
+  #     if(class(disp_covar)=="matrix"){
+  #       check_no_intercept<-function(x){mean(x==1)}
+  #       if(any(apply(disp_covar,2,check_no_intercept)==1)){
+  #         stop("Please remove intercept from dispersion covariate matrix")
+  #       }
+  #     }
 
   if(mean(count==0)>.9){
     warning("More than 90% of data are zeros. Mean model results may be misleading for such sparse data")

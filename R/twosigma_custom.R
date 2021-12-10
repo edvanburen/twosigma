@@ -20,6 +20,42 @@
 ##' \item{\code{fit: }} If \code{return_summary_fits=TRUE}, returns a list of model fit objects of class \code{summary.glmmTMB}. If \code{return_summary_fits=FALSE}, returns a list of model fit objects of class \code{glmmTMB}. In either case, the order matches the row order of \code{count_matrix}, and the names of the list elements are taken as the rownames of \code{count_matrix}.
 ##' \item{\code{gene_error:}} Vector indicating whether the particular gene produced an error during model fitting (TRUE) or not (FALSE).
 ##' }
+##' @examples
+##' # Set Parameters to Simulate Some Data
+##'
+##'nind<-10;ncellsper<-rep(50,nind)
+##'sigma.a<-.5;sigma.b<-.5;phi<-.1
+##'alpha<-c(1,0,-.5,-2);beta<-c(2,0,-.1,.6)
+##'beta2<-c(2,1,-.1,.6)
+##'id.levels<-1:nind;nind<-length(id.levels)
+##'id<-rep(id.levels,times=ncellsper)
+##'sim.seed<-1234
+##'
+##' # Simulate individual level covariates
+##'
+##'t2d_sim<-rep(rbinom(nind,1,p=.4),times=ncellsper)
+##'cdr_sim<-rbeta(sum(ncellsper),3,6)
+##'age_sim<-rep(sample(c(20:60),size=nind,replace = TRUE),times=ncellsper)
+##'
+##'# Construct design matrices
+##'
+##'Z<-cbind(scale(t2d_sim),scale(age_sim),scale(cdr_sim))
+##'colnames(Z)<-c("t2d_sim","age_sim","cdr_sim")
+##'X<-cbind(scale(t2d_sim),scale(age_sim),scale(cdr_sim))
+##'colnames(X)<-c("t2d_sim","age_sim","cdr_sim")
+##'
+##' # Simulate Data
+##'
+##'sim_dat<-matrix(nrow=2,ncol=sum(ncellsper))
+##'for(i in 1:nrow(sim_dat)){
+##'    sim_dat[i,]<-simulate_zero_inflated_nb_random_effect_data(ncellsper,X,Z,alpha,beta2
+##'    ,phi,sigma.a,sigma.b,id.levels=NULL)$Y
+##'}
+##'rownames(sim_dat)<-paste("Gene",1:2)
+##'
+##' # Run twosigma_custom
+##'
+##' twosigma_custom(sim_dat[1:2,],mean_form = count~X,zi_form = ~0,id=id)
 ##' @export twosigma_custom
 twosigma_custom<-function(count_matrix,mean_form,zi_form,id,return_summary_fits=TRUE,
   silent=FALSE,disp_covar=NULL

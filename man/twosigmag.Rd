@@ -14,7 +14,7 @@ twosigmag(
   mean_form_null = NULL,
   zi_form_null = NULL,
   id,
-  statistic = "LR",
+  statistic,
   lr.df = NULL,
   covar_to_test = NULL,
   contrast_matrix = NULL,
@@ -98,4 +98,47 @@ A list with the following elements:
 }
 \description{
 Gene set testing for single-cell RNA-sequencing data adjusting for inter-gene correlation.
+}
+\examples{
+# Set Parameters to Simulate Some Data
+
+nind<-10;ncellsper<-rep(50,nind)
+sigma.a<-.5;sigma.b<-.5;phi<-.1
+alpha<-c(1,0,-.5,-2);beta<-c(2,0,-.1,.6)
+beta2<-c(2,1,-.1,.6)
+id.levels<-1:nind;nind<-length(id.levels)
+id<-rep(id.levels,times=ncellsper)
+sim.seed<-1234
+
+# Simulate individual level covariates
+
+t2d_sim<-rep(rbinom(nind,1,p=.4),times=ncellsper)
+cdr_sim<-rbeta(sum(ncellsper),3,6)
+age_sim<-rep(sample(c(20:60),size=nind,replace = TRUE),times=ncellsper)
+
+# Construct design matrices
+
+Z<-cbind(scale(t2d_sim),scale(age_sim),scale(cdr_sim))
+colnames(Z)<-c("t2d_sim","age_sim","cdr_sim")
+X<-cbind(scale(t2d_sim),scale(age_sim),scale(cdr_sim))
+colnames(X)<-c("t2d_sim","age_sim","cdr_sim")
+
+# Simulate Data, half under null half under alternative
+
+sim_dat<-matrix(nrow=4,ncol=sum(ncellsper))
+for(i in 1:nrow(sim_dat)){
+ if(i<2){# Gene Sets Under the Null
+   sim_dat[i,]<-simulate_zero_inflated_nb_random_effect_data(ncellsper,X,Z,alpha,beta2
+   ,phi,sigma.a,sigma.b,id.levels=NULL)$Y
+ }else{# Gene Sets Under the Alternative
+   sim_dat[i,]<-simulate_zero_inflated_nb_random_effect_data(ncellsper,X,Z,alpha,beta
+   ,phi,sigma.a,sigma.b,id.levels=NULL)$Y
+ }
+}
+rownames(sim_dat)<-paste("Gene",1:4)
+
+# Run twosigmag
+
+twosigmag(sim_dat,index_test = list(c(1,3)),all_as_ref = TRUE,mean_form = count~X
+,zi_form = ~0,id=id,covar_to_test  = "t2d_sim",statistic = "Z")
 }

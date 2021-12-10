@@ -47,8 +47,8 @@ twosigma(count_matrix, mean_covar, zi_covar,id,ncores=1)
 ```
 
 - **count_matrix**: A vector of non-negative integer counts. No normalization is done.
-- **mean_covar**: A matrix (such as from model.matrix) of covariates for the (conditional) mean model without an intercept term. Columns give covariates and the number of rows should correspond to the number of cells.
-- **zi_covar**: A matrix (such as from model.matrix) of covariates for the zero-inflation model without an intercept term. Columns give covariates and the number of rows should correspond to the number of cells.
+- **mean_covar**: A matrix (such as from model.matrix) of covariates for the (conditional) mean model **without an intercept term**. Columns give covariates and the number of rows should correspond to the number of cells.
+- **zi_covar**: A matrix (such as from model.matrix) of covariates for the zero-inflation model **without an intercept term**. Columns give covariates and the number of rows should correspond to the number of cells.
 - **id**: Vector of individual-level ID's (length equal to the total number of cells). Used for random effect prediction and the ad hoc method and is currently required even if neither is being used.
 - **ncores**: Number of cores to use for parallelization. **Multiple cores are recommended if possible.**
 
