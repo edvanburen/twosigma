@@ -362,7 +362,7 @@ rm(a)
 gc()
 #browser()
   p.val<-matrix(NA,nrow=nsets,ncol=ncomps)
-  #p.val_ttest<-matrix(NA,nrow=nsets,ncol=ncomps)
+  #p.val_FDR<-matrix(NA,nrow=nsets,ncol=ncomps)
   rho_est<-rep(NA,length=nsets)
   direction<-matrix(NA,nrow=nsets,ncol=ncomps)
   estimates_set_level<-matrix(NA,nrow=nsets,ncol=ncomps)
@@ -421,8 +421,8 @@ gc()
     }
     if(i%%100==0){print(paste0("Set ",i," of ",nsets," Finished"))}
   }
-  p.val_FDR<-apply(p.val,MARGIN=2,FUN=p.adjust,method="fdr")
   #browser()
+  p.val_FDR<-matrix(apply(p.val,MARGIN=2,FUN=p.adjust,method="fdr"),nrow=nsets,ncol=ncomps)
   rownames(stats_all)<-genes
   colnames(p.val)<-rownames(contrast_matrix)
   rownames(p.val)<-names(index_test)

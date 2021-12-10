@@ -15,7 +15,7 @@ Eric Van Buren: evb@hsph.harvard.edu, Di Wu: did@email.unc.edu, Yun Li: yun_li@m
 
 ## Introduction
 
-<code>twosigma</code> is an R package for differential expression (DE) analysis and gene set testing (GST) in single-cell RNA-seq (scRNA-seq) data.  At the gene-level, DE can be assessed by fitting our proposed TWO-component SInGle cell Model-based Association method (TWO-SIGMA). The first component models the drop-out probability with a mixed effects logistic regression, and the second component models the (conditional) mean read count with a mixed-effects log-linear negative binomial regression. Our approach thus allows for both excess zero counts and overdispersed counts while also accommodating dependency in both drop-out probability and mean mRNA abundance.  TWO-SIGMA is especially useful in its flexibility to analyze DE beyond a two-group comparison while simultaneously controlling for additional subject-level or cell-level covariates including batch effects.  At the set-level, the package can perform competitive DE-based gene set testing using our proposed TWO-SIGMA-G method. Users can specify the number of cores to be used for parallelization in all functions using the ncores argument.
+<code>twosigma</code> is an R package for differential expression (DE) analysis and DE-based gene set testing (GST) in single-cell RNA-seq (scRNA-seq) data.  At the gene-level, DE can be assessed by fitting our proposed TWO-component SInGle cell Model-based Association method (TWO-SIGMA). The first component models the drop-out probability with a mixed effects logistic regression, and the second component models the (conditional) mean read count with a mixed-effects log-linear negative binomial regression. Our approach thus allows for both excess zero counts and overdispersed counts while also accommodating dependency in both drop-out probability and mean mRNA abundance.  TWO-SIGMA is especially useful in its flexibility to analyze DE beyond a two-group comparison while simultaneously controlling for additional subject-level or cell-level covariates including batch effects.  At the set-level, the package can perform competitive DE-based gene set testing using our proposed TWO-SIGMA-G method. Users can specify the number of cores to be used for parallelization in all functions using the ncores argument.
 
 ## Installation
 We recommend installing from GitHub or CRAN for the latest version (1.0.2) of the package, which is built for any version of R >= 3.6.3 (including R >= 4.0):
@@ -162,12 +162,12 @@ Competitive gene set testing based on TWO-SIGMA can be performed using the funct
 
 #Set parameters for the simulation
 # This is as was done in the TWO-SIGMA paper
-set.seed(1)
+set.seed(1234)
 nind<-10
 ncellsper<-rep(1000,nind)
 sigma.a<-.1
 sigma.b<-.1
-alpha<-c(1,0,-.5,-2)
+alpha<-c(-1,0,-.5,-2)
 beta<-c(2,0,-.1,.6)
 phi<-.1
 id.levels<-1:nind
@@ -208,7 +208,7 @@ fit2<-twosigma_custom(counts, mean_form=count~t2d_sim+age_sim+cdr_sim
 
 #fit and fit2 are the same for the both genes
 
-fit[[1]];fit2[[1]]
+fit$fit[[1]];fit2$fit[[1]]
 fit$fit['Gene 2'];fit2$fit['Gene 2']
 
 #--- Fit TWO-SIGMA without a zero-inflation component
@@ -227,6 +227,8 @@ fit_meanZI$fit[['Gene 1']]
 lr.fit<-lr.twosigma(counts,covar_to_test="t2d_sim",mean_covar = X,zi_covar=Z,id=id)
 lr.fit$LR_stat
 lr.fit$LR_p.val
+
+# Same results using lr.twosigma_custom
 
 lr.fit_custom<-lr.twosigma_custom(counts,mean_form_alt=count~t2d_sim+age_sim+cdr_sim
 , zi_form_alt=~t2d_sim+age_sim+cdr_sim, mean_form_null=count~age_sim+cdr_sim
@@ -254,31 +256,24 @@ for(i in 1:nrow(sim_dat2)){
   }
 }
 
-# Use LR statistic
-gst<-twosigmag(sim_dat2,index_test = list(c(6:10)),index_ref = list(c(1:4)),
-mean_form=count~t2d_sim+age_sim+cdr_sim,zi_form=~t2d_sim+age_sim+cdr_sim
-,mean_form_null=count~age_sim+cdr_sim,
-zi_form_null=~age_sim+cdr_sim,statistic="LR",
-covar_to_test='t2d_sim',lr.df=2,id=id)
-
-gst$set_p.val
-
 # Use Z-statistic
 
-gst2<-twosigmag(sim_dat2,index_test = list("Set 1" = c(6:10)),mean_form = count~t2d_sim+age_sim+cdr_sim
-,zi_form = ~t2d_sim+age_sim+cdr_sim,id=id,covar_to_test  = "t2d_sim",ncores = 1,statistic = "Z",ncores=1)
+gst2<-twosigmag(sim_dat2,index_test = list("Set 1" = c(6:10),"Set 2" = c(1:5)),mean_form = count~t2d_sim+age_sim+cdr_sim
+,zi_form = ~t2d_sim+age_sim+cdr_sim,id=id,covar_to_test  = "t2d_sim"
+,statistic = "Z",ncores=1)
 
 gst2$set_p.val
 
 # Testing a simple contrast equivalent to the Z statistic for 't2d_sim'
 
-gst3<-twosigmag(sim_dat2,index_test = list("Set 1" = c(6:10)),mean_form = count~t2d_sim+age_sim+cdr_sim
+gst3<-twosigmag(sim_dat2,index_test = list("Set 1" = c(6:10),"Set 2" = c(1:5)),mean_form = count~t2d_sim+age_sim+cdr_sim
 ,zi_form = ~t2d_sim+age_sim+cdr_sim,id=id,statistic = "contrast"
 ,contrast_matrix = matrix(c(0,1,0,0),nrow=1),ncores = 1)
 
 # Same result as using Z test
 
 gst3$set_p.val
+gst2$set_p.val
 
 
 # Testing a contrast of a factor variable
@@ -289,17 +284,17 @@ fact<-factor(rep(sample(c(0,1,2),nind,replace=T),times=ncellsper))
 cont_matrix<-matrix(c(-1,1,0,-1,0,1),nrow=2,byrow = T)
 rownames(cont_matrix)<-c("Test 1","Test 2")
 
-gst4<-twosigmag(sim_dat2,index_test = list("Set 1" = c(6:10))
+gst4<-twosigmag(sim_dat2,index_test = list("Set 1" = c(6:10),"Set 2" = c(1:5))
 ,mean_form = count~t2d_sim+age_sim+cdr_sim+fact
 ,zi_form = ~t2d_sim+age_sim+cdr_sim,id=rep(id.levels,times=ncellsper)
 ,statistic = "contrast",contrast_matrix = cont_matrix
   ,factor_name="fact",ncores = 1,return_summary_fits = T)
 
-# Finally, test the factor "manually to show results are the same
+# Finally, test the factor "manually"" to show results are the same
 cont_matrix2<-matrix(c(0,0,0,0,1,0,0,0,0,0,0,1),nrow=2,byrow = T)
 rownames(cont_matrix2)<-c("Test 1","Test 2")
 
-gst5<-twosigmag(sim_dat2,index_test = list("Set 1" = c(6:10)),mean_form = count~t2d_sim+age_sim+cdr_sim+fact
+gst5<-twosigmag(sim_dat2,index_test = list("Set 1" = c(6:10),"Set 2" = c(1:5)),mean_form = count~t2d_sim+age_sim+cdr_sim+fact
 ,zi_form = ~t2d_sim+age_sim+cdr_sim,id=id,statistic = "contrast",contrast_matrix = cont_matrix2
 ,ncores = 1,return_summary_fits = T)
   
@@ -308,14 +303,14 @@ gst5<-twosigmag(sim_dat2,index_test = list("Set 1" = c(6:10)),mean_form = count~
 gst4$set_p.val
 gst5$set_p.val
 
-gst6<-twosigmag(sim_dat2,index_test = list("Set 1" = c(6:10),"Set 2"=c(1:5)),mean_form = count~t2d_sim+age_sim+cdr_sim+fact
+gst6<-twosigmag(sim_dat2,index_test = list("Set 1" = c(6:10),"Set 2" = c(1:5)),mean_form = count~t2d_sim+age_sim+cdr_sim+fact
 ,zi_form = ~t2d_sim+age_sim+cdr_sim,id=id,statistic = "contrast",contrast_matrix = cont_matrix2
 ,ncores = 1,return_summary_fits = T)
 
 
 #Plot Results in Heatmaps
-
-plot_tsg<-function(obj,top_set_size_ct=10,font_size=10,set_cex=.7,plot_title){
+library(pheatmap)
+plot_tsg<-function(obj,top_set_size_ct=10,font_size=10,set_cex=.7,plot_title="Title"){
     j<-0
     for(i in colnames(obj$set_p.val)){
       j<-j+1
@@ -338,7 +333,6 @@ plot_tsg<-function(obj,top_set_size_ct=10,font_size=10,set_cex=.7,plot_title){
     pheatmap(mat=as.matrix(t(mat_plot)),cluster_rows=FALSE,main = "Heatmap of Set-Level log10 p-values (Unadjusted) by Cell Type",cellwidth = 10,cellheight=30,show_colnames = T,
              cluster_cols=FALSE,fontsize=font_size,fontsize_col = set_cex*font_size,border_color = NA
              ,na_col='grey',color=colorRampPalette(c('darkgreen',"white"))(12))
-    dev.off()
 
   }
 
