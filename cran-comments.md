@@ -11,4 +11,4 @@ This is a resubmission of the twosigma package, version 1.0.2. Based on the feed
 4. Added tests for all eight exported functions in "tests/testthat/test-twosigma.R"
 
 5. Removed the case in which a user's global options were changed from the function twosigmag.R
-(commented line 99), and removed the function twosigmag_ttest.R entirely from the package (also had previously modified a user's global options)
+(commented line 99), and removed the function twosigmag_ttest.R entirely from the package (it had also had previously modified a user's global options)
