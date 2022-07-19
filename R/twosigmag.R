@@ -423,7 +423,7 @@ gc()
   }
   #browser()
   p.val_FDR<-matrix(apply(p.val,MARGIN=2,FUN=p.adjust,method="fdr"),nrow=nsets,ncol=ncomps)
-  rownames(stats_all)<-genes
+  rownames(stats_all)<-gene_names
   colnames(p.val)<-rownames(contrast_matrix)
   rownames(p.val)<-names(index_test)
   colnames(p.val_FDR)<-rownames(contrast_matrix)
