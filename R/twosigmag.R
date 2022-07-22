@@ -246,7 +246,8 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
           estimates_gene_level[k,]<-fit$coefficients$cond[covar_to_test+1,'Estimate']
           se_gene_level[k,]<-fit$coefficients$cond[covar_to_test+1,'Std. Error']
           stats_all[k,]<-(fit$coefficients$cond[covar_to_test,'z value']+fit$coefficients$zi[covar_to_test,'z value'])/sqrt(2)
-          p.vals_gene_level[k,]<-fit$coefficients$cond[covar_to_test,'Pr(>|z|)']
+          #p.vals_gene_level[k,]<-fit$coefficients$cond[covar_to_test,'Pr(>|z|)']
+          p.vals_gene_level[k,]<-2*pnorm(-1*abs(stats_all[k,]))
         }
         if(is.character(covar_to_test)){
           if(sum(grepl(covar_to_test,names_cond))>1){num_err=1;stop(paste(c("covar_to_test matches to multiple variables in mean model. Please rename these other variables to not contain the name of covar_to_test. Variable names in the mean model are: ",names_cond),collapse=" "))}
@@ -256,7 +257,7 @@ twosigmag<-function(count_matrix,index_test,index_ref=NULL,all_as_ref=FALSE,mean
           estimates_gene_level[k,]<-fit$coefficients$cond[grepl(covar_to_test,names_cond),'Estimate']
           se_gene_level[k,]<-fit$coefficients$cond[grepl(covar_to_test,names_cond),'Std. Error']
           stats_all[k,]<-(fit$coefficients$cond[grepl(covar_to_test,names_cond),'z value']+fit$coefficients$zi[grepl(covar_to_test,names_zi),'z value'])/sqrt(2)
-          p.vals_gene_level[k,]<-fit$coefficients$cond[grepl(covar_to_test,names_cond),'Pr(>|z|)']
+          p.vals_gene_level[k,]<-2*pnorm(-1*abs(stats_all[k,]))
         }
       }
       if(statistic=="contrast"){
