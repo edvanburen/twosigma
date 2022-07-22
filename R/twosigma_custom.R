@@ -71,20 +71,17 @@ twosigma_custom<-function(count_matrix,mean_form,zi_form,id,return_summary_fits=
   ngenes<-nrow(count_matrix)
   genes<-rownames(count_matrix)
   if(is.null(genes)){genes<-1:ngenes}
-  #if(!is.matrix(count_matrix)){stop("Please ensure the input count_matrix is of class matrix.")}
+  if(!is.matrix(count_matrix)){stop("Please ensure the input count_matrix is of class matrix.")}
   if(length(id)!=ncol(count_matrix)){stop("Argument id should be a numeric vector with length equal to the number of columns of count_matrix (i.e. the number of cells).")}
-
-
-
 
   fit_ts<-function(chunk,id){
     k<-0
-    num_err=0
+    #num_err=0
     fit<-vector('list',length=length(chunk))
     gene_err<-rep(TRUE,length(chunk))
     logLik<-rep(NA,length(chunk))
     for(l in unlist(chunk)){
-      if(num_err>0){break}
+      #if(num_err>0){break}
       k<-k+1
     count<-count_matrix[l,,drop=FALSE]
     check_twosigma_custom_input(count,mean_form,zi_form,id,disp_covar)
@@ -123,8 +120,8 @@ twosigma_custom<-function(count_matrix,mean_form,zi_form,id,return_summary_fits=
       logLik[k]<-as.numeric(summary(fit[[k]])$logLik)
       gene_err[k]<-(is.na(logLik[k]) | f$sdr$pdHess==FALSE)
     }},error=function(e){}) # end try-catch
-    return(list(fit=fit,gene_err=gene_err))
     }
+    return(list(fit=fit,gene_err=gene_err))
   }
 
   size=chunk_size
@@ -153,10 +150,9 @@ twosigma_custom<-function(count_matrix,mean_form,zi_form,id,return_summary_fits=
   }else{
     a<-lapply(chunks,FUN=fit_ts,id=id)
   }
-
+  #browser()
   rm(count_matrix)
   gc()
-  #browser()
   fit<-do.call(c,sapply(a,'[',1))
   gene_err<-unlist(sapply(a,'[',2))
   names(fit)<-genes
