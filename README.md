@@ -5,9 +5,9 @@
 
 Van Buren, E, Hu, M, Weng, C, et al. TWO‐SIGMA: A novel two‐component single cell model‐based association method for single‐cell RNA‐seq data. Genetic Epidemiology. 2020; 1– 12. https://doi.org/10.1002/gepi.22361
 
-**TWO-SIGMA-G bioRxiv preprint**:
+**TWO-SIGMA-G**:
 
-TWO-SIGMA-G: A New Competitive Gene Set Testing Framework for scRNA-seq Data Accounting for Inter-Gene and Cell-Cell Correlation: doi: https://doi.org/10.1101/2021.01.24.427979
+Van Buren, E, Hu, M, Cheng, L, et al. TWO-SIGMA-G: A New Competitive Gene Set Testing Framework for scRNA-seq Data Accounting for Inter-Gene and Cell-Cell Correlation. Briefings in Bioinformatics. 23 (3): 2022. https://doi.org/10.1093/bib/bbac084 
 
 ## Contact Emails
 
